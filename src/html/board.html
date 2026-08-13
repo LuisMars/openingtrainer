@@ -1,0 +1,23 @@
+<section class="screen wrap" id="scBoard">
+  <div class="stage">
+    <div class="board" id="board" role="application" tabindex="0" aria-label="Chess board. Arrow keys move the cursor, Enter selects and plays."></div>
+    <svg class="arrows" id="arrows" viewBox="0 0 8 8" preserveAspectRatio="none">
+      <defs><marker id="ah" markerWidth="3" markerHeight="3" refX="1.7" refY="1.5" orient="auto">
+        <path d="M0,0 L3,1.5 L0,3 z" fill="rgba(224,161,60,.85)"/></marker></defs>
+    </svg>
+  </div>
+  <div class="tray" id="tray"><span></span><span></span></div>
+  <div class="prog"><i id="progBar"></i></div>
+  <div class="sess mono" id="sess"></div>
+  <div class="offbook" id="offbook"></div>
+  <div class="ctl" id="ctl"></div>
+  <div class="note">
+    <div class="hd"><span class="mv" id="nMove">Ready</span><span class="src" id="nSrc"></span></div>
+    <p id="nText"></p>
+    <div class="msg" id="nMsg" role="status" aria-live="polite"></div>
+  </div>
+  <details class="sheetbox" id="libBox"><summary>Masters database</summary><div class="lib" id="lib"></div></details>
+  <details class="sheetbox" id="sheetBox"><summary>Notation</summary><div class="rows" id="rows"></div></details>
+</section>
+
+

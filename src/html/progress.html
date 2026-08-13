@@ -1,0 +1,19 @@
+<section class="screen wrap" id="scProgress">
+  <div class="big">
+    <div><b id="pSolid">0</b><small>Solid</small></div>
+    <div><b id="pSeen">0</b><small>Seen</small></div>
+    <div><b id="pAcc">0%</b><small>Accuracy</small></div>
+  </div>
+  <div id="pRows"></div>
+  <div class="verify run" id="verifyRow"><b id="verifyDot">checking</b><span id="verifyTxt">verifying the data set…</span></div>
+  <div class="chapter">Weak spots</div>
+  <div id="pWeak"></div>
+  <div class="chapter">Backup</div>
+  <textarea id="pData" class="data" placeholder="Export writes your progress here. Paste a backup and press Import."></textarea>
+  <div class="ctl" style="margin-top:6px">
+    <button class="wide" id="pExport">Export</button>
+    <button class="wide" id="pImport">Import</button>
+  </div>
+  <button class="danger" id="pReset">Reset all progress</button>
+</section>
+

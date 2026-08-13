@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1219">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Offline trainer for the Colle System and the Hippopotamus Defence: 47 lines, spaced repetition, tactics.">
+<title>Colle &amp; Hippo Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1219; --panel:#151c26; --panel2:#1c2632; --line:#293648;
+    --amber:#e0a13c; --moss:#7fb06a; --rust:#cd564b;
+    --sqL:#e4dabc; --sqD:#48645f; --pcW:#f6f1e6; --pcB:#12161b; --edgeW:#12161b; --edgeB:#ded5bd;
+    --text:#e2e8ef; --dim:#8798aa; --w:min(94vw,430px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:radial-gradient(1100px 520px at 50% -12%,#1a2431 0%,var(--ink) 62%);
+    color:var(--text);font-family:"Inter",system-ui,sans-serif;font-size:15px;line-height:1.5;
+    min-height:100vh;padding-bottom:40px}
+  .wrap{width:var(--w);max-width:100%;margin:0 auto}
+  button{font:inherit;color:inherit;cursor:pointer}
+  button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  /* app bar */
+  #crash{display:none;position:sticky;top:0;z-index:40;background:#3a1714;border-bottom:1px solid var(--rust);
+    color:#f0c9c5;font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding:9px 12px;line-height:1.5}
+  #crash.on{display:block}
+  #crash button{background:none;border:1px solid var(--rust);color:#f0c9c5;padding:3px 9px;margin-left:8px;font:inherit}
+  .verify{display:flex;align-items:center;gap:8px;margin-top:14px;padding:9px 11px;border:1px solid var(--line);
+    background:var(--panel);font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--dim)}
+  .verify b{font-weight:600}
+  .verify.ok b{color:var(--moss)} .verify.bad b{color:var(--rust)} .verify.run b{color:var(--amber)}
+  .appbar{position:sticky;top:0;z-index:20;background:rgba(13,18,25,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .appbar .inner{display:flex;align-items:center;gap:8px;height:50px}
+  .appbar button{background:none;border:0;padding:8px 6px;color:var(--dim);font-size:17px;line-height:1}
+  .appbar .ttl{flex:1;font-family:"Zilla Slab",serif;font-weight:600;font-size:16px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .appbar .sub{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--dim);letter-spacing:.1em}
+
+  .screen{display:none;padding-top:16px}
+  .screen.on{display:block}
+
+  /* menu */
+  .hero{margin:6px 0 18px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--amber);margin:0 0 4px}
+  h1{font-family:"Zilla Slab",serif;font-weight:700;font-size:30px;line-height:1.03;margin:0 0 8px}
+  .lede{color:var(--dim);font-size:13.5px;margin:0}
+  .strip{display:flex;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:14px}
+  .strip div{flex:1;background:var(--panel);padding:9px 8px;text-align:center}
+  .strip b{display:block;font-family:"Zilla Slab",serif;font-size:21px;line-height:1.1}
+  .strip small{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--dim)}
+  .card{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;background:var(--panel);
+    border:1px solid var(--line);border-left:3px solid transparent;padding:13px 14px;margin-bottom:7px}
+  .card:hover{background:var(--panel2)}
+  .card.key{border-left-color:var(--amber)}
+  .card .ico{width:26px;flex:none;display:flex;padding-top:1px}
+  .card .ico svg{width:26px;height:26px;stroke-width:5;paint-order:stroke fill;fill:var(--pcW);stroke:var(--edgeW)}
+  .card h3{margin:0 0 2px;font-size:15px;font-weight:600}
+  .card p{margin:0;font-size:12.5px;color:var(--dim)}
+  .card .badge{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+    color:var(--amber);white-space:nowrap;padding-top:2px}
+
+  /* line list */
+  .chapter{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);margin:16px 0 6px}
+  .lbtn{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);
+    border-left:3px solid transparent;padding:10px 12px;margin-bottom:5px}
+  .lbtn:hover{background:var(--panel2)}
+  .lbtn.done{border-left-color:var(--moss)}
+  .lbtn .nm{font-weight:600;font-size:13.5px;display:block}
+  .lbtn .meta{display:flex;align-items:center;gap:8px;margin-top:5px;
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--dim)}
+  .pbar{flex:none;width:64px;height:4px;background:#22303f}
+  .pbar i{display:block;height:100%;background:var(--moss)}
+  .kind{padding:1px 6px;border:1px solid var(--line);color:var(--dim);letter-spacing:.08em;text-transform:uppercase;font-size:9px;display:inline-block;margin-top:3px}
+  .lbtn .kind{padding:1px 6px;border:1px solid var(--line);color:var(--dim);letter-spacing:.08em;text-transform:uppercase;font-size:9.5px}
+  .note .src a{color:var(--dim);text-decoration:none;border-bottom:1px solid rgba(135,152,170,.4)}
+
+
+  /* board */
+  .stage{position:relative;width:var(--w);margin:0 auto}
+  .board{position:relative;width:var(--w);height:var(--w);display:grid;
+    grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+    border:1px solid #070a0e;box-shadow:0 20px 40px rgba(0,0,0,.55);touch-action:manipulation;
+    user-select:none;-webkit-user-select:none}
+  .sq{position:relative;display:flex;align-items:center;justify-content:center}
+  .sq.cursor{box-shadow:inset 0 0 0 3px rgba(255,255,255,.75)}
+  .board:focus{outline:2px solid var(--amber);outline-offset:3px}
+  .board:focus:not(:focus-visible){outline:none}
+  .sq.grab{touch-action:none;cursor:grab}
+  .sq.lift .pc{opacity:.22}
+  .sq.l{background:var(--sqL)}
+  .sq.d{background:var(--sqD)}
+  .pc{width:84%;height:84%;position:relative;z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));
+    -webkit-user-drag:none;user-select:none}
+  .pc.custom{width:80%;height:80%;stroke-width:4;stroke-linejoin:round;paint-order:stroke fill}
+  .pc.drag{position:fixed;width:auto;height:auto;z-index:60;pointer-events:none;
+    transform:translate(-50%,-50%) scale(1.1);filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
+  .pc.custom.w{fill:var(--pcW);stroke:var(--edgeW)}
+  .pc.custom.b{fill:var(--pcB);stroke:var(--edgeB)}
+  .pc.slide{transition:transform .22s cubic-bezier(.3,.9,.35,1)}
+  .mk{position:absolute;inset:0;pointer-events:none;z-index:1}
+  .mk.from{background:rgba(224,161,60,.24)} .mk.to{background:rgba(224,161,60,.4)}
+  .mk.sel{background:rgba(127,176,106,.45)}
+  .mk.hint{box-shadow:inset 0 0 0 4px rgba(224,161,60,.9)}
+  .mk.over{box-shadow:inset 0 0 0 5px rgba(246,245,240,.65)}
+  .dot{position:absolute;width:26%;height:26%;border-radius:50%;background:rgba(20,26,33,.28);
+    z-index:3;pointer-events:none}
+  .dot.cap{width:88%;height:88%;background:none;border:5px solid rgba(20,26,33,.26);border-radius:50%}
+  .mk.bad{background:rgba(205,86,75,.6);animation:fade .55s forwards}
+  .mk.good{background:rgba(127,176,106,.7);box-shadow:inset 0 0 0 4px rgba(127,176,106,.9);
+    animation:goodflash .6s ease-out forwards}
+  @keyframes fade{to{opacity:0}}
+  @keyframes goodflash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  .ghost{position:absolute;width:58%;height:58%;opacity:.32;z-index:1}
+  .ghost.custom{fill:#0c1015;stroke:none}
+  .ghost.custom.wg{fill:#fff}
+  .coord{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:9px;z-index:3;pointer-events:none}
+  .coord.f{right:3px;bottom:1px} .coord.r{left:3px;top:1px}
+  .sq.l .coord{color:#7c8571} .sq.d .coord{color:#cfd7c6}
+  svg.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
+  .tray{display:flex;justify-content:space-between;align-items:center;min-height:26px;
+    background:var(--sqL);border:1px solid #070a0e;border-top:0;padding:3px 6px;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;color:#4a5a52}
+  .tray.empty{display:none}
+  .tray>span{display:flex;align-items:center;gap:1px;min-height:20px}
+  .tray svg{width:19px;height:19px;flex:none}
+  .tray svg.custom{fill:#2a3138;stroke:none}
+  .tray svg.custom.w{fill:#fbf8f0;stroke:#2a3138;stroke-width:5}
+  .prog{height:3px;background:#22303f} .prog i{display:block;height:100%;background:var(--amber);width:0;transition:width .25s}
+
+  .offbook{display:none;align-items:center;gap:8px;margin-top:8px;padding:8px 11px;
+    background:rgba(224,161,60,.1);border:1px solid rgba(224,161,60,.35);
+    font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--amber)}
+  .offbook.on{display:flex}
+  .offbook span{flex:1;color:#d9c9a8}
+  .sess{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--dim);padding:7px 1px 0}
+  .sess b{color:var(--amber);font-weight:600}
+  .ctl{display:flex;gap:5px;margin-top:9px}
+  .ctl button{flex:1;background:var(--panel);border:1px solid var(--line);padding:11px 0;font-size:14px;
+    font-family:"IBM Plex Mono",monospace}
+  .ctl button:hover{background:var(--panel2)}
+  .ctl button:disabled{opacity:.3;cursor:default}
+  .ctl button.wide{font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+
+  .note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);
+    padding:11px 13px;margin-top:9px;min-height:92px}
+  .note .hd{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+  .note .mv{font-family:"IBM Plex Mono",monospace;font-size:17px;font-weight:600;color:var(--amber)}
+  .note .src .eco{color:#6f8093;font-size:9.5px;letter-spacing:.02em;text-transform:none}
+  .note .src{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--dim);margin-left:auto;text-align:right}
+  .note p{margin:0;font-size:13.5px;color:#cbd6e1}
+  .msg{font-family:"IBM Plex Mono",monospace;font-size:12.5px;margin-top:7px;min-height:18px}
+  .ok{color:var(--moss)} .no{color:var(--rust)} .neutral{color:var(--dim)}
+  .ok.hit{font-weight:700}
+  .neutral.wait{color:var(--amber);font-weight:600;animation:waitpulse 1.3s ease-in-out infinite}
+  @keyframes waitpulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  details.sheetbox{margin-top:9px;background:var(--panel);border:1px solid var(--line)}
+  details.sheetbox summary{list-style:none;padding:10px 12px;font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);cursor:pointer}
+  details.sheetbox summary::-webkit-details-marker{display:none}
+  .rows{display:flex;flex-direction:column;font-family:"IBM Plex Mono",monospace;font-size:13.5px;padding-bottom:10px}
+  .row{display:grid;grid-template-columns:30px 1fr 1fr;gap:3px;padding:1px 12px}
+  .row:nth-child(odd){background:rgba(255,255,255,.02)}
+  .num{color:var(--dim);font-size:11.5px;padding-top:3px}
+  .ply{padding:3px 5px}
+  .ply.cur{background:var(--amber);color:#11161d;font-weight:600}
+  .ply.past{color:#a3b3c3} .ply.future{color:#5b697a}
+
+  .lib{padding:0 12px 12px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--dim)}
+  .lib .hd{display:flex;justify-content:space-between;margin-bottom:7px;color:#bdc9d6}
+  .wdl{display:flex;height:6px;margin-bottom:9px;background:#22303f}
+  .wdl i{display:block;height:100%}
+  .lrow{display:flex;align-items:center;gap:8px;padding:3px 0}
+  .lrow b{width:52px;color:var(--text);font-weight:600}
+  .lrow.ours b{color:var(--amber)}
+  .lrow .bar{flex:1;height:5px;background:#22303f}
+  .lrow .bar i{display:block;height:100%;background:#4d6379}
+  .lrow.ours .bar i{background:var(--amber)}
+  .lrow em{font-style:normal;width:56px;text-align:right;font-size:11px}
+  /* progress screen */
+  .big{display:flex;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:16px}
+  .big div{flex:1;background:var(--panel);padding:12px 8px;text-align:center}
+  .big b{display:block;font-family:"Zilla Slab",serif;font-size:25px;line-height:1.1}
+  .big small{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .prow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid rgba(41,54,72,.6);font-size:12.5px}
+  .prow span{flex:1;color:#bdc9d6}
+  .prow em{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--dim);width:38px;text-align:right}
+  .data{width:100%;height:74px;background:var(--panel);border:1px solid var(--line);color:var(--dim);
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:8px;resize:vertical}
+  .weak{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:var(--panel);
+    border:1px solid var(--line);border-left:3px solid var(--rust);padding:9px 11px;margin-bottom:5px;font-size:12.5px}
+  .weak span{flex:1;color:#c6d2de}
+  .weak em{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--dim)}
+  .danger{width:100%;margin-top:18px;background:transparent;border:1px solid var(--line);color:var(--dim);
+    padding:11px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .danger:hover{border-color:var(--rust);color:var(--rust)}
+
+  /* options sheet */
+  .scrim{position:fixed;inset:0;background:rgba(6,9,13,.72);z-index:30;display:none}
+  .scrim.on{display:block}
+  .opts{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--panel);
+    border-top:1px solid var(--line);padding:8px 0 22px;transform:translateY(100%);transition:transform .22s}
+  .opts.on{transform:translateY(0)}
+  .opts button{display:flex;width:100%;background:none;border:0;padding:13px 20px;text-align:left;
+    font-size:14.5px;border-bottom:1px solid rgba(41,54,72,.5)}
+  .opts button span{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--dim)}
+  .opts button[aria-pressed="true"] span{color:var(--amber)}
+  footer{color:var(--dim);font-size:11.5px;line-height:1.6;margin-top:22px}
+  footer a{color:var(--amber);text-decoration:none;border-bottom:1px solid rgba(224,161,60,.3)}
+  footer .prov{display:grid;grid-template-columns:max-content 1fr;gap:9px 12px;margin:10px 0}
+  footer .prov dt{display:grid;gap:4px;justify-items:start;align-content:start}
+  footer .prov dt .kind{margin-top:2px}
+  footer .prov dd{margin:0}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="crash" role="alert"></div>
+<div class="appbar"><div class="wrap inner">
+  <button id="navBack" aria-label="Back">&#8592;</button>
+  <span class="ttl" id="barTitle">Colle &amp; Hippo</span>
+  <span class="sub" id="barSub"></span>
+  <button id="navMore" aria-label="Options">&#8942;</button>
+</div></div>
+
+<main>
+
+<section class="screen on wrap" id="scMenu">
+  <div class="hero">
+    <p class="eyebrow">Repertoire trainer</p>
+    <h1>The Triangle<br>&amp; the Swamp</h1>
+    <p class="lede">Forty-seven lines, from game scores, book recommendations and the opening database. The Colle as White, the Hippopotamus as Black. Learn them, then let the trainer decide which position you have earned the right to forget.</p>
+  </div>
+  <div class="strip">
+    <div><b id="kDue">0</b><small>Untouched</small></div>
+    <div><b id="kSolid">0</b><small>Solid</small></div>
+    <div><b id="kAcc">0</b><small>Due now</small></div>
+    <div><b id="kToday">0</b><small>Today</small></div>
+  </div>
+  <button class="card key" id="cShuffle">
+    <span class="ico" data-pc="n"></span>
+    <span><h3>Shuffle drill</h3><p>A random position from any line. Speed counts: slow answers come back sooner.</p></span>
+    <span class="badge" id="bDue"></span>
+  </button>
+  <button class="card" id="cStudy">
+    <span class="ico" data-pc="b"></span>
+    <span><h3>Study a line</h3><p>Notes on every move, plus what the masters played.</p></span>
+  </button>
+  <button class="card" id="cDrill">
+    <span class="ico" data-pc="r"></span>
+    <span><h3>Drill a line</h3><p>Play one line from move one, from memory.</p></span>
+  </button>
+  <button class="card" id="cPuzzle">
+    <span class="ico" data-pc="k"></span>
+    <span><h3>Tactics from your openings</h3><p>Real puzzles from games in these structures.</p></span>
+    <span class="badge" id="bPz"></span>
+  </button>
+  <button class="card" id="cProgress">
+    <span class="ico" data-pc="q"></span>
+    <span><h3>Progress</h3><p>Solid, slipping, untouched, and your weak spots.</p></span>
+  </button>
+  <footer>
+    <b>Where each line comes from.</b> Every line carries a tag, and the tag is the claim.
+    <dl class="prov">
+      <dt><span class="kind">game</span></dt>
+      <dd>A real game score, checked move for move against its sources.</dd>
+      <dt><span class="kind">book</span></dt>
+      <dd>A published recommendation, cited in the note.</dd>
+      <dt><span class="kind">eco</span></dt>
+      <dd>A named variation, taken verbatim from
+        <a href="https://github.com/lichess-org/chess-openings">lichess-org/chess-openings</a> (CC0).</dd>
+      <dt><span class="kind">theory</span></dt>
+      <dd>Documented theory, assembled here.</dd>
+      <dt><span class="kind">model</span> <span class="kind">synthetic</span></dt>
+      <dd>Written for this trainer: legal and thematic, but nobody played them and no book prints them.</dd>
+    </dl>
+    Tactics are real positions from real games, filtered out of the
+    <a href="https://database.lichess.org/">lichess puzzle database</a> (CC0) and each linked back to its puzzle page.
+    Opening names come from the same CC0 data set. Piece graphics are Colin M. L. Burnett's standard set,
+    <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via the
+    <a href="https://github.com/lichess-org/lila/tree/master/public/piece/cburnett">lichess repository</a>;
+    board colours are the lichess and chess.com defaults. Legality comes from a move generator written for this app
+    and checked against the standard perft positions, and every move of every line and puzzle here was replayed
+    through it. It is not an engine: it knows what is legal, never what is good.
+  </footer>
+</section>
+
+<section class="screen wrap" id="scLines"><div id="lineList"></div></section>
+
+<section class="screen wrap" id="scBoard">
+  <div class="stage">
+    <div class="board" id="board" role="application" tabindex="0" aria-label="Chess board. Arrow keys move the cursor, Enter selects and plays."></div>
+    <svg class="arrows" id="arrows" viewBox="0 0 8 8" preserveAspectRatio="none">
+      <defs><marker id="ah" markerWidth="3" markerHeight="3" refX="1.7" refY="1.5" orient="auto">
+        <path d="M0,0 L3,1.5 L0,3 z" fill="rgba(224,161,60,.85)"/></marker></defs>
+    </svg>
+  </div>
+  <div class="tray" id="tray"><span></span><span></span></div>
+  <div class="prog"><i id="progBar"></i></div>
+  <div class="sess mono" id="sess"></div>
+  <div class="offbook" id="offbook"></div>
+  <div class="ctl" id="ctl"></div>
+  <div class="note">
+    <div class="hd"><span class="mv" id="nMove">Ready</span><span class="src" id="nSrc"></span></div>
+    <p id="nText"></p>
+    <div class="msg" id="nMsg" role="status" aria-live="polite"></div>
+  </div>
+  <details class="sheetbox" id="libBox"><summary>Masters database</summary><div class="lib" id="lib"></div></details>
+  <details class="sheetbox" id="sheetBox"><summary>Notation</summary><div class="rows" id="rows"></div></details>
+</section>
+
+
+<section class="screen wrap" id="scProgress">
+  <div class="big">
+    <div><b id="pSolid">0</b><small>Solid</small></div>
+    <div><b id="pSeen">0</b><small>Seen</small></div>
+    <div><b id="pAcc">0%</b><small>Accuracy</small></div>
+  </div>
+  <div id="pRows"></div>
+  <div class="verify run" id="verifyRow"><b id="verifyDot">checking</b><span id="verifyTxt">verifying the data set…</span></div>
+  <div class="chapter">Weak spots</div>
+  <div id="pWeak"></div>
+  <div class="chapter">Backup</div>
+  <textarea id="pData" class="data" placeholder="Export writes your progress here. Paste a backup and press Import."></textarea>
+  <div class="ctl" style="margin-top:6px">
+    <button class="wide" id="pExport">Export</button>
+    <button class="wide" id="pImport">Import</button>
+  </div>
+  <button class="danger" id="pReset">Reset all progress</button>
+</section>
+
+</main>
+
+<div class="scrim" id="scrim"></div>
+<nav class="opts" id="opts">
+  <button id="oFlip" aria-pressed="false">Flip board <span id="oFlipS">off</span></button>
+  <button id="oGhost" aria-pressed="false">Show target squares <span id="oGhostS">off</span></button>
+  <button id="oTheme">Board colours <span id="oThemeS">Brown</span></button>
+  <button id="oSet">Piece set <span id="oSetS">Standard</span></button>
+  <button id="oBook" aria-pressed="false">Drill book lines only <span id="oBookS">off</span></button>
+  <button id="oRestart">Restart this line <span></span></button>
+  <button id="oMenu">Back to menu <span></span></button>
+</nav>
+
+<script>
+/* ================= plumbing ================= */
+const F="abcdefgh";
+const START="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const G={k:"\u265A",q:"\u265B",r:"\u265C",b:"\u265D",n:"\u265E",p:"\u265F"};
+const PIECE={p:'<circle cx="50" cy="30" r="13"/><path d="M34 72c0-14 6-21 16-25 10 4 16 11 16 25z"/><path d="M30 74h40l4 8H26z"/><path d="M24 84h52l4 8H20z"/>',r:'<path d="M26 18h11v8h9v-8h8v8h9v-8h11v17l-7 6v25l7 6H26l7-6V41l-7-6z"/><path d="M22 80h56l4 8H18z"/>',n:'<path d="M36 82c-2-16 4-24 14-31 5-4 5-8 1-10l-9 5c-5 2-9-1-8-6 2-11 12-20 24-24l2-9 7 7c12 5 18 16 18 33 0 18-5 27-6 35z"/><circle cx="58" cy="34" r="3.5" fill="none" stroke-width="5"/><path d="M26 82h52l4 8H22z"/>',b:'<circle cx="50" cy="15" r="6"/><path d="M50 22c9 7 16 18 16 27 0 9-7 15-16 15s-16-6-16-15c0-9 7-20 16-27z"/><path d="M42 30 L60 50" fill="none" stroke-width="5" stroke-linecap="round"/><path d="M31 66h38l5 10H26z"/><path d="M24 80h52l4 8H20z"/>',q:'<circle cx="20" cy="26" r="6"/><circle cx="35" cy="18" r="6"/><circle cx="50" cy="14" r="7"/><circle cx="65" cy="18" r="6"/><circle cx="80" cy="26" r="6"/><path d="M22 30l8 22 6-30 14 30 14-30 6 30 8-22-8 42H30z"/><path d="M28 74h44l4 8H24z"/><path d="M22 84h56l4 8H18z"/>',k:'<path d="M46 12h8v8h8v8h-8v10h-8V28h-8v-8h8z"/><path d="M32 74c-3-18 5-28 18-36 13 8 21 18 18 36z"/><path d="M28 74h44l4 8H24z"/><path d="M22 86h56l4 8H18z"/>'};
+const NAME={k:"king",q:"queen",r:"rook",b:"bishop",n:"knight",p:"pawn"};
+function pieceEl(ch,cls){
+  const s=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  s.setAttribute("viewBox","0 0 100 100");s.setAttribute("class",cls);
+  s.innerHTML=PIECE[ch.toLowerCase()];
+  return s;
+}
+const VAL={p:1,n:3,b:3,r:5,q:9,k:0};
+const ix=s=>(8-parseInt(s[1],10))*8+F.indexOf(s[0]);
+const sq=i=>F[i%8]+(8-Math.floor(i/8));
+
+function fenBoard(f){const b=new Array(64).fill("");let i=0;
+  for(const c of f.split(" ")[0]){if(c==="/")continue;if(c>="1"&&c<="8")i+=+c;else b[i++]=c;}return b;}
+function apply(b,u){
+  const f=ix(u.slice(0,2)),t=ix(u.slice(2,4)),pr=u[4],p=b[f];
+  b[f]="";
+  if(p.toLowerCase()==="p"&&f%8!==t%8&&!b[t])b[t+(p==="P"?8:-8)]="";
+  b[t]=pr?(p==="P"?pr.toUpperCase():pr.toLowerCase()):p;
+  if(p==="K"&&u==="e1g1"){b[ix("h1")]="";b[ix("f1")]="R";}
+  if(p==="K"&&u==="e1c1"){b[ix("a1")]="";b[ix("d1")]="R";}
+  if(p==="k"&&u==="e8g8"){b[ix("h8")]="";b[ix("f8")]="r";}
+  if(p==="k"&&u==="e8c8"){b[ix("a8")]="";b[ix("d8")]="r";}
+  return b;
+}
+
+/* ================= repertoire ================= */
+const HIPPO_T=[["a6","p"],["b6","p"],["d6","p"],["e6","p"],["g6","p"],["h6","p"],["b7","b"],["g7","b"],["d7","n"],["e7","n"]];
+const COLLE_T=[["d4","P"],["e3","P"],["c3","P"],["d3","B"],["f3","N"],["d2","N"]];
+const ZUK_T=[["d4","P"],["e3","P"],["b3","P"],["d3","B"],["b2","B"],["e5","N"],["d2","N"]];
+
+const LINES=[
+{id:"ck", ch:"Colle as White", you:"w", name:"Koltanowski: the e4 break", src:"D05 main plan", start:START, targets:COLLE_T, moves:[
+ ["d2d4","d4","The triangle starts here. d4, then e3 and c3, and the center never cracks."],
+ ["d7d5","d5","Symmetry. The Colle is built for exactly this: a pawn on d5, the c8 bishop still home."],
+ ["g1f3","Nf3","Covers e5, leaves the f-pawn free."],
+ ["g8f6","Nf6","The knight guarding h7. Watch it; White spends nine moves removing it."],
+ ["e2e3","e3","The price: the c1 bishop is buried. Paid in exchange for a guaranteed e4 break."],
+ ["e7e6","e6","Black entombs his own bishop. This is the Colle's dream position."],
+ ["f1d3","Bd3","The whole opening in one move. That diagonal ends on h7."],
+ ["c7c5","c5","The principled hit at the base of the triangle."],
+ ["c2c3","c3","Koltanowski's move: d4 defended twice, every piece freed for the kingside."],
+ ["b8c6","Nc6",""],
+ ["b1d2","Nbd2","A third attacker on e4, and it does not block the bishop."],
+ ["f8d6","Bd6","Black mirrors. Both bishops want the same squares."],
+ ["e1g1","O-O","Castle first. Always."],
+ ["e8g8","O-O","Into the crosshairs, and there is nowhere better."],
+ ["d4c5","dxc5","Timed, not automatic: it wins a tempo on the bishop and empties d4 for the e-pawn."],
+ ["d6c5","Bxc5",""],
+ ["e3e4","e4!","The pivot. Every move since move three existed to make this one good."],
+ ["d8c7","Qc7","Black eyes h2 and prepares to meet e5."],
+ ["d1e2","Qe2","Rooks connected, e-pawn backed, e5 looming. e5 evicts the f6 knight, sole guardian of h7."]
+]},
+{id:"kolt", ch:"Colle as White", you:"w", name:"Koltanowski\u2013O'Hanlon, Dublin 1937", src:"the e5 clamp", start:START, targets:COLLE_T, moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["c7c5","c5",""],
+ ["c2c3","c3",""],["e7e6","e6","Same position as the main line, reached by a different order. Systems do not care."],
+ ["f1d3","Bd3",""],["b8c6","Nc6",""],["b1d2","Nbd2",""],["f8d6","Bd6",""],["e1g1","O-O",""],["e8g8","O-O",""],
+ ["d4c5","dxc5",""],["d6c5","Bxc5",""],["e3e4","e4",""],["d8c7","Qc7",""],["d1e2","Qe2",""],
+ ["f8e8","Re8","Black defends e6 and prepares ...e5. Reasonable, and still too slow."],
+ ["e4e5","e5!","The clamp. Now the f6 knight must move and h7 loses its defender; this, not the pawn grab, is the point of e4."],
+ ["f6d7","Nd7","Forced retreat. Black's kingside is suddenly a building site."],
+ ["d2b3","Nb3","Tempo on the bishop while its partner heads for d4 or f4."],
+ ["c5b6","Bb6",""],
+ ["c1f4","Bf4","Entombed for nine moves, the last minor piece emerges with the e5 pawn as its anchor. Black played 13...f6 here and was overrun."]
+]},
+{id:"ohanlon", ch:"Colle as White", you:"w", name:"Colle\u2013O'Hanlon, Nice 1930", src:"the model attack, 1-0", start:START, targets:COLLE_T, moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["c7c5","c5",""],
+ ["c2c3","c3",""],["e7e6","e6",""],["f1d3","Bd3",""],["f8d6","Bd6",""],["b1d2","Nbd2",""],["b8d7","Nbd7","Knight to d7 instead of c6: less pressure on d4, more support for ...e5."],
+ ["e1g1","O-O",""],["e8g8","O-O",""],["f1e1","Re1","Colle keeps the tension and adds a piece to the e-file."],
+ ["f8e8","Re8",""],["e3e4","e4","Threatening e5, forking bishop and knight. Black clears the tension instead."],
+ ["d5e4","dxe4",""],["d2e4","Nxe4",""],["f6e4","Nxe4","The h7 defender leaves the board voluntarily. Everything after this is arithmetic."],
+ ["d3e4","Bxe4",""],["c5d4","cxd4","Greedy, and the practical turning point. Black grabs a pawn while White's three attackers converge."],
+ ["e4h7","Bxh7+!","The Greek gift. Bishop for pawn, and the king is dragged into the open."],
+ ["g8h7","Kxh7",""],["f3g5","Ng5+",""],
+ ["h7g6","Kg6","Refusing to go back. After 13...Kg8 14.Qh5 Black must hold f7 and h7 at once, so the king runs forward into the attack instead."],
+ ["h2h4","h4","The quiet killer: another attacker joins with tempo and the king has no shelter."],
+ ["e8h8","Rh8",""],["e1e6","Rxe6+","The rook on e1 finally justifies move eight."],
+ ["d7f6","Nf6",""],["h4h5","h5+",""],["g6h6","Kh6",""],["e6d6","Rxd6",""],["d8a5","Qa5",""],
+ ["g5f7","Nxf7+",""],["h6h7","Kh7",""],["f7g5","Ng5+",""],["h7g8","Kg8",""],
+ ["d1b3","Qb3+","Black resigned. Nine moves from a quiet symmetrical position to a resignable one; the sacrifice's soundness is still argued, its practical force is not."]
+]},
+{id:"cz", ch:"Colle as White", you:"w", name:"Zukertort: the Pillsbury lift", src:"b3, Bb2, Ne5, f4, Rf3", start:START, targets:ZUK_T, moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3","e5 is the square this whole system lives on."],["g8f6","Nf6",""],
+ ["e2e3","e3",""],["e7e6","e6",""],["f1d3","Bd3",""],["c7c5","c5",""],
+ ["b2b3","b3","The fork in the road. No c3 prop; instead the buried bishop escapes sideways."],
+ ["b8c6","Nc6",""],
+ ["c1b2","Bb2","Two bishops now rake the black king, one to h7 and one through g7. The center is softer than in the Koltanowski, and that is the trade."],
+ ["f8d6","Bd6",""],["e1g1","O-O",""],["e8g8","O-O",""],["b1d2","Nbd2",""],
+ ["b7b6","b6","The Queen's Indian setup, statistically Black's most reliable answer here."],
+ ["f3e5","Ne5","The outpost. Every Zukertort game is a referendum on this knight."],
+ ["c8b7","Bb7",""],["f2f4","f4","Cementing it, and opening the rook's road."],
+ ["c6e7","Ne7","Black reroutes to g6 to challenge the beast."],
+ ["f1f3","Rf3","Pillsbury's lift: Rh3 and Qh5 follow. Three attackers against a king defended only by pawns."]
+]},
+{id:"anti", ch:"Colle as White", you:"w", name:"Anti-Colle: 3...Bf5, the right answer", src:"4.c4! leave the system", start:START, targets:[], moves:[
+ ["d2d4","d4",""],["g8f6","Nf6",""],["g1f3","Nf3",""],["d7d5","d5",""],["e2e3","e3",""],
+ ["c8f5","Bf5","The Anti-Colle. Black solves his only structural problem before you can lock the door."],
+ ["c2c4","c4!","Abandon the Colle. With the bishop outside the chain, e4 will never come with force; take the center instead."],
+ ["c7c6","c6",""],
+ ["d1b3","Qb3","Hitting b7 and d5, the squares the bishop stopped defending when it left c8."],
+ ["d8b6","Qb6",""],
+ ["c4c5","c5","Gaining space and asking the queen a question."],
+ ["b6c7","Qc7",""],
+ ["f3e5","Ne5","The e5 outpost survives every version of this opening."],
+ ["e7e6","e6",""],["f1d3","Bd3","Now the trade happens on White's terms."],
+ ["b8d7","Nbd7",""],["f2f4","f4",""],
+ ["f5d3","Bxd3",""],["b3d3","Qxd3","White has space, the half-open lines and a plan; Black has traded his good bishop for a piece White was happy to give. This is the difference between reacting and following a recipe."]
+]},
+{id:"trap", ch:"Colle as White", you:"w", name:"The autopilot punished", src:"why 4.c3 vs ...Bf5 fails", start:START, targets:[], moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],
+ ["c8f5","Bf5","Same moment, wrong reply coming."],
+ ["c2c3","c3","Autopilot. The move that makes the system a system now makes it a corpse."],
+ ["b8d7","Nbd7",""],["f1d3","Bd3","Offering the trade Black wants."],
+ ["f5d3","Bxd3","The attacking bishop is gone, and with it the whole point of the opening."],
+ ["d1d3","Qxd3",""],["c7c5","c5",""],["e1g1","O-O",""],["e7e6","e6",""],["b1d2","Nbd2",""],
+ ["c5d4","cxd4",""],["e3d4","exd4",""],
+ ["f8d6","Bd6","Black is comfortable, has no bad bishop, and White has an isolated plan. Learn this line so you never reach it."]
+]},
+{id:"hip-e4", ch:"Hippopotamus as Black", you:"b", name:"The model setup vs 1.e4", src:"B00 formation", start:START, targets:HIPPO_T, moves:[
+ ["e2e4","e4","White takes the whole center. The Hippo lets him, and asks what he plans to do with it."],
+ ["g7g6","g6","Move one of ten. Order barely matters, which is why this defence costs almost nothing to learn."],
+ ["d2d4","d4",""],["f8g7","Bg7","The long diagonal is the swamp's main artery."],
+ ["b1c3","Nc3",""],["d7d6","d6","Third rank, not fourth. Nothing here can be attacked profitably."],
+ ["g1f3","Nf3",""],["a7a6","a6","Prophylaxis with teeth: no Bb5, no Nb5, and ...b5 is ready if White drifts."],
+ ["f1c4","Bc4",""],["e7e6","e6","Door shut. That bishop now stares at a wall."],
+ ["e1g1","O-O",""],["b7b6","b6",""],
+ ["a2a4","a4","Stopping ...b5, and note White is spending moves reacting to a position with no weaknesses."],
+ ["c8b7","Bb7","Both bishops now aim through the center."],
+ ["d1e2","Qe2",""],["b8d7","Nd7","Knights stay low, behind the wall, supporting ...e5 and ...c5."],
+ ["c1g5","Bg5",""],["g8e7","Ne7","The second knight unpins and eyes f5, g6, c6."],
+ ["a1d1","Rad1",""],["h7h6","h6","The last pawn joins the wall, with tempo."],
+ ["g5e3","Be3","Complete: six pawns on the sixth, both bishops fianchettoed, knights on d7 and e7, castling deliberately delayed. Black controls every square on the fifth rank, so White cannot make progress without pushing a pawn into the swamp."]
+]},
+{id:"hip66", ch:"Hippopotamus as Black", you:"b", name:"Petrosian\u2013Spassky, Moscow 1966, g12", src:"the game that named it", start:START, targets:HIPPO_T, moves:[
+ ["g1f3","Nf3","Spassky, in a world championship match, chose a setup Reinfeld had called simply lost."],
+ ["g7g6","g6",""],["c2c4","c4",""],["f8g7","Bg7",""],["d2d4","d4","The broadest center a Hippo can face."],
+ ["d7d6","d6",""],["b1c3","Nc3",""],["b8d7","Nd7","No ...a6 here; against a c4 setup Bb5 is not the nuisance it is after 1.e4."],
+ ["e2e4","e4","Four pawns abreast. Objectively pleasant, practically nothing to bite on."],
+ ["e7e6","e6",""],["f1e2","Be2",""],["b7b6","b6",""],["e1g1","O-O",""],["c8b7","Bb7",""],
+ ["c1e3","Be3",""],["g8e7","Ne7","Setup done, and almost none of it required calculation."],
+ ["d1c2","Qc2",""],["h7h6","h6",""],
+ ["a1d1","Rad1","Every white piece stands well. That is the problem: good squares with no targets."],
+ ["e8g8","O-O",""],
+ ["d4d5","d5","Petrosian closes it. Wikipedia's rule holds: against d5 Black answers ...e5 and the game becomes a King's Indian."],
+ ["e6e5","e5",""],["c2c1","Qc1",""],["g8h7","Kh7","Stepping off the file the break will open."],
+ ["g2g3","g3",""],
+ ["f7f5","f5!","There it is. The crouch was loading, not passivity. Drawn by repetition after mutual chances, and the commentators had their name for the animal."]
+]},
+{id:"hip-e5", ch:"Hippopotamus as Black", you:"b", name:"When White plays e5: the French answer", src:"model line, Wikipedia plan", start:START, targets:HIPPO_T, moves:[
+ ["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],
+ ["g1f3","Nf3",""],["a7a6","a6",""],["f1c4","Bc4",""],["e7e6","e6",""],["e1g1","O-O",""],["b7b6","b6",""],
+ ["f1e1","Re1",""],["c8b7","Bb7",""],["a2a4","a4",""],["b8d7","Nd7",""],
+ ["e4e5","e5","White grabs space. The wall has an answer for this."],
+ ["d6d5","d5!","Lock it. The structure is now a French Defence with Black's pieces already outside the chain, which is more than most French players manage."],
+ ["c4d3","Bd3",""],
+ ["c7c5","c5","The French break, on schedule. Play shifts to the queenside where White's pawn chain has its base. Remember the pair: White e5 means Black ...d5 then ...c5; White d5 means Black ...e5 then ...f5."]
+]},
+{id:"hip-f4", ch:"Hippopotamus as Black", you:"b", name:"When NOT to crouch: 4.f4", src:"transpose to the Pirc", start:START, targets:[], moves:[
+ ["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],
+ ["f2f4","f4","The Austrian pawn mass. Three abreast on d4, e4, f4 is the one structure the Hippo has no comfortable answer to."],
+ ["g8f6","Nf6!","Abandon the setup. Hit e4 immediately and transpose to the Pirc, where ...Ne7 would simply be a worse version."],
+ ["g1f3","Nf3",""],["e8g8","O-O","Castling now, not later: with f4 played, a king in the center is a liability rather than a resource."],
+ ["f1d3","Bd3",""],
+ ["b8a6","Na6","Pirc territory, heading for c5 against d3 and e4. The lesson is the discipline: a system you play on autopilot against every setup eventually meets the setup that punishes it."]
+]},
+{id:"cz-tab", ch:"Colle as White", you:"w", name:"Zukertort: the modern tabiya", src:"Sadler's blog position", start:START, targets:ZUK_T, moves:[
+ ["d2d4","d4",""],["g8f6","Nf6",""],["g1f3","Nf3",""],["e7e6","e6",""],["e2e3","e3",""],["c7c5","c5",""],
+ ["f1d3","Bd3",""],["d7d5","d5",""],["b2b3","b3",""],["b8c6","Nc6",""],["c1b2","Bb2",""],["f8d6","Bd6",""],
+ ["e1g1","O-O",""],["e8g8","O-O",""],["b1d2","Nbd2",""],["b7b6","b6",""],
+ ["a2a3","a3","Prophylaxis worth memorising: it takes b4 from the knight and keeps the d3 bishop alive, and that bishop is the attack."],
+ ["c8b7","Bb7",""],["f3e5","Ne5",""],
+ ["a8c8","Rc8","Black's counterplay is the c-file, always. Meet it with Rac1 or c3, never with panic."],
+ ["f2f4","f4",""],
+ ["c6e7","Ne7","Sadler flags this as the critical move: the knight steps aside and the c8 rook suddenly bears down on c2."],
+ ["d1f3","Qf3","The main move in the databases, heading for h3 or g4. Its drawback is exactly what ...Ne7 revealed: c2 is now loose, and after ...cxd4 and ...Rxc2 Black has the counterplay he was missing. 12.Rf3 is the cruder alternative."]
+]},
+{id:"colle-kid", ch:"Colle as White", you:"w", name:"Against the fianchetto (...g6)", src:"model setup, not theory", start:START, targets:[], moves:[
+ ["d2d4","d4",""],["g8f6","Nf6",""],["g1f3","Nf3",""],["g7g6","g6","The setup the Colle fears. With a pawn on g6 the bishop on d3 stares at granite."],
+ ["e2e3","e3",""],["f8g7","Bg7",""],
+ ["b2b3","b3!","Switch systems on the spot. The Koltanowski bishop has no target here; the Zukertort bishop contests the diagonal the king's bishop just claimed."],
+ ["e8g8","O-O",""],["c1b2","Bb2",""],["d7d6","d6",""],
+ ["f1e2","Be2","Not d3. Against ...g6 that square is an ornament; e2 keeps the bishop useful and the structure sound."],
+ ["b8d7","Nbd7",""],["e1g1","O-O",""],
+ ["e7e5","e5","The King's Indian break, arriving early because White never claimed the centre."],
+ ["b1c3","Nc3",""],["f8e8","Re8",""],["d4e5","dxe5",""],["d6e5","dxe5",""],
+ ["e3e4","e4","A balanced middlegame where d5 is the battleground. No attack, no crisis, and no chance to play a rehearsed sacrifice. This is the honest price of a system repertoire."]
+]},
+{id:"anti-bg4", ch:"Colle as White", you:"w", name:"Anti-Colle: 3...Bg4, hunt it", src:"4.h3 and 5.g4", start:START, targets:[], moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],
+ ["c8g4","Bg4","The other Anti-Colle. Black develops the problem bishop before the wall closes."],
+ ["h2h3","h3!","Ask the question immediately, before castling makes the answer expensive."],
+ ["g4h5","Bh5",""],
+ ["g2g4","g4","Committal and strong: the bishop is chased to a diagonal where it can be traded on White's terms. The cost is a loosened kingside, so White usually castles long or not at all."],
+ ["h5g6","Bg6",""],
+ ["f3e5","Ne5","Threatening Nxg6 and h4-h5, winning the bishop pair with a pawn storm attached."],
+ ["f6d7","Nfd7",""],["e5g6","Nxg6",""],["h7g6","hxg6",""],
+ ["f1g2","Bg2","White has the bishop pair and space; Black has an open h-file pointed at a king that has not committed. Sharp, not safe, and a long way from the quiet Colle you thought you were playing."]
+]},
+{id:"hip-g16", ch:"Hippopotamus as Black", you:"b", name:"Petrosian\u2013Spassky, Moscow 1966, g16", src:"the second outing, drawn", start:START, targets:HIPPO_T, moves:[
+ ["d2d4","d4","Ten days after game 12, the same animal against a different first move."],
+ ["g7g6","g6",""],["e2e4","e4",""],["f8g7","Bg7",""],["g1f3","Nf3",""],["d7d6","d6",""],
+ ["f1e2","Be2",""],["e7e6","e6",""],
+ ["c2c3","c3","Petrosian builds slowly rather than grabbing more space. Against the Hippo that is the mature approach: no pawn beyond the fourth rank until there is a reason."],
+ ["b8d7","Nd7",""],["e1g1","O-O",""],["g8e7","Ne7",""],["b1d2","Nbd2",""],["b7b6","b6",""],
+ ["a2a4","a4",""],["a7a6","a6","The wall completes itself in whatever order White allows."],
+ ["f1e1","Re1",""],["c8b7","Bb7",""],["e2d3","Bd3",""],
+ ["e8g8","O-O","This time Spassky castles. The Hippo is a formation, not a dogma."],
+ ["d2c4","Nc4",""],["d8e8","Qe8",""],
+ ["c1d2","Bd2",""],["f7f6","f6","Preparing ...e5 rather than ...f5: the break is chosen by the position, not by habit."],
+ ["d1e2","Qe2",""],["g8h8","Kh8","Drawn in 49 moves. Two Hippos, two draws, one world championship kept by the other man; the opening did its job, which was never to win by itself."]
+]},
+{id:"hip-150", ch:"Hippopotamus as Black", you:"b", name:"Facing the pawn storm: Be3, f3, g4", src:"the critical modern try", start:START, targets:HIPPO_T, moves:[
+ ["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],
+ ["b7b6","b6","Both fianchettoes early, because against this setup Black cannot afford slow moves."],
+ ["c1e3","Be3","White declares the plan: Qd2, f3, g4, castle long, and throw the h-pawn."],
+ ["c8b7","Bb7",""],["d1d2","Qd2",""],["d7d6","d6",""],
+ ["f2f3","f3","Propping e4 and preparing g4. Note the bishops on b7 and g7 are now biting on f3 and d4 granite."],
+ ["e7e6","e6",""],
+ ["g2g4","g4",""],
+ ["g8e7","Ne7","The tabiya of the dangerous version. Black's counters are ...h5 hitting the storm at its base, ...c5 against the centre, or ...d5 immediately. What loses is drifting: the Hippo tolerates slow play from White, never from Black."]
+]},
+{id:"rudel", ch:"Colle as White", you:"w", name:"Zukertort: Rudel's early Ne5", src:"Zuke 'Em quick-start line", start:START, targets:ZUK_T, moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["e7e6","e6",""],
+ ["f1d3","Bd3",""],["c7c5","c5",""],["b2b3","b3",""],["b8c6","Nc6",""],["c1b2","Bb2",""],["f8d6","Bd6",""],
+ ["e1g1","O-O",""],["e8g8","O-O",""],
+ ["f3e5","Ne5","Rudel's sharp option instead of the slow 8.Nbd2 or the positional 8.dxc5. The knight lands first and asks questions later."],
+ ["c5d4","cxd4","Black opens the c-file, which is his whole plan in this structure."],
+ ["e3d4","exd4","Recapture towards the centre. The d4 pawn now feeds the e5 knight and the b2 bishop breathes."],
+ ["d8c7","Qc7",""],
+ ["f2f4","f4","Cement, then attack. Every Zukertort game runs through this pawn."],
+ ["c6b4","Nb4","Hunting the d3 bishop, the piece that makes the attack work."],
+ ["f1f3","Rf3!?","Rudel lets the bishop go. The lift is worth more than the piece it abandons."],
+ ["b4d3","Nxd3",""],
+ ["d1d3","Qxd3","Queen recaptures with the threat of Rh3 followed by Ng4, hitting h7 twice. Black is not lost, but he must find defensive moves while White simply follows a plan. That asymmetry is the whole argument for playing a system."]
+]},
+{id:"soltis", ch:"Colle as White", you:"w", name:"3...Bf5: recapture with the c-pawn", src:"Soltis: 5.cxd3, not 5.Qxd3", start:START, targets:[], moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],
+ ["c8f5","Bf5","The Anti-Colle again. If you are not switching to 4.c4, this is the other book answer."],
+ ["f1d3","Bd3","Offer the trade yourself rather than waiting to be robbed of a tempo."],
+ ["f5d3","Bxd3",""],
+ ["c2d3","cxd3!","Soltis's move. 5.Qxd3 invites ...Ne4 and ...f5 with real counterplay; taking with the c-pawn opens the c-file, kills that plan and leaves White a shade better."],
+ ["e7e6","e6",""],
+ ["b1c3","Nc3","From here the plan is ordinary rather than clever: pressure c-file, prepare e4, no sacrifices on h7 because the bishop that would make them is already off the board. Accepting a small, safe edge is part of playing this system honestly."]
+]},
+{id:"soltis-trap", ch:"Colle as White", you:"w", name:"3...Bf5: the tempting trade", src:"Soltis: why 5.Bxf5 misfires", start:START, targets:[], moves:[
+ ["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],
+ ["c8f5","Bf5",""],["f1d3","Bd3",""],
+ ["e7e6","e6","Soltis's recommendation for Black: keep the bishop, decline the trade."],
+ ["d3f5","Bxf5","This looks strong, wrecking the pawns and opening the d-file."],
+ ["e6f5","exf5",""],
+ ["d1d3","Qd3","Hitting f5 and d5, and it appears White wins a pawn or the initiative."],
+ ["d8c8","Qc8","The refutation, and the reason to know this line: Black defends everything, keeps the extra centre pawn's support and later exchanges queens. White will probably never get e3-e4 in. A comfortable position for Black out of an opening designed to attack him."]
+]},
+{id:"eco-gru", ch:"Colle as White", you:"w", name:"Colle System, Gr\u00fcnfeld Formation", src:"D04 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["g7g6","g6",""],["f1d3","Bd3",""],["f8g7","Bg7","Black answers the Colle with a fianchetto. The d3 bishop now stares at a pawn on g6, which is why the b3/Bb2 build is the better follow-up here."]]},
+{id:"eco-kid", ch:"Colle as White", you:"w", name:"Indian Defense: Colle System, King's Indian Variation", src:"A48 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["g8f6","Nf6",""],["g1f3","Nf3",""],["g7g6","g6",""],["e2e3","e3",""],["f8g7","Bg7",""],["f1d3","Bd3",""],["d7d6","d6","A King's Indian shell against the Colle. White has a solid position and no attack; play c4 or b3 and treat it as a normal game."]]},
+{id:"eco-trad", ch:"Colle as White", you:"w", name:"Colle System, Traditional Colle", src:"D05 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["g8f6","Nf6",""],["g1f3","Nf3",""],["e7e6","e6",""],["e2e3","e3",""],["c7c5","c5",""],["f1d3","Bd3",""],["d7d5","d5",""],["c2c3","c3","The Koltanowski move order by another route: c3 before Nbd2, keeping ...Bb4+ ideas out."]]},
+{id:"eco-ptero", ch:"Colle as White", you:"w", name:"Colle System: Pterodactyl Variation", src:"A40 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["g7g6","g6",""],["g1f3","Nf3",""],["f8g7","Bg7",""],["e2e3","e3",""],["c7c5","c5",""],["f1d3","Bd3",""],["d8a5","Qa5+","The check is the point: ...Qa5+ hits the loose d4 pawn and the king at once. Answer with Nc3 or Bd2 and remember it exists."]]},
+{id:"eco-rham", ch:"Colle as White", you:"w", name:"Colle System: Rhamphorhynchus Variation", src:"A04 \u00b7 named variation", start:START, targets:[], moves:[["g1f3","Nf3",""],["c7c5","c5",""],["e2e3","e3",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["d4c5","dxc5",""],["d8a5","Qa5+","Same trick from a Reti move order after dxc5. Ridiculous name, real tempo loss if you have never seen it."]]},
+{id:"eco-mong3", ch:"Hippopotamus as Black", you:"b", name:"Modern: Mongredien Defense, with Nc3", src:"B06 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["b7b6","b6","The Hippo's skeleton in three moves. From here ...d6, ...e6, ...Nd7, ...Ne7 and the wall is up."]]},
+{id:"eco-mong", ch:"Hippopotamus as Black", you:"b", name:"Modern: Mongredien Defense, with Nf3", src:"B06 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["g1f3","Nf3",""],["b7b6","b6","The same double fianchetto against the quieter Nf3 setup."]]},
+{id:"eco-bish", ch:"Hippopotamus as Black", you:"b", name:"Modern: Bishop Attack", src:"B06 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["f1c4","Bc4","The bishop eyes f7 before you have built anything. Meet it with ...e6, which is a Hippo move anyway."]]},
+{id:"eco-paus", ch:"Hippopotamus as Black", you:"b", name:"Modern: Pseudo-Austrian Attack", src:"B06 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],["f2f4","f4","d4, e4 and f4 again: the structure where the Hippo is at its worst. Transpose with ...Nf6 rather than insisting."]]},
+{id:"eco-averb", ch:"Hippopotamus as Black", you:"b", name:"Modern: Averbakh System", src:"A42 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["g7g6","g6",""],["c2c4","c4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],["e2e4","e4","The c4 version. Petrosian used exactly this against Spassky in 1966; ...Nd7 and ...e6 follow."]]},
+{id:"syn-qid", ch:"Colle as White", you:"w", name:"Model: Zukertort against the Queen's Indian", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["g8f6","Nf6",""],["g1f3","Nf3",""],["e7e6","e6",""],["e2e3","e3",""],["b7b6","b6",""],["f1d3","Bd3",""],["c8b7","Bb7",""],["e1g1","O-O",""],["c7c5","c5",""],["b2b3","b3",""],["f8e7","Be7",""],["c1b2","Bb2",""],["e8g8","O-O",""],["b1d2","Nbd2",""],["d7d5","d5",""],["f3e5","Ne5","The outpost lands the moment Black commits to ...d5."],["b8d7","Nbd7",""],["f2f4","f4","Cement first, attack second."],["f6e4","Ne4",""],["d1e2","Qe2","Backing e4 and clearing f1 for the lift."],["f7f5","f5",""],["f1f3","Rf3","Rh3 and Qh5 next. Nothing here is forced; it is the plan you fall back on when Black plays sensibly."]]},
+{id:"syn-hipc5", ch:"Hippopotamus as Black", you:"b", name:"Model: locking the centre, then ...f5", src:"constructed model", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],["g1f3","Nf3",""],["a7a6","a6",""],["f1e2","Be2",""],["e7e6","e6",""],["e1g1","O-O",""],["g8e7","Ne7",""],["a2a4","a4",""],["b7b6","b6",""],["c1e3","Be3",""],["c8b7","Bb7",""],["d1d2","Qd2",""],["b8d7","Nd7",""],["a1d1","Rad1",""],["h7h6","h6",""],["d4d5","d5",""],["e6e5","e5","They just closed the centre, so the game moves to the wings; answer the advance in kind."],["f3e1","Ne1",""],["f7f5","f5","The rule in practice: their d5 is met by locking, then breaking on the other wing, a King's Indian with the pieces already placed."]]},
+{id:"syn-hiph5", ch:"Hippopotamus as Black", you:"b", name:"Model: ...h5 against the pawn storm", src:"constructed model", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["b7b6","b6",""],["c1e3","Be3",""],["c8b7","Bb7",""],["d1d2","Qd2",""],["d7d6","d6",""],["f2f3","f3",""],["e7e6","e6",""],["g2g4","g4",""],["h7h5","h5","Strike the storm at its base before it arrives. Waiting is what loses these positions."],["g4h5","gxh5",""],["h8h5","Rxh5","The rook joins on an open file, which is exactly what White did not want."],["e1c1","O-O-O",""],["b8d7","Nd7",""],["g1e2","Nge2",""],["g8e7","Ne7","Black is uncastled by choice and has counterplay on the file White opened for him."]]},
+{id:"syn-greek", ch:"Colle as White", you:"w", name:"Model: the e5 clamp and the h7 target", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["e7e6","e6",""],["f1d3","Bd3",""],["c7c5","c5",""],["c2c3","c3",""],["b8c6","Nc6",""],["b1d2","Nbd2",""],["f8d6","Bd6",""],["e1g1","O-O",""],["e8g8","O-O",""],["d4c5","dxc5",""],["d6c5","Bxc5",""],["e3e4","e4",""],["d8c7","Qc7",""],["d1e2","Qe2",""],["f8e8","Re8",""],["e4e5","e5","The clamp evicts the f6 knight."],["f6d7","Nd7",""],["d3h7","Bxh7+","With the defender gone the sacrifice is the standard follow-up. Engines dispute several of these positions; treat it as a pattern to calculate, not a rule to trust."],["g8h7","Kxh7",""],["f3g5","Ng5+",""],["h7g8","Kg8",""],["e2h5","Qh5","This is the picture the whole opening has been aiming at, and it is a threat rather than a verdict. Qh7+ can be answered by ...Kf8 across the square the rook vacated, and ...Nf6 blocks while hitting the attacker, so what follows is calculation."]]},
+{id:"eco-austrian", ch:"Hippopotamus as Black", you:"b", name:"Pirc: Austrian Attack", src:"B09 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["d7d6","d6",""],["d2d4","d4",""],["g8f6","Nf6",""],["b1c3","Nc3",""],["g7g6","g6",""],["f2f4","f4",""],["f8g7","Bg7",""],["g1f3","Nf3",""],["e8g8","O-O","The full Austrian: d4, e4, f4 and Nf3. Play it as a Pirc, not a Hippo."]]},
+{id:"eco-pircclass", ch:"Hippopotamus as Black", you:"b", name:"Pirc: Classical Variation", src:"B08 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["d7d6","d6",""],["d2d4","d4",""],["g8f6","Nf6",""],["b1c3","Nc3",""],["g7g6","g6",""],["g1f3","Nf3",""],["f8g7","Bg7","The quiet main line. ...Bg7 and ...O-O first, then decide between ...e5 and ...c5."]]},
+{id:"eco-std", ch:"Hippopotamus as Black", you:"b", name:"Modern: Standard Defense", src:"B06 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6","The plain move order everything else transposes into."]]},
+{id:"eco-3pawn", ch:"Hippopotamus as Black", you:"b", name:"Modern: Three Pawns Attack", src:"B06 \u00b7 named variation", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["f2f4","f4","Three abreast again. The wall has no answer to this, so hit the centre instead."]]},
+{id:"eco-psam", ch:"Hippopotamus as Black", you:"b", name:"Modern: Averbakh Variation, Pseudo-S\u00e4misch", src:"A42 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["g7g6","g6",""],["c2c4","c4",""],["f8g7","Bg7",""],["e2e4","e4",""],["d7d6","d6",""],["c1e3","Be3",""],["g8f6","Nf6",""],["f2f3","f3","f3 and Be3: they intend Qd2 and a storm. ...c5 or ...c6 with ...b5 must come fast."]]},
+{id:"eco-rat", ch:"Hippopotamus as Black", you:"b", name:"Rat Defense: Small Center Defense", src:"C00 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["e7e6","e6",""],["e2e4","e4",""],["d7d6","d6","...d6 and ...e5 without the fianchetto, a cousin of the crouch worth recognising."]]},
+{id:"eco-torre", ch:"Colle as White", you:"w", name:"Torre Attack", src:"D03 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["c1g5","Bg5",""],["e7e6","e6",""],["e2e3","e3",""],["c7c5","c5",""],["c2c3","c3",""],["b8d7","Nbd7",""],["b1d2","Nbd2",""],["f8d6","Bd6","Bg5 instead of Bd3. Related family, different bishop, and often the better try against a fianchetto."]]},
+{id:"eco-london", ch:"Colle as White", you:"w", name:"London System", src:"D02 \u00b7 named variation", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["c1f4","Bf4",""],["c7c5","c5",""],["e2e3","e3",""],["b8c6","Nc6",""],["b1d2","Nbd2",""],["e7e6","e6",""],["c2c3","c3","The Colle's louder cousin. If Black plays ...g6, this is where many Colle players go."]]},
+{id:"syn-slav", ch:"Colle as White", you:"w", name:"Model: the Colle against a Slav shape", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["c7c6","c6",""],["f1d3","Bd3",""],["c8g4","Bg4",""],["h2h3","h3","Ask the bishop early; the Slav player wants it outside the chain."],["g4h5","Bh5",""],["b1d2","Nbd2",""],["e7e6","e6",""],["d1e2","Qe2","The e4 break needs a fourth attacker when Black has a solid centre."],["f8d6","Bd6",""],["e3e4","e4","On schedule even against ...c6, because Black spent a move on the bishop."],["d5e4","dxe4",""],["d2e4","Nxe4",""],["f6e4","Nxe4",""],["e2e4","Qxe4",""],["b8d7","Nd7",""],["e1g1","O-O",""],["d8c7","Qc7",""],["c2c4","c4","Now the extra space is real. Against Slav structures the Colle turns positional rather than sacrificial."]]},
+{id:"syn-qf3", ch:"Colle as White", you:"w", name:"Model: Zukertort with Qf3 and Qh3", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["e7e6","e6",""],["f1d3","Bd3",""],["c7c5","c5",""],["b2b3","b3",""],["b8c6","Nc6",""],["c1b2","Bb2",""],["f8d6","Bd6",""],["e1g1","O-O",""],["e8g8","O-O",""],["a2a3","a3","Prophylaxis: no ...Nb4 hitting the bishop the attack depends on."],["b7b6","b6",""],["b1d2","Nbd2",""],["c8b7","Bb7",""],["f3e5","Ne5",""],["a8c8","Rc8",""],["f2f4","f4",""],["c6e7","Ne7",""],["d1f3","Qf3","The other attacking scheme: instead of the rook lift, the h3 route, with g4 behind it. If Black jumps a knight into e4 now, take it at once, as the companion line on ...Ne4 shows."]]},
+{id:"syn-ne4", ch:"Colle as White", you:"w", name:"Model: answering ...Ne4", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["e7e6","e6",""],["f1d3","Bd3",""],["c7c5","c5",""],["b2b3","b3",""],["b8c6","Nc6",""],["c1b2","Bb2",""],["f8d6","Bd6",""],["e1g1","O-O",""],["e8g8","O-O",""],["b1d2","Nbd2",""],["f6e4","Ne4",""],["d2e4","Nxe4","Take at once. Leaving the knight there is how White drifts into a worse version."],["d5e4","dxe4",""],["d3e4","Bxe4","The bishop returns to the diagonal it was always meant for."],["c5d4","cxd4",""],["b2d4","Bxd4",""],["c6d4","Nxd4",""],["f3d4","Nxd4",""],["d8g5","Qg5",""],["d4f3","Nf3","The queen sortie is met by simple development; the position is level and easy to play, which is the honest verdict on this line."]]},
+{id:"syn-english", ch:"Hippopotamus as Black", you:"b", name:"Model: the Hippo against 1.c4", src:"constructed model", start:START, targets:[], moves:[["c2c4","c4",""],["g7g6","g6",""],["b1c3","Nc3",""],["f8g7","Bg7",""],["g2g3","g3",""],["e7e6","e6","Against a fianchetto the b7 bishop needs this square opened, not blocked."],["f1g2","Bg2",""],["g8e7","Ne7","The knight avoids f6, where the g2 bishop would meet it."],["g1f3","Nf3",""],["b7b6","b6",""],["e1g1","O-O",""],["c8b7","Bb7",""],["d2d4","d4",""],["d7d6","d6",""],["e2e4","e4",""],["b8d7","Nd7",""],["c1e3","Be3",""],["h7h6","h6",""],["d1d2","Qd2",""],["a7a6","a6","The wall is complete against the English too. White has more space and no target, which is the whole bet."]]},
+{id:"syn-london", ch:"Hippopotamus as Black", you:"b", name:"Model: the Hippo against a London setup", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["g7g6","g6",""],["c1f4","Bf4",""],["f8g7","Bg7",""],["e2e3","e3",""],["d7d6","d6",""],["g1f3","Nf3",""],["b8d7","Nd7","Against the London the knight belongs here, keeping ...e5 available."],["f1e2","Be2",""],["e7e6","e6",""],["e1g1","O-O",""],["g8e7","Ne7",""],["c2c3","c3",""],["b7b6","b6",""],["b1d2","Nbd2",""],["c8b7","Bb7",""],["h2h3","h3",""],["h7h6","h6","Take g5 from the bishop that has nowhere else to go."],["a2a4","a4",""],["a7a6","a6",""],["d1b3","Qb3",""],["e8g8","O-O","Here castling is safe: the London player has no pawn storm prepared, so the king can go to the wing the break will not open."]]},
+{id:"syn-e5punish", ch:"Hippopotamus as Black", you:"b", name:"Model: punishing an early e5", src:"constructed model", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],["f2f4","f4",""],["g8f6","Nf6",""],["g1f3","Nf3",""],["e8g8","O-O",""],["f1d3","Bd3",""],["b8a6","Na6",""],["e1g1","O-O",""],["c7c5","c5","Strike the centre before the storm gets going."],["d4d5","d5",""],["e7e6","e6",""],["d5e6","dxe6","Their break helps you: the bishop comes to life on e6."],["c8e6","Bxe6",""],["e4e5","e5",""],["d6e5","dxe5",""],["f4e5","fxe5",""],["f6d7","Nd7","Retreat, and let the advanced pawn become a target rather than a battering ram. Three white pawns went forward; the e5 one now needs defending, which is what over-extension against the crouch looks like."]]},
+{id:"syn-hipdown", ch:"Hippopotamus as Black", you:"b", name:"Model: how the Hippo loses", src:"constructed model", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],["c1e3","Be3",""],["a7a6","a6",""],["d1d2","Qd2",""],["b7b6","b6",""],["f2f4","f4",""],["e7e6","e6","Playable, but the clock is running: with f4 in, White gets a free hand."],["g1f3","Nf3",""],["g8e7","Ne7",""],["f1d3","Bd3",""],["c8b7","Bb7",""],["e4e5","e5",""],["d6d5","d5","Forced by their space grab, and now the g7 bishop is biting on granite for the rest of the game."],["e1g1","O-O",""],["h7h6","h6",""],["c3e2","Ne2",""],["b8d7","Nd7",""],["c2c3","c3",""],["c7c5","c5","The break arrives late. White has the freer game, a safe king and a plan; Black has a bishop biting on d5 granite. Knowing the losing picture is worth more than another win to admire."],["b2b3","b3",""]]},
+{id:"syn-h4", ch:"Hippopotamus as Black", you:"b", name:"Model: meeting the h4 lunge", src:"constructed model", start:START, targets:[], moves:[["e2e4","e4",""],["g7g6","g6",""],["d2d4","d4",""],["f8g7","Bg7",""],["b1c3","Nc3",""],["d7d6","d6",""],["h2h4","h4","The lunge, and the commonest aggressive try you will actually meet online. White wants h5 before you are organised; the full crouch must wait."],["h7h5","h5","Stop it at once. The file stays closed, and the pawn White just fixed on h4 will need minding for the rest of the game."],["g1f3","Nf3",""],["g8f6","Nf6","With the h-file question answered, the knight takes its natural square: it covers g4 and watches e4. The wall resumes afterwards."],["f1c4","Bc4",""],["e7e6","e6","The same door-shut move as against the Bishop Attack. f7 is covered and the c4 bishop stares at a wall."],["c1g5","Bg5",""],["b8d7","Nbd7","Calm development. f6 stays covered twice, so the pin has nothing to lean on, and the queenside expansion comes next."],["d1d2","Qd2",""],["a7a6","a6","The usual teeth: ...b5 with tempo on the bishop follows whether White castles long or stalls."],["e1c1","O-O-O",""],["b7b5","b5","White committed the king first, so the pawns do the arguing on that wing."],["c4b3","Bb3",""],["c8b7","Bb7","Both sides now attack where the enemy king lives, but your attack needed no pawn moves in front of your own. Closing the h-file on move four is what bought that."]]},
+{id:"syn-clamp", ch:"Colle as White", you:"w", name:"Model: the ...c4 clamp", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["e7e6","e6",""],["f1d3","Bd3",""],["c7c5","c5",""],["c2c3","c3",""],["c5c4","c4","The clamp. Club players love it: space, tempo on the bishop, and the d4 tension gone. What Black gives up is the pressure on your centre, and that is the clue to the remedy."],["d3c2","Bc2","Keep the bishop on the diagonal it lives for; it is stepping back, not giving up."],["b8c6","Nc6",""],["e1g1","O-O",""],["f8d6","Bd6",""],["b2b3","b3","The remedy, worth one rehearsal: hit the clamp at its base before finishing development."],["c4b3","cxb3",""],["a2b3","axb3","Recapture with the a-pawn. The file opens for the rook, and the c3 pawn keeps its job of propping d4."],["e8g8","O-O",""],["b1d2","Nbd2","Back on the known road: the e4 break gathers its usual escorts."],["d8c7","Qc7",""],["e3e4","e4","On schedule. The clamp changed nothing about the plan, only the timing."],["d5e4","dxe4",""],["d2e4","Nxe4",""],["f6e4","Nxe4",""],["c2e4","Bxe4","The retreat to c2 was never a concession: the bishop returns to the b1-h7 diagonal it never really left. Remember the pair of moves that dissolved the clamp: Bc2, then b3."]]},
+{id:"syn-e5colle", ch:"Colle as White", you:"w", name:"Model: when ...e5 lands", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["c7c5","c5",""],["c2c3","c3",""],["e7e6","e6",""],["f1d3","Bd3",""],["f8d6","Bd6",""],["b1d2","Nbd2",""],["b8d7","Nbd7","The arrangement that makes ...e5 work: the knight supports the break instead of pressing d4."],["e1g1","O-O",""],["e8g8","O-O",""],["f1e1","Re1",""],["e6e5","e5","The move the Colle's reputation hangs on, played on time and fully supported. O'Hanlon preferred 8...Re8 and never got another chance; a prepared opponent plays this."],["d4e5","dxe5","Trade at once. Left alone, ...e4 would come with tempo on both the bishop and the knight."],["d7e5","Nxe5",""],["f3e5","Nxe5",""],["d6e5","Bxe5",""],["e3e4","e4","The counter-break, and the move to remember here: it frees the c1 bishop and opens lines for the rook that went to e1."],["d5e4","dxe4",""],["d2e4","Nxe4",""],["f6e4","Nxe4",""],["d3e4","Bxe4",""],["d8d1","Qxd1","The d-file emptied itself, so the queens come off."],["e1d1","Rxd1","A queenless middlegame with mirrored pawns, and no attack in sight. This is the honest outcome when ...e5 lands on time: develop the c1 bishop, contest the d-file, and play chess. The Colle's promise was never a forced attack, only a familiar position."]]},
+{id:"syn-dutch", ch:"Colle as White", you:"w", name:"Model: against the Dutch", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["f7f5","f5","The Dutch. The triangle still works, but the target changes: against ...f5 the d3 bishop would stare at granite, so the b2 bishop does the attacking."],["g1f3","Nf3",""],["g8f6","Nf6",""],["e2e3","e3",""],["g7g6","g6","The Leningrad shape, the version club players reach for."],["b2b3","b3","The same switch as against any kingside fianchetto: no c3, bishop to b2, meeting the g7 bishop head on."],["f8g7","Bg7",""],["c1b2","Bb2",""],["e8g8","O-O",""],["f1e2","Be2","Not d3; the pawn on f5 has already blunted that diagonal."],["d7d6","d6",""],["e1g1","O-O",""],["d8e8","Qe8","The Leningrad plan in one move: the queen backs ...e5 and dreams of h5. Everything White does next is about that e5 square."],["c2c4","c4","Take the space the Dutch conceded, and give the b1 knight a route through c3."],["b8c6","Nc6","Gathering support for the break; the Leningrad lives or dies by ...e5."],["b1c3","Nc3","Developed with a point behind it: once ...e5 comes, Nd5 will be the reply."],["e7e5","e5","The break arrives, fully prepared. Now comes the sequence to rehearse."],["d4e5","dxe5",""],["d6e5","dxe5",""],["c3d5","Nd5","The knight arrives with a concrete threat: Nxc7 forks queen and rook."],["f6d5","Nxd5",""],["c4d5","cxd5","Recapture with the pawn, not the queen, which ...Be6 would meet with tempo. The pawn keeps asking questions: the c6 knight is hit and must move again, the b2 bishop presses e5 down the cleared diagonal, and the c-file is half open for a rook. The break came and went; the targets stayed."]]},
+{id:"syn-benoni", ch:"Colle as White", you:"w", name:"Model: against 1...c5", src:"constructed model", start:START, targets:[], moves:[["d2d4","d4",""],["c7c5","c5","The direct jab, and a genuine decision at move two: three replies, three different games."],["e2e3","e3","The system answer. 2.d5 wins space but signs you up for Benoni middlegames this repertoire never plays, and 2.dxc5 invites the ...Qa5+ recapture trick from the Rhamphorhynchus line. 2.e3 simply offers the Colle."],["c5d4","cxd4",""],["e3d4","exd4","Recapture towards the centre; Qxd4 instead would meet ...Nc6 with tempo. The furniture changes but not the house: with no e3 pawn the e-file is half open, and the usual e4 break is replaced by piece play down that file."],["d7d5","d5",""],["g1f3","Nf3",""],["g8f6","Nf6",""],["f1d3","Bd3",""],["b8c6","Nc6",""],["c2c3","c3","The familiar prop for d4, doing the same job as ever."],["c8g4","Bg4","The difference from the standard Colle: Black's bishop got out before ...e6. Active here, and it left something behind."],["b1d2","Nbd2",""],["e7e6","e6",""],["e1g1","O-O",""],["f8d6","Bd6",""],["f1e1","Re1","The rook takes the file that came free at move three."],["e8g8","O-O",""],["h2h3","h3","The standard question, asked before the bishop can take on f3 at a moment of its own choosing."],["g4h5","Bh5",""],["d1b3","Qb3","What the active bishop left behind: b7. The queen hits it and d5 at once, and Black usually spends a move on the defence, ...Rb8 or ...Na5. A Colle position with the sting on the other wing."]]}
+];
+
+
+const KIND={ck:"theory",kolt:"game",ohanlon:"game",cz:"theory",anti:"theory",trap:"theory",
+ "hip-e4":"model","hip66":"game","hip-e5":"model","hip-f4":"theory","cz-tab":"theory",
+ "colle-kid":"model","anti-bg4":"theory","hip-g16":"game","hip-150":"theory",
+ rudel:"book",soltis:"book","soltis-trap":"book","eco-gru":"eco","eco-kid":"eco","eco-trad":"eco","eco-ptero":"eco","eco-rham":"eco","eco-mong3":"eco","eco-mong":"eco","eco-bish":"eco","eco-paus":"eco","eco-averb":"eco","syn-qid":"synthetic","syn-hipc5":"synthetic","syn-hiph5":"synthetic","syn-greek":"synthetic","eco-austrian":"eco","eco-pircclass":"eco","eco-std":"eco","eco-3pawn":"eco","eco-psam":"eco","eco-rat":"eco","eco-torre":"eco","eco-london":"eco","syn-slav":"synthetic","syn-qf3":"synthetic","syn-ne4":"synthetic","syn-english":"synthetic","syn-london":"synthetic","syn-e5punish":"synthetic","syn-hipdown":"synthetic","syn-h4":"synthetic","syn-clamp":"synthetic","syn-e5colle":"synthetic","syn-dutch":"synthetic","syn-benoni":"synthetic"};
+const SRC={
+ ohanlon:"https://www.365chess.com/game.php?gid=2652130",
+ kolt:"https://www.irlchess.com/2025/08/14/koltanowski-simuls-and-match-v-ohanlon-1937/",
+ hip66:"https://www.chessgames.com/perl/chessgame?gid=1106728",
+ "hip-g16":"https://www.chessgames.com/perl/chessgame?gid=1106734",
+ "cz-tab":"https://matthewsadler.me.uk/attack/a-typical-colle-zukertort-position-part-1/",
+ ck:"https://en.wikipedia.org/wiki/Colle_System",
+ cz:"https://en.wikipedia.org/wiki/Colle_System",
+ anti:"https://en.wikipedia.org/wiki/Colle_System",
+ trap:"https://chessdoctrine.com/chess-openings/queens-pawn/colle-system/",
+ "anti-bg4":"https://chessdoctrine.com/chess-openings/queens-pawn/colle-system/",
+ "colle-kid":"https://en.wikipedia.org/wiki/Colle_System",
+ "hip-e4":"https://en.wikipedia.org/wiki/Hippopotamus_Defence",
+ "hip-e5":"https://en.wikipedia.org/wiki/Hippopotamus_Defence",
+ "hip-f4":"https://en.wikipedia.org/wiki/Hippopotamus_Defence",
+ "hip-150":"https://en.wikipedia.org/wiki/Hippopotamus_Defence",
+ rudel:"https://www.chess.com/article/view/quick-start-guide-to-the-colle-zukertort-an-opening-for-players-of-any-strength",
+ soltis:"https://www.chess.com/forum/view/chess-openings/colle-system3?page=3",
+ "soltis-trap":"https://www.chess.com/forum/view/chess-openings/colle-system3?page=3","eco-gru":"https://github.com/lichess-org/chess-openings","eco-kid":"https://github.com/lichess-org/chess-openings","eco-trad":"https://github.com/lichess-org/chess-openings","eco-ptero":"https://github.com/lichess-org/chess-openings","eco-rham":"https://github.com/lichess-org/chess-openings","eco-mong3":"https://github.com/lichess-org/chess-openings","eco-mong":"https://github.com/lichess-org/chess-openings","eco-bish":"https://github.com/lichess-org/chess-openings","eco-paus":"https://github.com/lichess-org/chess-openings","eco-averb":"https://github.com/lichess-org/chess-openings","eco-austrian":"https://github.com/lichess-org/chess-openings","eco-pircclass":"https://github.com/lichess-org/chess-openings","eco-std":"https://github.com/lichess-org/chess-openings","eco-3pawn":"https://github.com/lichess-org/chess-openings","eco-psam":"https://github.com/lichess-org/chess-openings","eco-rat":"https://github.com/lichess-org/chess-openings","eco-torre":"https://github.com/lichess-org/chess-openings","eco-london":"https://github.com/lichess-org/chess-openings"};
+/* ===== legal move engine: 0 = a8 ... 63 = h1 ===== */
+const DIRS={n:[-17,-15,-10,-6,6,10,15,17],b:[-9,-7,7,9],r:[-8,-1,1,8],q:[-9,-8,-7,-1,1,7,8,9],k:[-9,-8,-7,-1,1,7,8,9]};
+const file=i=>i%8, rank=i=>Math.floor(i/8);
+function onBoard(from,to){
+  if(to<0||to>63)return false;
+  const df=Math.abs(file(to)-file(from));
+  return df<=2;
+}
+function startPos(){return {b:fenBoard(START),w:true,cr:"KQkq",ep:-1};}
+function fenPos(fen){
+  const p=fen.split(" ");
+  return {b:fenBoard(fen),w:(p[1]||"w")==="w",cr:p[2]&&p[2]!=="-"?p[2]:"",
+    ep:p[3]&&p[3]!=="-"?ix(p[3]):-1};
+}
+function clonePos(p){return {b:p.b.slice(),w:p.w,cr:p.cr,ep:p.ep};}
+function isW(c){return c===c.toUpperCase();}
+
+function attacked(b,sqi,byWhite){
+  // pawns
+  const pd=byWhite?[9,7]:[-9,-7];      // from target back to attacker square
+  for(const d of pd){
+    const j=sqi+d;
+    if(j<0||j>63)continue;
+    if(Math.abs(file(j)-file(sqi))!==1)continue;
+    const pc=b[j];
+    if(pc&&(byWhite?pc==="P":pc==="p"))return true;
+  }
+  for(const d of DIRS.n){
+    const j=sqi+d;
+    if(j<0||j>63)continue;
+    const dd=Math.abs(file(j)-file(sqi));
+    if(dd>2||dd===0)continue;
+    const pc=b[j];
+    if(pc&&(byWhite?pc==="N":pc==="n"))return true;
+  }
+  for(const d of DIRS.k){
+    const j=sqi+d;
+    if(j<0||j>63)continue;
+    if(Math.abs(file(j)-file(sqi))>1)continue;
+    const pc=b[j];
+    if(pc&&(byWhite?pc==="K":pc==="k"))return true;
+  }
+  const rays=[[DIRS.r,"rq"],[DIRS.b,"bq"]];
+  for(const [dirs,set] of rays){
+    for(const d of dirs){
+      let j=sqi,prev=sqi;
+      while(true){
+        j+=d;
+        if(j<0||j>63)break;
+        if(Math.abs(file(j)-file(prev))>1)break;
+        const pc=b[j];
+        if(pc){
+          const low=pc.toLowerCase();
+          if(isW(pc)===byWhite&&set.includes(low))return true;
+          break;
+        }
+        prev=j;
+      }
+    }
+  }
+  return false;
+}
+function kingIdx(b,white){
+  const k=white?"K":"k";
+  for(let i=0;i<64;i++)if(b[i]===k)return i;
+  return -1;
+}
+function inCheck(p){return attacked(p.b,kingIdx(p.b,p.w),!p.w);}
+
+function pseudo(p){
+  const out=[],b=p.b,w=p.w;
+  for(let i=0;i<64;i++){
+    const pc=b[i];
+    if(!pc||isW(pc)!==w)continue;
+    const t=pc.toLowerCase();
+    if(t==="p"){
+      const dir=w?-8:8, one=i+dir;
+      const last=w?0:7;
+      if(one>=0&&one<64&&!b[one]){
+        if(rank(one)===last)for(const q of "qrbn")out.push({f:i,t:one,p:q});
+        else out.push({f:i,t:one});
+        const two=i+dir*2;
+        if(rank(i)===(w?6:1)&&!b[two])out.push({f:i,t:two,dbl:1});
+      }
+      for(const d of [dir-1,dir+1]){
+        const j=i+d;
+        if(j<0||j>63||Math.abs(file(j)-file(i))!==1)continue;
+        if(b[j]&&isW(b[j])!==w){
+          if(rank(j)===last)for(const q of "qrbn")out.push({f:i,t:j,p:q});
+          else out.push({f:i,t:j});
+        }else if(j===p.ep&&!b[j])out.push({f:i,t:j,ep:1});
+      }
+    }else if(t==="n"||t==="k"){
+      for(const d of DIRS[t]){
+        const j=i+d;
+        if(j<0||j>63)continue;
+        const dd=Math.abs(file(j)-file(i));
+        if(t==="n"){if(dd>2||dd===0)continue;}else if(dd>1)continue;
+        if(b[j]&&isW(b[j])===w)continue;
+        out.push({f:i,t:j});
+      }
+      if(t==="k"){
+        const home=w?60:4;
+        if(i===home&&!attacked(b,i,!w)){
+          const K=w?"K":"k",Q=w?"Q":"q";
+          if(p.cr.includes(K)&&!b[i+1]&&!b[i+2]&&b[i+3]===(w?"R":"r")
+            &&!attacked(b,i+1,!w)&&!attacked(b,i+2,!w))out.push({f:i,t:i+2,c:"k"});
+          if(p.cr.includes(Q)&&!b[i-1]&&!b[i-2]&&!b[i-3]&&b[i-4]===(w?"R":"r")
+            &&!attacked(b,i-1,!w)&&!attacked(b,i-2,!w))out.push({f:i,t:i-2,c:"q"});
+        }
+      }
+    }else{
+      for(const d of DIRS[t]){
+        let j=i,prev=i;
+        while(true){
+          j+=d;
+          if(j<0||j>63)break;
+          if(Math.abs(file(j)-file(prev))>1)break;
+          if(b[j]){if(isW(b[j])!==w)out.push({f:i,t:j});break;}
+          out.push({f:i,t:j});
+          prev=j;
+        }
+      }
+    }
+  }
+  return out;
+}
+function make(p,m){
+  const n=clonePos(p),b=n.b,pc=b[m.f],w=isW(pc);
+  b[m.f]="";
+  if(m.ep)b[m.t+(w?8:-8)]="";
+  b[m.t]=m.p?(w?m.p.toUpperCase():m.p):pc;
+  if(m.c==="k"){b[m.t+1]="";b[m.t-1]=w?"R":"r";}
+  if(m.c==="q"){b[m.t-2]="";b[m.t+1]=w?"R":"r";}
+  let cr=n.cr;
+  const drop=s=>{for(const ch of s)cr=cr.replace(ch,"");};
+  if(pc==="K")drop("KQ");
+  if(pc==="k")drop("kq");
+  if(m.f===63||m.t===63)drop("K");
+  if(m.f===56||m.t===56)drop("Q");
+  if(m.f===7||m.t===7)drop("k");
+  if(m.f===0||m.t===0)drop("q");
+  n.cr=cr;
+  n.ep=m.dbl?(m.f+(w?-8:8)):-1;
+  n.w=!n.w;
+  return n;
+}
+function legal(p){
+  const out=[];
+  for(const m of pseudo(p)){
+    const n=make(p,m);
+    if(!attacked(n.b,kingIdx(n.b,p.w),!p.w))out.push(m);
+  }
+  return out;
+}
+function uciOf(m){return sq(m.f)+sq(m.t)+(m.p||"");}
+function findMove(p,uci){
+  return legal(p).find(m=>uciOf(m)===uci||uciOf(m)===uci.slice(0,4)&&!m.p)||
+         legal(p).find(m=>sq(m.f)+sq(m.t)===uci.slice(0,4));
+}
+function san(p,m){
+  const pc=p.b[m.f],t=pc.toLowerCase(),cap=!!p.b[m.t]||m.ep;
+  if(m.c)return m.c==="k"?"O-O":"O-O-O";
+  let s="";
+  if(t==="p"){
+    s=cap?sq(m.f)[0]+"x"+sq(m.t):sq(m.t);
+    if(m.p)s+="="+m.p.toUpperCase();
+  }else{
+    const same=legal(p).filter(x=>x.t===m.t&&x.f!==m.f&&p.b[x.f]===pc);
+    let dis="";
+    if(same.length){
+      if(!same.some(x=>file(x.f)===file(m.f)))dis=sq(m.f)[0];
+      else if(!same.some(x=>rank(x.f)===rank(m.f)))dis=sq(m.f)[1];
+      else dis=sq(m.f);
+    }
+    s=t.toUpperCase()+dis+(cap?"x":"")+sq(m.t);
+  }
+  const n=make(p,m);
+  if(attacked(n.b,kingIdx(n.b,n.w),!n.w))s+=legal(n).length?"+":"#";
+  return s;
+}
+function perft(p,d){
+  if(d===0)return 1;
+  let n=0;
+  for(const m of legal(p))n+=perft(make(p,m),d-1);
+  return n;
+}
+
+function fenOf(p){
+  let rows=[];
+  for(let r=0;r<8;r++){
+    let s="",e=0;
+    for(let f=0;f<8;f++){
+      const c=p.b[r*8+f];
+      if(c){if(e){s+=e;e=0;}s+=c;}else e++;
+    }
+    if(e)s+=e;rows.push(s);
+  }
+  return rows.join("/")+" "+(p.w?"w":"b")+" "+(p.cr||"-")+" "+(p.ep>=0?sq(p.ep):"-")+" 0 1";
+}
+const CB={"K":"<g fill=\"none\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><path stroke-linejoin=\"miter\" d=\"M22.5 11.63V6M20 8h5\"/><path fill=\"#fff\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" d=\"M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5\"/><path fill=\"#fff\" d=\"M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10z\"/><path d=\"M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0\"/></g>","Q":"<g fill=\"#fff\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><path d=\"M8 12a2 2 0 1 1-4 0 2 2 0 1 1 4 0m16.5-4.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0M41 12a2 2 0 1 1-4 0 2 2 0 1 1 4 0M16 8.5a2 2 0 1 1-4 0 2 2 0 1 1 4 0M33 9a2 2 0 1 1-4 0 2 2 0 1 1 4 0\"/><path stroke-linecap=\"butt\" d=\"M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15-5.5-14V25L7 14z\"/><path stroke-linecap=\"butt\" d=\"M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z\"/><path fill=\"none\" d=\"M11.5 30c3.5-1 18.5-1 22 0M12 33.5c6-1 15-1 21 0\"/></g>","R":"<g fill=\"#fff\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><path stroke-linecap=\"butt\" d=\"M9 39h27v-3H9zm3-3v-4h21v4zm-1-22V9h4v2h5V9h5v2h5V9h4v5\"/><path d=\"m34 14-3 3H14l-3-3\"/><path stroke-linecap=\"butt\" stroke-linejoin=\"miter\" d=\"M31 17v12.5H14V17\"/><path d=\"m31 29.5 1.5 2.5h-20l1.5-2.5\"/><path fill=\"none\" stroke-linejoin=\"miter\" d=\"M11 14h23\"/></g>","B":"<g fill=\"none\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><g fill=\"#fff\" stroke-linecap=\"butt\"><path d=\"M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.35.49-2.32.47-3-.5 1.35-1.94 3-2 3-2z\"/><path d=\"M15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z\"/><path d=\"M25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z\"/></g><path stroke-linejoin=\"miter\" d=\"M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5\"/></g>","N":"<g fill=\"none\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><path fill=\"#fff\" d=\"M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21\"/><path fill=\"#fff\" d=\"M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.042-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4.003 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-.994-.5-2-.5-3 1-1 3 2.5 3 2.5h2s.78-1.992 2.5-3c1 0 1 3 1 3\"/><path fill=\"#000\" d=\"M9.5 25.5a.5.5 0 1 1-1 0 .5.5 0 1 1 1 0m5.433-9.75a.5 1.5 30 1 1-.866-.5.5 1.5 30 1 1 .866.5\"/></g>","P":"<path fill=\"#fff\" stroke=\"#000\" stroke-linecap=\"round\" stroke-width=\"1.5\" d=\"M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z\"/>","k":"<g fill=\"none\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><path stroke-linejoin=\"miter\" d=\"M22.5 11.6V6\"/><path fill=\"#000\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" d=\"M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5\"/><path fill=\"#000\" d=\"M11.5 37a22.3 22.3 0 0 0 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10z\"/><path stroke-linejoin=\"miter\" d=\"M20 8h5\"/><path stroke=\"#ececec\" d=\"M32 29.5s8.5-4 6-9.7C34.1 14 25 18 22.5 24.6v2.1-2.1C20 18 9.9 14 7 19.9c-2.5 5.6 4.8 9 4.8 9\"/><path stroke=\"#ececec\" d=\"M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0\"/></g>","q":"<g fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><g stroke=\"none\"><circle cx=\"6\" cy=\"12\" r=\"2.75\"/><circle cx=\"14\" cy=\"9\" r=\"2.75\"/><circle cx=\"22.5\" cy=\"8\" r=\"2.75\"/><circle cx=\"31\" cy=\"9\" r=\"2.75\"/><circle cx=\"39\" cy=\"12\" r=\"2.75\"/></g><path stroke-linecap=\"butt\" d=\"M9 26c8.5-1.5 21-1.5 27 0l2.5-12.5L31 25l-.3-14.1-5.2 13.6-3-14.5-3 14.5-5.2-13.6L14 25 6.5 13.5z\"/><path stroke-linecap=\"butt\" d=\"M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z\"/><path fill=\"none\" stroke-linecap=\"butt\" d=\"M11 38.5a35 35 1 0 0 23 0\"/><path fill=\"none\" stroke=\"#ececec\" d=\"M11 29a35 35 1 0 1 23 0m-21.5 2.5h20m-21 3a35 35 1 0 0 22 0m-23 3a35 35 1 0 0 24 0\"/></g>","r":"<g fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><path stroke-linecap=\"butt\" d=\"M9 39h27v-3H9zm3.5-7 1.5-2.5h17l1.5 2.5zm-.5 4v-4h21v4z\"/><path stroke-linecap=\"butt\" stroke-linejoin=\"miter\" d=\"M14 29.5v-13h17v13z\"/><path stroke-linecap=\"butt\" d=\"M14 16.5 11 14h23l-3 2.5zM11 14V9h4v2h5V9h5v2h5V9h4v5z\"/><path fill=\"none\" stroke=\"#ececec\" stroke-linejoin=\"miter\" stroke-width=\"1\" d=\"M12 35.5h21m-20-4h19m-18-2h17m-17-13h17M11 14h23\"/></g>","b":"<g fill=\"none\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><g fill=\"#000\" stroke-linecap=\"butt\"><path d=\"M9 36c3.4-1 10.1.4 13.5-2 3.4 2.4 10.1 1 13.5 2 0 0 1.6.5 3 2-.7 1-1.6 1-3 .5-3.4-1-10.1.5-13.5-1-3.4 1.5-10.1 0-13.5 1-1.4.5-2.3.5-3-.5 1.4-2 3-2 3-2z\"/><path d=\"M15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z\"/><path d=\"M25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z\"/></g><path stroke=\"#ececec\" stroke-linejoin=\"miter\" d=\"M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5\"/></g>","n":"<g fill=\"none\" fill-rule=\"evenodd\" stroke=\"#000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\"><path fill=\"#000\" d=\"M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21\"/><path fill=\"#000\" d=\"M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.04-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-1-.5-2-.5-3 1-1 3 2.5 3 2.5h2s.78-2 2.5-3c1 0 1 3 1 3\"/><path fill=\"#ececec\" stroke=\"#ececec\" d=\"M9.5 25.5a.5.5 0 1 1-1 0 .5.5 0 1 1 1 0m5.43-9.75a.5 1.5 30 1 1-.86-.5.5 1.5 30 1 1 .86.5\"/><path fill=\"#ececec\" stroke=\"none\" d=\"m24.55 10.4-.45 1.45.5.15c3.15 1 5.65 2.49 7.9 6.75S35.75 29.06 35.25 39l-.05.5h2.25l.05-.5c.5-10.06-.88-16.85-3.25-21.34s-5.79-6.64-9.19-7.16z\"/></g>","p":"<path stroke=\"#000\" stroke-linecap=\"round\" stroke-width=\"1.5\" d=\"M22.5 9a4 4 0 0 0-3.22 6.38 6.48 6.48 0 0 0-.87 10.65c-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47a6.46 6.46 0 0 0-.87-10.65A4.01 4.01 0 0 0 22.5 9z\"/>"};
+const ECO={"ck":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D05","Queen's Pawn Game: Colle System"],[7,"D05","Queen's Pawn Game: Colle System"]],"kolt":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"]],"ohanlon":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"]],"cz":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D05","Queen's Pawn Game: Colle System"],[7,"D05","Queen's Pawn Game: Colle System"]],"anti":[[1,"A40","Queen's Pawn Game"],[2,"A45","Indian Defense"],[3,"A46","Indian Defense: Knights Variation"]],"trap":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D04","Queen's Pawn Game: Colle System, Anti-Colle"]],"hip-e4":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"],[7,"B06","Modern Defense: Two Knights Variation"]],"hip66":[[1,"A04","Zukertort Opening"],[2,"A04","Zukertort Opening: Kingside Fianchetto"]],"hip-e5":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"],[7,"B06","Modern Defense: Two Knights Variation"]],"hip-f4":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"],[7,"B06","Modern Defense: Pseudo-Austrian Attack"]],"cz-tab":[[1,"A40","Queen's Pawn Game"],[2,"A45","Indian Defense"],[3,"A46","Indian Defense: Knights Variation"],[5,"A46","Yusupov-Rubinstein System"],[9,"D05","Rubinstein Opening"]],"colle-kid":[[1,"A40","Queen's Pawn Game"],[2,"A45","Indian Defense"],[3,"A46","Indian Defense: Knights Variation"],[4,"A48","East Indian Defense"]],"anti-bg4":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"]],"hip-g16":[[1,"A40","Queen's Pawn Game"],[2,"A40","Queen's Pawn Game: Modern Defense"]],"hip-150":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Mongredien Defense, with Nc3"]],"rudel":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D05","Queen's Pawn Game: Colle System"],[7,"D05","Queen's Pawn Game: Colle System"]],"soltis":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D04","Queen's Pawn Game: Colle System, Anti-Colle"]],"soltis-trap":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D04","Queen's Pawn Game: Colle System, Anti-Colle"]],"eco-gru":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[8,"D04","Queen's Pawn Game: Colle System, Grünfeld Formation"]],"eco-kid":[[1,"A40","Queen's Pawn Game"],[2,"A45","Indian Defense"],[3,"A46","Indian Defense: Knights Variation"],[4,"A48","East Indian Defense"],[8,"A48","Indian Defense: Colle System, King's Indian Variation"]],"eco-trad":[[1,"A40","Queen's Pawn Game"],[2,"A45","Indian Defense"],[3,"A46","Indian Defense: Knights Variation"],[5,"A46","Yusupov-Rubinstein System"],[9,"D05","Queen's Pawn Game: Colle System, Traditional Colle"]],"eco-ptero":[[1,"A40","Queen's Pawn Game"],[2,"A40","Queen's Pawn Game: Modern Defense"],[8,"A40","Colle System: Pterodactyl Variation"]],"eco-rham":[[1,"A04","Zukertort Opening"],[2,"A04","Zukertort Opening: Sicilian Invitation"],[8,"A04","Colle System: Rhamphorhynchus Variation"]],"eco-mong3":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Mongredien Defense, with Nc3"]],"eco-mong":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[6,"B06","Modern Defense: Mongredien Defense, with Nf3"]],"eco-bish":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Bishop Attack"]],"eco-paus":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"],[7,"B06","Modern Defense: Pseudo-Austrian Attack"]],"eco-averb":[[1,"A40","Queen's Pawn Game"],[2,"A40","Queen's Pawn Game: Modern Defense"],[6,"A41","Modern Defense"],[7,"A42","Modern Defense: Averbakh System"]],"syn-qid":[[1,"A40","Queen's Pawn Game"],[2,"A45","Indian Defense"],[3,"A46","Indian Defense: Knights Variation"],[5,"A46","Yusupov-Rubinstein System"],[16,"D05","Queen's Pawn Game: Colle System"]],"syn-hipc5":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"],[7,"B06","Modern Defense: Two Knights Variation"]],"syn-hiph5":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Mongredien Defense, with Nc3"]],"syn-greek":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D05","Queen's Pawn Game: Colle System"],[7,"D05","Queen's Pawn Game: Colle System"]],"eco-austrian":[[1,"B00","King's Pawn Game"],[2,"B00","Pirc Defense"],[3,"B00","Pirc Defense"],[4,"B00","Pirc Defense"],[6,"B07","Pirc Defense"],[7,"B09","Pirc Defense: Austrian Attack"],[10,"B09","Pirc Defense: Austrian Attack"]],"eco-pircclass":[[1,"B00","King's Pawn Game"],[2,"B00","Pirc Defense"],[3,"B00","Pirc Defense"],[4,"B00","Pirc Defense"],[6,"B07","Pirc Defense"],[7,"B08","Pirc Defense: Classical Variation"],[8,"B08","Pirc Defense: Classical Variation"]],"eco-std":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"]],"eco-3pawn":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Three Pawns Attack"]],"eco-psam":[[1,"A40","Queen's Pawn Game"],[2,"A40","Queen's Pawn Game: Modern Defense"],[9,"A42","Modern Defense: Averbakh Variation, Pseudo-Sämisch"]],"eco-rat":[[1,"A40","Queen's Pawn Game"],[2,"A40","Horwitz Defense"],[4,"C00","Rat Defense: Small Center Defense"]],"eco-torre":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D03","Queen's Pawn Game: Torre Attack"],[10,"D03","Queen's Pawn Game: Torre Attack"],[11,"D03","Queen's Pawn Game: Torre Attack"],[12,"D03","Queen's Pawn Game: Torre Attack"]],"eco-london":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D02","Queen's Pawn Game: London System"],[7,"D02","Queen's Pawn Game: London System"],[9,"D02","Queen's Pawn Game: London System"],[11,"D02","Queen's Pawn Game: London System"]],"syn-slav":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"]],"syn-qf3":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D05","Queen's Pawn Game: Colle System"],[7,"D05","Queen's Pawn Game: Colle System"]],"syn-ne4":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D05","Queen's Pawn Game: Colle System"],[7,"D05","Queen's Pawn Game: Colle System"]],"syn-english":[[1,"A10","English Opening"],[2,"A10","English Opening: Great Snake Variation"]],"syn-london":[[1,"A40","Queen's Pawn Game"],[2,"A40","Queen's Pawn Game: Modern Defense"]],"syn-e5punish":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"],[7,"B06","Modern Defense: Pseudo-Austrian Attack"]],"syn-hipdown":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"]],"syn-h4":[[1,"B00","King's Pawn Game"],[2,"B06","Modern Defense"],[4,"B06","Modern Defense"],[5,"B06","Modern Defense: Standard Line"],[6,"B06","Modern Defense: Standard Defense"]],"syn-clamp":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"],[6,"D05","Queen's Pawn Game: Colle System"],[7,"D05","Queen's Pawn Game: Colle System"]],"syn-e5colle":[[1,"A40","Queen's Pawn Game"],[2,"D00","Queen's Pawn Game"],[3,"D02","Queen's Pawn Game: Zukertort Variation"],[4,"D02","Queen's Pawn Game: Symmetrical Variation"],[5,"D04","Queen's Pawn Game: Colle System"]],"syn-dutch":[[1,"A40","Queen's Pawn Game"],[2,"A80","Dutch Defense"]],"syn-benoni":[[1,"A40","Queen's Pawn Game"],[2,"A43","Benoni Defense: Old Benoni"]]};
+const PZ=[{"id":"7jxna","f":"r1b3k1/pp2rppp/1q3n2/3p4/3N4/PP1B3P/2P2PP1/R2Q1RK1 b - - 0 18","m":["b6d4","d3h7","g8h7","d1d4"],"s":["Qxd4","Bxh7+","Kxh7","Qxd4"],"r":1049,"t":"Queens Pawn Game","side":"w"},{"id":"9TH3w","f":"3r1rk1/pp3ppp/1q3b2/2p5/5B2/2PBRQ2/bP3PPP/4R1K1 b - - 1 18","m":["b6b2","d3h7","g8h7","f3h5","h7g8","e3h3"],"s":["Qxb2","Bxh7+","Kxh7","Qh5+","Kg8","Rh3"],"r":1865,"t":"Queens Pawn Game","side":"w"},{"id":"IF6Fp","f":"r4rk1/1p1bbppp/p3p3/3pP3/3q2P1/4B2P/PPB1QP2/R4RK1 b - - 1 18","m":["d4b2","c2h7","g8h7","e2b2"],"s":["Qxb2","Bxh7+","Kxh7","Qxb2"],"r":1141,"t":"Queens Pawn Game","side":"w"},{"id":"Kf9bu","f":"r2q1rk1/ppp2ppp/5n2/8/bP1B4/P2B3P/2P2PP1/R2Q1RK1 b - - 0 15","m":["d8d4","d3h7","g8h7","d1d4"],"s":["Qxd4","Bxh7+","Kxh7","Qxd4"],"r":1004,"t":"Queens Pawn Game","side":"w"},{"id":"ROpjT","f":"2r2rk1/pb1qbppp/1p6/2ppP3/2P5/1P1BP3/PB1Q2PP/R4RK1 b - - 0 16","m":["d5c4","d3h7","g8h7","d2d7"],"s":["dxc4","Bxh7+","Kxh7","Qxd7"],"r":1227,"t":"Queens Pawn Game","side":"w"},{"id":"lJbnE","f":"r2q1rk1/pp2bppp/2n5/3P3b/8/P2BBN2/5PPP/R2QR1K1 b - - 0 16","m":["d8d5","d3h7","g8h7","d1d5"],"s":["Qxd5","Bxh7+","Kxh7","Qxd5"],"r":930,"t":"Queens Pawn Game","side":"w"},{"id":"so2o3","f":"rn1q1rk1/pbp2ppp/1p2pb2/4N3/3P4/3B4/PPP2PPP/R1BQ1RK1 b - - 1 10","m":["d8d4","d3h7","g8h7","d1d4"],"s":["Qxd4","Bxh7+","Kxh7","Qxd4"],"r":1201,"t":"Queens Pawn Game","side":"w"},{"id":"wgG5D","f":"2rq1rk1/1b2bppp/pn2p3/1p1pP1P1/2p2P2/1PP1PQ2/PBBN3P/R4RK1 b - - 0 16","m":["c4b3","c2h7","g8h7","f3h5","h7g8","f1f3"],"s":["cxb3","Bxh7+","Kxh7","Qh5+","Kg8","Rf3"],"r":2097,"t":"Queens Pawn Game","side":"w"},{"id":"9CuOf","f":"r4rk1/1b1n1ppp/pq2pn2/1p1pN3/3P1P2/PP1B4/2P3PP/RN1Q1R1K b - - 0 14","m":["b6d4","d3h7","f6h7","d1d4"],"s":["Qxd4","Bxh7+","Nxh7","Qxd4"],"r":1363,"t":"Queens Pawn Game","side":"w"},{"id":"2R9yN","f":"r1bq2k1/ppp2ppp/8/3nr3/5P2/P1NBP3/1P4PP/R2Q1RK1 b - - 0 14","m":["d5c3","d3h7","g8h7","d1d8"],"s":["Nxc3","Bxh7+","Kxh7","Qxd8"],"r":1374,"t":"Queens Pawn Game","side":"w"},{"id":"veQmP","f":"r2r2k1/pb2bppp/1p2pn2/4N3/2Nq1P2/1P1B4/P3Q1PP/R4R1K b - - 3 16","m":["f6d5","d3h7","g8h7","e2h5","h7g8","h5f7"],"s":["Nd5","Bxh7+","Kxh7","Qh5+","Kg8","Qxf7+"],"r":1225,"t":"Queens Pawn Game","side":"w"},{"id":"TAgP0","f":"rn3rk1/p1p2ppp/1p1bpq2/8/3P4/3B1P2/PPP2P1P/R1BQR1K1 b - - 0 11","m":["f6d4","d3h7","g8h7","d1d4"],"s":["Qxd4","Bxh7+","Kxh7","Qxd4"],"r":819,"t":"Queens Pawn Game","side":"w"},{"id":"fVxP9","f":"r2q1rk1/1b2bppp/p1n1pn2/1p2N3/3P4/2NB3R/PP3PPP/R1BQ2K1 b - - 5 13","m":["c6d4","d3h7","f6h7","d1h5"],"s":["Nxd4","Bxh7+","Nxh7","Qh5"],"r":1451,"t":"Queens Pawn Game","side":"w"},{"id":"1gIGN","f":"rnbqr1k1/pp1nb1pp/2p1pp2/3pN2Q/3P4/1P1BP3/PBPN1PPP/R4RK1 b - - 1 10","m":["d7f8","d3h7","f8h7","h5f7","g8h8","e5g6"],"s":["Nf8","Bxh7+","Nxh7","Qf7+","Kh8","Ng6#"],"r":1969,"t":"Queens Pawn Game","side":"w"},{"id":"0YW3n","f":"r1bq1rk1/pp3p2/2p3B1/3pb1Np/7P/2P1P3/PPQ2PP1/R3K2R b KQ - 0 15","m":["f7g6","c2g6","e5g7","g6h7"],"s":["fxg6","Qxg6+","Bg7","Qh7#"],"r":953,"t":"Queens Pawn Game","side":"w"},{"id":"13P8B","f":"r3k2r/pp2bpp1/1qn1p2p/3pNb2/3Pn3/1PPB1N1P/P2B1PP1/R2QK2R b KQkq - 6 12","m":["e4f2","e1f2","f5d3","e5d3"],"s":["Nxf2","Kxf2","Bxd3","Nxd3"],"r":1212,"t":"Queens Pawn Game","side":"w"},{"id":"1sir5","f":"B1b2rk1/p3bppp/4pn2/1p4N1/1Pp1N3/q5P1/2Q1PP1P/5RK1 b - - 1 16","m":["c8d7","e4f6","g7f6","c2h7"],"s":["Bd7","Nxf6+","gxf6","Qxh7#"],"r":892,"t":"Queens Pawn Game","side":"w"},{"id":"37h7w","f":"r2qr1k1/p1pb2pQ/2pbp2p/5pN1/3P3P/2P5/PP3PP1/R1B1K2R b KQ - 5 17","m":["g8f8","h7h8","f8e7","h8g7"],"s":["Kf8","Qh8+","Ke7","Qxg7#"],"r":972,"t":"Queens Pawn Game","side":"w"},{"id":"4ODaG","f":"r2qkb1r/pp1np2p/2p1Qn2/3p2N1/3P4/4P3/PPP2PPP/RN2K2R b KQkq - 2 10","m":["d8c7","e6f7","e8d8","g5e6"],"s":["Qc7","Qf7+","Kd8","Ne6+"],"r":987,"t":"Queens Pawn Game","side":"w"},{"id":"6FGzE","f":"r1bqr1k1/1p3p1B/p2bpn1Q/6N1/3p4/8/PPP2PPP/R4RK1 b - - 3 16","m":["f6h7","h6h7","g8f8","h7f7"],"s":["Nxh7","Qxh7+","Kf8","Qxf7#"],"r":1156,"t":"Queens Pawn Game","side":"w"},{"id":"6mEC3","f":"rn5r/pN2kppp/4pnb1/2q5/2B5/P3P3/1P3PPP/R1BQ1RK1 b - - 0 14","m":["c5c4","d1d6","e7e8","d6d8"],"s":["Qxc4","Qd6+","Ke8","Qd8#"],"r":1154,"t":"Queens Pawn Game","side":"w"},{"id":"7AYh3","f":"r1b1k2r/pp1n1pp1/4p2p/3p4/3PN2B/q2BP3/2Q2PPP/2R1K2R b Kkq - 0 15","m":["d5e4","c2c8","a8c8","c1c8"],"s":["dxe4","Qxc8+","Rxc8","Rxc8#"],"r":896,"t":"Queens Pawn Game","side":"w"},{"id":"7LuaS","f":"2q2rk1/p4pb1/1pN1pnpp/8/3PB3/8/PP2QPPP/5RK1 b - - 1 18","m":["f6e4","c6e7","g8h8","e7c8"],"s":["Nxe4","Ne7+","Kh8","Nxc8"],"r":888,"t":"Queens Pawn Game","side":"w"},{"id":"9TvZV","f":"r2q1bkr/pp2p1pp/2n2N2/8/3p4/4P3/PP3PPP/RNBQK2R b KQ - 0 10","m":["e7f6","d1b3","d8d5","b3d5"],"s":["exf6","Qb3+","Qd5","Qxd5#"],"r":903,"t":"Queens Pawn Game","side":"w"},{"id":"9dZoF","f":"rn1qkb1r/ppp4p/4p3/3pNpp1/3Pn3/4P2P/PPP1QPP1/RNB2RK1 b kq - 0 10","m":["f8d6","e2h5","e8f8","h5f7"],"s":["Bd6","Qh5+","Kf8","Qf7#"],"r":1175,"t":"Queens Pawn Game","side":"w"},{"id":"9tZqY","f":"r1bq1r1k/pp2b1pp/2n5/4Np2/2BP3R/8/PP3PPP/R1BQ2K1 b - - 0 15","m":["c6e5","h4h7","h8h7","d1h5"],"s":["Nxe5","Rxh7+","Kxh7","Qh5#"],"r":1251,"t":"Queens Pawn Game","side":"w"},{"id":"8D3gX","f":"r3kb1r/pBp2p2/4p3/4P3/8/4P1qb/PPP4p/R1BQ1R1K b kq - 0 18","m":["h3f1","b7c6","e8e7","d1d7"],"s":["Bxf1","Bc6+","Ke7","Qd7#"],"r":1307,"t":"Queens Pawn Game","side":"w"},{"id":"9Rtea","f":"2R2rk1/pp3ppp/1q2p3/3bN3/3Pn3/1N6/PP1Q1PPP/5RK1 b - - 0 17","m":["e4d2","c8f8","g8f8","e5d7","f8e7","d7b6"],"s":["Nxd2","Rxf8+","Kxf8","Nd7+","Ke7","Nxb6"],"r":1381,"t":"Queens Pawn Game","side":"w"},{"id":"9e9k8","f":"rnbq1r2/pp3ppk/4pb2/3p2N1/3p3P/2P1P3/PP3PP1/RN1QK2R b KQ - 1 10","m":["f6g5","h4g5","h7g6","d1h5"],"s":["Bxg5","hxg5+","Kg6","Qh5+"],"r":1485,"t":"Queens Pawn Game","side":"w"},{"id":"AwCKg","f":"2rq3r/pb1nbk1p/1pp1p1p1/3pP3/3P2Q1/1P1BP2R/PBP3PP/R5K1 b - - 1 17","m":["f7g7","h3h7","h8h7","g4g6"],"s":["Kg7","Rxh7+","Rxh7","Qxg6+"],"r":1449,"t":"Queens Pawn Game","side":"w"},{"id":"CWaNU","f":"2rq1rk1/pp3ppp/2pbpn2/3NB1N1/3P4/P2QP2P/1P3PP1/1R3RK1 b - - 0 18","m":["d6e5","d5f6","g7f6","d3h7"],"s":["Bxe5","Nxf6+","gxf6","Qxh7#"],"r":1315,"t":"Queens Pawn Game","side":"w"},{"id":"EQFBM","f":"r1bq1r1k/4b1p1/p1n2n2/1p4N1/4B2P/8/PPPBQPP1/2KR3R b - - 0 18","m":["f6e4","e2h5","h8g8","h5h7"],"s":["Nxe4","Qh5+","Kg8","Qh7#"],"r":1529,"t":"Queens Pawn Game","side":"w"},{"id":"OfWUB","f":"3r3r/pkpbqpp1/2n1pn2/3p4/QP1P4/2PBPN2/5P1P/RN3K2 b - - 0 15","m":["d8a8","d3a6","b7b8","a4b5"],"s":["Ra8","Ba6+","Kb8","Qb5#"],"r":1629,"t":"Queens Pawn Game","side":"w"},{"id":"Omypx","f":"2R2b1r/pB1k1pp1/4pn1p/4qb2/3r4/6P1/PP1B1P1P/3Q1RK1 b - - 0 16","m":["f8b4","d1a4","d7e7","d2b4","d4b4","a4b4"],"s":["Bb4","Qa4+","Ke7","Bxb4+","Rxb4","Qxb4+"],"r":1443,"t":"Queens Pawn Game","side":"w"},{"id":"YBDPo","f":"2rqk2r/pp1nbpp1/4pnB1/2pp4/3P1B2/2P1PN2/PPQ2PPP/R3K2R b KQk - 0 12","m":["f7g6","c2g6","e8f8","f3g5","d8e8","g5e6","f8g8","g6g7"],"s":["fxg6","Qxg6+","Kf8","Ng5","Qe8","Nxe6+","Kg8","Qxg7#"],"r":1531,"t":"Queens Pawn Game","side":"w"},{"id":"fCZJa","f":"r3k2r/pp1n1pbb/1q2p2p/2ppP2B/5BQP/1N2P3/PPP2P2/R3K2R b KQkq - 3 15","m":["g7e5","f4e5","d7e5","g4g7"],"s":["Bxe5","Bxe5","Nxe5","Qg7"],"r":1678,"t":"Queens Pawn Game","side":"w"},{"id":"tjDTO","f":"r1b2rk1/pp3p1p/1qn5/5p2/7Q/2P2N2/PP3PPP/R4RK1 b - - 1 16","m":["b6d8","f3g5","h7h5","h4h5","d8g5","h5g5"],"s":["Qd8","Ng5","h5","Qxh5","Qxg5","Qxg5+"],"r":1506,"t":"Queens Pawn Game","side":"w"},{"id":"5eoak","f":"2rq1rk1/pp2bpp1/2n3p1/3pp1Nn/6PQ/PP2PN2/1BP4P/1R3RK1 b - - 0 17","m":["e5e4","g4h5","e7g5","f3g5"],"s":["e4","gxh5","Bxg5","Nxg5"],"r":1554,"t":"Queens Pawn Game","side":"w"},{"id":"F1wwj","f":"r4rk1/pbqn1pp1/1pnbp3/2ppN1PQ/3P1P2/2P1PR2/PP1N3P/R1B3K1 b - - 3 15","m":["d6e5","f3h3","f7f6","g5g6","f8e8","h5h8"],"s":["Bxe5","Rh3","f6","g6","Rfe8","Qh8#"],"r":1743,"t":"Queens Pawn Game","side":"w"},{"id":"JUOkx","f":"r4rk1/ppqn1pp1/2p2bP1/8/3p4/P1P1B3/1P3PP1/R2QKB1R b KQ - 0 17","m":["d4e3","h1h8","g8h8","d1h5","h8g8","h5h7"],"s":["dxe3","Rh8+","Kxh8","Qh5+","Kg8","Qh7#"],"r":1741,"t":"Queens Pawn Game","side":"w"},{"id":"TWsxE","f":"r2qkbnr/ppp1pppp/8/5b2/1n1PpB2/2N5/PPPN1PPP/R2QKB1R b KQkq - 1 6","m":["d8d4","c3b5","d4d7","b5c7"],"s":["Qxd4","Nb5","Qd7","Nxc7+"],"r":1725,"t":"Queens Pawn Game","side":"w"},{"id":"Ugp7v","f":"2r2rk1/ppqnbppp/4p3/4P3/8/1PR5/PB2QPPP/3N1RK1 b - - 0 17","m":["c7e5","e2e5","d7e5","c3c8","f8c8","b2e5"],"s":["Qxe5","Qxe5","Nxe5","Rxc8","Rxc8","Bxe5"],"r":1750,"t":"Queens Pawn Game","side":"w"},{"id":"Uq7iM","f":"r2q1rk1/p1p3pp/1p1b1n2/3bN3/2BPp3/1Q6/PP1B2PP/R3R1K1 b - - 3 17","m":["d6e7","e5c6","d5c4","b3c4"],"s":["Be7","Nc6","Bxc4","Qxc4+"],"r":1783,"t":"Queens Pawn Game","side":"w"},{"id":"YF4fb","f":"r1bqr1k1/pp1nb1p1/4ppN1/3p3Q/3P1PP1/2P4P/PP1B4/R4RK1 b - - 0 18","m":["d7f8","h5h8","g8f7","g6e5","f6e5","f4e5"],"s":["Nf8","Qh8+","Kf7","Ne5+","fxe5","fxe5+"],"r":1803,"t":"Queens Pawn Game","side":"w"},{"id":"Zwn6E","f":"rn3b1r/pp1knQp1/2p1pp2/3p4/6q1/6B1/PPPNPPB1/2KR3R b - - 1 16","m":["h8h1","d1h1","b8a6","g2h3"],"s":["Rxh1","Rxh1","Na6","Bh3"],"r":2032,"t":"Queens Pawn Game","side":"w"},{"id":"zjcaV","f":"2r1kb1r/pp2pppp/1q3n2/3pNb2/3n4/2P1B3/PP2BPPP/RNQ1K2R b KQk - 1 10","m":["d4c2","c1c2","f5c2","e3b6","a7b6","e2b5"],"s":["Nc2+","Qxc2","Bxc2","Bxb6","axb6","Bb5+"],"r":1831,"t":"Queens Pawn Game","side":"w"},{"id":"3ExM4","f":"1r3rk1/p1q2ppp/Q2b1n2/4n1B1/2p5/6P1/PP2PPBP/R2R2K1 b - - 2 16","m":["f6d7","a6d6","c7d6","d1d6"],"s":["Nfd7","Qxd6","Qxd6","Rxd6"],"r":1776,"t":"Queens Pawn Game","side":"w"},{"id":"SJPeg","f":"r4rk1/p2bpp1p/n1Nq2p1/1Q2b3/B2P4/4P3/PP1K1PPP/R6R b - - 2 17","m":["a6c7","b5e5","d6e5","d4e5"],"s":["Nc7","Qxe5","Qxe5","dxe5"],"r":2023,"t":"Queens Pawn Game","side":"w"},{"id":"0P2cj","f":"q4knr/p1p1ppbp/3p2p1/8/5B2/P1N5/1PP1PP1P/R2QK2R w KQ - 0 11","m":["d1d5","g7c3","b2c3","a8d5"],"s":["Qd5","Bxc3+","bxc3","Qxd5"],"r":1158,"t":"Queens Pawn Game","side":"b"},{"id":"0W4Hy","f":"rn2k1nr/p4p1p/1pp3p1/1B2b3/8/2N1BP2/PPP2P1P/3RK2R w Kkq - 0 12","m":["f3f4","e5c3","b2c3","c6b5"],"s":["f4","Bxc3+","bxc3","cxb5"],"r":1006,"t":"Modern Defense Modern","side":"b"},{"id":"0nxDx","f":"rnb2rk1/2q1pp1p/p1P3p1/1B6/8/2Q5/PPP2PPP/2KR2NR w - - 0 15","m":["b5a4","c7f4","c1b1","f4a4"],"s":["Ba4","Qf4+","Kb1","Qxa4"],"r":1021,"t":"Pirc Defense Pirc","side":"b"},{"id":"0y7jg","f":"rnb2rk1/pp2ppbp/3P2p1/6B1/4N3/8/qPPQ1PPP/2KR1BNR w - - 0 10","m":["e4c3","a2a1","c3b1","g7b2"],"s":["Nc3","Qa1+","Nb1","Bxb2#"],"r":932,"t":"Pirc Defense Pirc","side":"b"},{"id":"1Arvh","f":"2k1r2r/Bppb1p1p/3p2p1/3P4/2B3n1/1QP5/PP1N1PPq/R3RK2 w - - 9 18","m":["d2f3","h2h1","f3g1","g4h2"],"s":["Nf3","Qh1+","Ng1","Nh2#"],"r":1297,"t":"Modern Defense Modern","side":"b"},{"id":"1X5WF","f":"r3r1k1/1ppq1p1p/p2p2pB/8/4P3/2b2PnP/PPPQ2P1/R2R2K1 w - - 0 18","m":["d2c3","g3e2","g1h2","e2c3"],"s":["Qxc3","Ne2+","Kh2","Nxc3"],"r":885,"t":"Pirc Defense Pirc","side":"b"},{"id":"1bKUC","f":"r1bqk1nr/pppn1pbp/3p2p1/4p3/2PPP3/2N1B3/PP3PPP/R2QKBNR w KQkq - 0 6","m":["f1d3","e5d4","e3d4","g7d4"],"s":["Bd3","exd4","Bxd4","Bxd4"],"r":993,"t":"Modern Defense Modern","side":"b"},{"id":"1ziBz","f":"r2q1rk1/ppp1ppbp/6P1/4n3/2Q5/2PP1P2/PP3P2/RNB1K2R w KQ - 1 13","m":["c4h4","e5f3","e1e2","f3h4"],"s":["Qh4","Nxf3+","Ke2","Nxh4"],"r":1212,"t":"Modern Defense Modern","side":"b"},{"id":"2Gs9t","f":"r1r3k1/ppp2p1p/6p1/4B3/8/8/PPP2PPP/4KB1R w K - 1 15","m":["f1d3","c8e8","f2f4","f7f6","e1f2","f6e5"],"s":["Bd3","Re8","f4","f6","Kf2","fxe5"],"r":1283,"t":"Pirc Defense Pirc","side":"b"},{"id":"2dG4l","f":"r1bqrk1b/pp3p1n/2pp3P/8/2PP3R/3Q4/PP2BPP1/R1B2K2 w - - 0 18","m":["d3h7","d8h4","h7h8","f8e7","h8e8","e7e8"],"s":["Qxh7","Qxh4","Qxh8+","Ke7","Qxe8+","Kxe8"],"r":924,"t":"Modern Defense Modern","side":"b"},{"id":"3OQqz","f":"rn4k1/ppp2pbp/4b1p1/3pq2r/3N4/1B2P3/PPP1QPPP/R1BR2K1 w - - 6 15","m":["d4e6","e5h2","g1f1","h2h1"],"s":["Nxe6","Qxh2+","Kf1","Qh1#"],"r":803,"t":"Queens Pawn Game","side":"b"},{"id":"0UlKv","f":"r3k2r/ppq1pp1p/2n3p1/4bb2/2B1Q3/2N1B3/PPP2PPP/2KR3R w kq - 4 13","m":["c3d5","f5e4","d5c7","e5c7"],"s":["Nd5","Bxe4","Nxc7+","Bxc7"],"r":1410,"t":"Modern Defense Modern","side":"b"},{"id":"14nYD","f":"r5k1/ppp3bp/3p2p1/4pr2/4Nn1q/1P1P1Q2/PBP2PBP/1R3RK1 w - - 2 18","m":["e4g3","f4h3","g2h3","f5f3"],"s":["Ng3","Nh3+","Bxh3","Rxf3"],"r":1454,"t":"Pirc Defense Pirc","side":"b"},{"id":"1IlL6","f":"r3nrk1/p1pb1pb1/2pp1q1B/4p2Q/3PP2p/2N2P2/PPP3P1/R3K1NR w KQ - 0 15","m":["d4e5","f6h6","h5h6","g7h6"],"s":["dxe5","Qxh6","Qxh6","Bxh6"],"r":1496,"t":"Pirc Defense Pirc","side":"b"},{"id":"3KYRe","f":"r3k1nr/1b2ppbp/pn1p2p1/q1pP4/Np2P3/1P1BBN2/P1P1QPPP/2KR3R w kq - 1 12","m":["a4b6","a5a3","c1b1","a3b2"],"s":["Nxb6","Qa3+","Kb1","Qb2#"],"r":1333,"t":"Modern Defense Modern","side":"b"},{"id":"3xco3","f":"r2qk2r/pp1n1pb1/2ppp3/3n1p1p/3P3P/2N2PB1/PPPQB1P1/2KR2NR w kq - 0 12","m":["g3f2","g7h6","d2h6","h8h6"],"s":["Bf2","Bh6","Qxh6","Rxh6"],"r":1456,"t":"Queens Pawn Game","side":"b"},{"id":"40nvJ","f":"rn1qk2r/pppn1p1p/6p1/4b3/4P3/2N2B2/PPP3PP/R1BQ1RK1 w kq - 0 11","m":["c1h6","d8h4","g2g3","h4h6"],"s":["Bh6","Qh4","g3","Qxh6"],"r":1669,"t":"Pirc Defense Pirc","side":"b"},{"id":"41va8","f":"r1b2rk1/pp1Ppp1p/1q4p1/8/3b3P/2N5/PPP3P1/R2QKB1R w KQ - 0 14","m":["d7c8q","d4f2","e1d2","b6e3"],"s":["dxc8=Q","Bf2+","Kd2","Qe3#"],"r":1530,"t":"Pirc Defense Pirc","side":"b"},{"id":"5Xti1","f":"r2r2k1/ppp2pb1/8/4p3/3nP3/2NB1P2/PPP1KP1P/R6R w - - 3 16","m":["e2e3","g7h6","f3f4","h6f4"],"s":["Ke3","Bh6+","f4","Bxf4#"],"r":1358,"t":"Pirc Defense Pirc","side":"b"},{"id":"5btPA","f":"rn1qk2r/2p2pb1/pp1p2p1/7p/3PPQb1/2NB1N2/PPP2PP1/R3K2R w KQkq - 0 12","m":["e1c1","g7h6","f4h6","h8h6"],"s":["O-O-O","Bh6","Qxh6","Rxh6"],"r":1450,"t":"Modern Defense Modern","side":"b"},{"id":"6OtlZ","f":"r6r/p3ppbp/1k4p1/1N6/2bN4/4P3/PPP3PP/2KR3R w - - 3 18","m":["b2b3","c4b5","d4b5","b6b5"],"s":["b3","Bxb5","Nxb5","Kxb5"],"r":1412,"t":"Pirc Defense Pirc","side":"b"},{"id":"7kVcy","f":"r2q3r/pp1bp1k1/2pp1n2/5B2/PP1bP1p1/2N3P1/1BPN3P/1R1Q1R1K w - - 3 18","m":["c3e2","h8h2","h1h2","d8h8","f5h7","h8h7","h2g2","h7h3"],"s":["Ne2","Rxh2+","Kxh2","Qh8+","Bh7","Qxh7+","Kg2","Qh3#"],"r":1479,"t":"Pirc Defense Pirc","side":"b"},{"id":"8jNsD","f":"r1br2k1/ppq2p1p/6p1/4n3/3BP3/1BP2P1P/P1P2P2/R2QK2R w KQ - 2 15","m":["d1e2","d8d4","c3d4","c7c3","e1f1","c3a1","f1g2","a1d4"],"s":["Qe2","Rxd4","cxd4","Qc3+","Kf1","Qxa1+","Kg2","Qxd4"],"r":1624,"t":"Pirc Defense Pirc","side":"b"},{"id":"0AxTx","f":"r1bqn2k/pp1n1B1p/3p2p1/2p1p3/3b1P2/2N4P/PPP3P1/R1BQK2R w KQ - 0 14","m":["f7e8","d8h4","e1d2","h4f4","d2e2","f4f2"],"s":["Bxe8","Qh4+","Kd2","Qxf4+","Ke2","Qf2+"],"r":2024,"t":"Pirc Defense Pirc","side":"b"},{"id":"1e4Nm","f":"5rkr/pppqp1b1/3pN1Q1/5n2/2P5/4B3/PP3PPP/R4RK1 w - - 1 16","m":["g2g4","f8f6","g6g5","d7e6"],"s":["g4","Rf6","Qg5","Qxe6"],"r":1988,"t":"Pirc Defense Pirc","side":"b"},{"id":"4tkFV","f":"r2q1rk1/pp3pbp/3p2pB/2pPn3/4P3/5B2/PPPQ1PPP/2KR3R w - - 4 16","m":["h2h4","e5c4","h6g7","c4d2"],"s":["h4","Nc4","Bxg7","Nxd2"],"r":1852,"t":"Pirc Defense Pirc","side":"b"},{"id":"6yvOb","f":"r1b3k1/1p1n1pb1/p2prq2/6p1/3P3Q/2PB4/PP4PP/R1B2RK1 w - - 0 17","m":["f1f6","g5h4","f6e6","f7e6"],"s":["Rxf6","gxh4","Rxe6","fxe6"],"r":1719,"t":"Queens Pawn Game","side":"b"},{"id":"A8WYc","f":"1r6/pQ2ppkp/2n3p1/6B1/8/2qP3P/P3KPP1/R6R w - - 3 18","m":["h1c1","c3e5","e2f1","b8b7"],"s":["Rhc1","Qe5+","Kf1","Rxb7"],"r":1851,"t":"Pirc Defense Pirc","side":"b"},{"id":"CHi7U","f":"r4b1r/ppp1p1k1/2nq2pp/6Nn/3P2Q1/8/PPP2PPP/RNB2RK1 w - - 0 11","m":["c1f4","h5f4","g5e4","h6h5"],"s":["Bf4","Nxf4","Ne4","h5"],"r":2116,"t":"Modern Defense Modern","side":"b"},{"id":"GhiVE","f":"1k1r4/1pp1pp2/3p1npr/nN5p/3PP3/3Q3P/qPP1BPP1/2KR3R w - - 0 17","m":["e2f3","a5c4","d3c4","a2c4"],"s":["Bf3","Nc4","Qxc4","Qxc4"],"r":1728,"t":"Pirc Defense Pirc","side":"b"},{"id":"HLLvj","f":"1r1q1rk1/Nb3pbp/1p1P1np1/2p5/8/2N1BQ1P/PPP2PP1/R3R1K1 w - - 1 17","m":["a7c6","d8d6","e3f4","d6c6","f3c6","b7c6","f4b8","f8b8"],"s":["Nc6","Qxd6","Bf4","Qxc6","Qxc6","Bxc6","Bxb8","Rxb8"],"r":1989,"t":"Pirc Defense Pirc","side":"b"},{"id":"LoCQm","f":"r1r3k1/pp2ppb1/3p1np1/q7/2b1P1P1/2N1BP2/PPPQ4/1K1R2NR w - - 2 16","m":["e3h6","f6e4","f3e4","g7c3"],"s":["Bh6","Nxe4","fxe4","Bxc3"],"r":1885,"t":"Pirc Defense Pirc","side":"b"}];
+/* ================= state ================= */
+const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
+  sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
+  run:0,bestRun:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
+  arrow:null,passKeys:null};
+let stats={pos:{},best:{},pz:{},day:"",today:0,bestRun:0,theme:0};
+const THEMES=[
+  ["Brown","#f0d9b5","#b58863","#f6f1e6","#12161b","#12161b","#ded5bd"],
+  ["Blue","#dee3e6","#8ca2ad","#f8f6f0","#14181d","#14181d","#dfe4e8"],
+  ["Green","#ebecd0","#779556","#f7f6ec","#12161b","#12161b","#e3e6cd"],
+  ["Slate","#e4dabc","#48645f","#f6f1e6","#12161b","#12161b","#ded5bd"]
+];
+const SETS=[["Standard","0 0 45 45",()=>CB,false],["Engraved","0 0 100 100",()=>PIECE,true]];
+function pieceEl2(ch,cls){
+  const set=SETS[S.set||0],svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("viewBox",set[1]);
+  svg.setAttribute("class",cls+(set[3]?" custom":""));
+  const map=set[2]();
+  svg.innerHTML=set[3]?map[ch.toLowerCase()]:map[ch];
+  return svg;
+}
+const el=id=>document.getElementById(id);
+let PZLINE=null;
+function makePz(i){
+  const p=PZ[i],p0=fenPos(p.f),m0=findMove(p0,p.m[0]);
+  const s0=m0?san(p0,m0):"",p1=m0?make(p0,m0):p0;
+  PZLINE={id:"pz:"+p.id,ch:"Tactics",you:p.side,name:"Puzzle "+p.id,pz:p,
+    src:p.t,start:fenOf(p1),targets:[],
+    moves:p.m.slice(1).map((u,k)=>[u,p.s[k+1],k===0?("They have just played "+s0+"."):""])};
+  return PZLINE;
+}
+function startPuzzle(i){
+  clearTimeout(S.pending);S.pending=0;
+  S.mode="puzzle";S.pz=((i%PZ.length)+PZ.length)%PZ.length;makePz(S.pz);
+  S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;clearFree();
+  S.flip=PZLINE.you==="b";syncOpts();
+  el("nMsg").textContent="";go("board");armClock();
+}
+function armPz(ms){
+  clearTimeout(S.pending);
+  const bar=el("progBar");
+  bar.style.transition="none";bar.style.width="100%";void bar.offsetWidth;
+  bar.style.transition="width "+ms+"ms linear";bar.style.width="0%";
+  S.pending=setTimeout(()=>{S.pending=0;startPuzzle(S.pz+1);},ms);
+}
+const L=()=>(S.mode==="puzzle"&&PZLINE)?PZLINE:LINES[S.li];
+const yourTurn=()=>(nowPos().w?"w":"b")===L().you;
+const HOUR=36e5, LADDER=[0,4,24,72,168,336];
+const CHAPTERS=["Colle as White","Hippopotamus as Black"];
+LINES.sort((a,b)=>CHAPTERS.indexOf(a.ch)-CHAPTERS.indexOf(b.ch));
+
+function boardAt(l,n){let b=fenBoard(l.start);for(let i=0;i<n;i++)b=apply(b,l.moves[i][0]);return b;}
+function posAt(l,n){
+  let p=l.start===START?startPos():fenPos(l.start.indexOf(" ")>0?l.start:l.start+" w - -");
+  for(let i=0;i<n;i++){const m=findMove(p,l.moves[i][0]);if(!m)break;p=make(p,m);}
+  return p;
+}
+function nowPos(){return S.free.length?S.fpos:posAt(L(),S.ply);}
+function clearFree(){S.free=[];S.fpos=null;const o=el("offbook");if(o)o.classList.remove("on");}
+function drillPlies(l){const a=[];for(let p=0;p<l.moves.length;p++)if((p%2===0?"w":"b")===l.you)a.push(p);return a;}
+/* Position identity: two lines can transpose into the same board, and fenOf always
+   appends a fixed "0 1" so its output needs no trimming to compare across lines. When
+   two lines land on the same board and want the same reply, they should share one
+   stats record instead of one each - key() below folds line+ply down to fen+expected-
+   move for that reason. Puzzle "lines" (id "pz:<id>", built at runtime by makePz) keep
+   the old l.id+":"+p shape unchanged; grade() relies on that "pz:" prefix to skip them,
+   so it must not become a fen key. */
+// Lines that teach a mistake on purpose. Shuffle gives no context for why a losing
+// move would be "correct", so they are kept out of it and out of ALT below. Ids
+// checked against src/data/lines.js. Study and Drill still offer them in full.
+const NO_SHUFFLE=new Set(["trap","soltis-trap","syn-hipdown"]);
+/* ALT maps a board to every line and ply that trains it. Where two lines transpose
+   and want different replies, Shuffle accepts any of them: the position is asked on
+   its own there, so there is no continuation to keep consistent. Study and Drill are
+   unaffected and still grade against the line you picked. */
+/* fenOf writes an ep square whenever the last move was a double pawn push, whether or
+   not any capture is actually possible - so two lines reaching the same board by
+   different move orders (one via a double push, one not) get different fenOf strings
+   even though they are the same position. Blank that field HERE, at the KEYCACHE/ALT
+   boundary, rather than in fenOf itself: makePz (above) still needs fenOf's raw,
+   ep-preserving output for PZLINE.start, because that string is re-parsed by fenPos
+   and replayed move-by-move, and a puzzle whose next move is genuinely an en-passant
+   capture would silently stop being legal if the flag were stripped there. Nothing
+   else calls fenOf. */
+function keyFen(pos){
+  if(pos.ep<0)return fenOf(pos);
+  return legal(pos).some(m=>m.ep)?fenOf(pos):fenOf({b:pos.b,w:pos.w,cr:pos.cr,ep:-1});
+}
+function bookExcluded(l){return S.bookOnly&&(KIND[l.id]==="game"||KIND[l.id]==="model"||KIND[l.id]==="synthetic");}
+const KEYCACHE={},ALT={};
+(function(){
+  LINES.forEach((l,li)=>{
+    if(l.id==="pz")return;
+    for(const p of drillPlies(l)){
+      const f=keyFen(posAt(l,p));
+      KEYCACHE[l.id+":"+p]=f+":"+l.moves[p][0];
+      if(!NO_SHUFFLE.has(l.id))(ALT[f]=ALT[f]||[]).push([li,p,l.moves[p][0].slice(0,4)]);
+    }
+  });
+})();
+function altAt(pos,uci){const a=ALT[keyFen(pos)];return a?a.find(x=>x[2]===uci):null;}
+function key(l,p){return l.id.indexOf("pz:")===0?l.id+":"+p:(KEYCACHE[l.id+":"+p]||l.id+":"+p);}
+function rec(k){return stats.pos[k];}
+const SLOW=7000;
+function quick(r){return r&&r.ms&&r.ms<SLOW;}
+function state(k){
+  const r=rec(k);
+  if(!r||r.ok+r.no===0)return "new";
+  const step=Math.min(r.streak,LADDER.length-1);
+  const hrs=LADDER[step]*(quick(r)?1:.4);
+  if(Date.now()>=r.last+hrs*HOUR)return "due";
+  return (r.streak>=2&&quick(r))?"solid":"learning";
+}
+function lineScore(l){
+  const ps=drillPlies(l);
+  let solid=0;for(const p of ps)if(state(key(l,p))==="solid")solid++;
+  return{n:ps.length,solid:solid};
+}
+function totals(){
+  // Keys are shared across lines now (see the KEYCACHE/ALT comment above), so a naive
+  // line*ply walk counts one board-plus-reply record once per line that transposes
+  // into it - the start position alone is ~22 line-views for one record. Dedupe by
+  // key: each distinct record is counted exactly once, in the line/ply it is first
+  // met (LINES order), same rule weakest() and shuffle() use.
+  let fresh=0,due=0,learn=0,solid=0,seen=0,ok=0,tot=0,all=0;
+  const done=new Set();
+  for(const l of LINES){if(l.id==="pz")continue;for(const p of drillPlies(l)){
+    const k=key(l,p);
+    if(done.has(k))continue;
+    done.add(k);
+    all++;const st=state(k),r=rec(k);
+    if(st==="new")fresh++;else if(st==="due")due++;else if(st==="learning")learn++;else solid++;
+    if(r){seen++;ok+=r.ok;tot+=r.ok+r.no;}
+  }}
+  return{fresh:fresh,due:due,learn:learn,solid:solid,seen:seen,all:all,acc:tot?Math.round(ok/tot*100):0};
+}
+
+/* ================= navigation ================= */
+function go(scr){
+  S.screen=scr;stop();
+  for(const id of ["scMenu","scLines","scBoard","scProgress"])el(id).classList.remove("on");
+  el({menu:"scMenu",lines:"scLines",board:"scBoard",progress:"scProgress"}[scr]).classList.add("on");
+  el("navBack").style.visibility=scr==="menu"?"hidden":"visible";
+  el("navMore").style.visibility=scr==="board"?"visible":"hidden";
+  const T=el("barTitle"),U=el("barSub");
+  if(scr==="menu"){T.textContent="Colle & Hippo";U.textContent="";renderMenu();}
+  if(scr==="lines"){T.textContent=S.mode==="study"?"Study a line":"Drill a line";U.textContent="";renderLines();}
+  if(scr==="progress"){T.textContent="Progress";U.textContent="";renderProgress();}
+  if(scr==="board"){
+    T.textContent=S.mode==="shuffle"?"Shuffle drill":(S.mode==="puzzle"?"Tactics":L().name);
+    U.textContent=S.mode==="shuffle"?"":(L().you==="w"?"WHITE":"BLACK");
+    render(false);
+  }
+  scrollTo(0,0);
+}
+el("navBack").onclick=()=>{
+  if(S.screen==="board")go(S.mode==="shuffle"||S.mode==="puzzle"?"menu":"lines");
+  else go("menu");
+};
+el("cShuffle").onclick=()=>{S.mode="shuffle";S.arrow=null;shuffle(true);go("board");};
+el("cStudy").onclick=()=>{S.mode="study";go("lines");};
+el("cDrill").onclick=()=>{S.mode="line";go("lines");};
+el("cProgress").onclick=()=>go("progress");
+el("cPuzzle").onclick=()=>{
+  let next=0,best=-1;
+  for(let i=0;i<PZ.length;i++){
+    const r=(stats.pz||{})[PZ[i].id];
+    const sc=r?(r.ok?-1:2):1;
+    if(sc>best){best=sc;next=i;}
+  }
+  startPuzzle(next);
+};
+
+/* ================= menu / lists ================= */
+function renderMenu(){
+  const t=totals();
+  el("kDue").textContent=t.fresh;el("kSolid").textContent=t.solid;el("kAcc").textContent=t.due;
+  el("bDue").textContent=t.due?t.due+" due now":(t.fresh?t.fresh+" new":"all solid");
+  let solvedPz=0;for(const q of PZ)if(((stats.pz||{})[q.id]||{}).ok)solvedPz++;
+  el("bPz").textContent=solvedPz+"/"+PZ.length+" solved";
+  el("kToday").textContent=stats.today||0;
+}
+function renderLines(){
+  const c=el("lineList");c.innerHTML="";let ch=null;
+  LINES.forEach((l,i)=>{
+    if(l.id==="pz")return;
+    if(l.ch!==ch){ch=l.ch;const h=document.createElement("div");h.className="chapter";h.textContent=ch;c.appendChild(h);}
+    const s=lineScore(l),pct=s.n?s.solid/s.n*100:0;
+    const b=document.createElement("button");
+    b.className="lbtn"+(pct===100?" done":"");
+    b.innerHTML='<span class="nm">'+l.name+'</span><span class="meta">'+
+      '<span class="pbar"><i style="width:'+pct+'%"></i></span>'+
+      "<span>"+s.solid+"/"+s.n+" solid</span><span class='kind' style='margin-left:auto'>"+KIND[l.id]+"</span></span>";
+    b.onclick=()=>{S.li=i;startLine();};
+    c.appendChild(b);
+  });
+}
+function startLine(){
+  S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();clearFree();
+  S.flip=L().you==="b";syncOpts();
+  el("nMsg").textContent="";go("board");armClock();
+  if(S.mode==="line"&&!yourTurn())setTimeout(autoReply,300);
+}
+
+/* ---------- production guards ---------- */
+function crash(msg){
+  const c=el("crash");if(!c)return;
+  c.classList.add("on");
+  c.innerHTML="<span>Something went wrong: "+String(msg).slice(0,140)+
+    ". Your progress is saved; reloading is safe.</span>";
+  const b=document.createElement("button");b.textContent="Reload";
+  b.onclick=()=>location.reload();c.appendChild(b);
+}
+addEventListener("error",e=>crash(e.message||"script error"));
+addEventListener("unhandledrejection",e=>crash((e.reason&&e.reason.message)||e.reason||"promise rejection"));
+
+function selfTest(){
+  const t0=Date.now(),errs=[];
+  try{
+    if(perft(startPos(),3)!==8902)errs.push("move generator failed perft(3)");
+  }catch(e){errs.push("move generator threw: "+e.message);}
+  let moves=0;
+  for(const l of LINES){
+    let p=l.start===START?startPos():fenPos(l.start);
+    l.moves.forEach((mv,i)=>{
+      const m=findMove(p,mv[0]);
+      if(!m){errs.push(l.id+" move "+(i+1)+" ("+mv[1]+") is not legal");return;}
+      if(san(p,m).replace(/[+#]/g,"")!==mv[1].replace(/[+#!?]/g,""))
+        errs.push(l.id+" move "+(i+1)+" is labelled "+mv[1]);
+      moves++;p=make(p,m);
+    });
+  }
+  let pzOk=0;
+  for(const z of PZ){
+    let p,fine=true;
+    try{p=fenPos(z.f);}catch(e){fine=false;}
+    if(fine)for(const u of z.m){const m=findMove(p,u);if(!m){fine=false;break;}p=make(p,m);}
+    if(fine)pzOk++;else errs.push("puzzle "+z.id+" does not replay");
+  }
+  return {ms:Date.now()-t0,lines:LINES.length,moves:moves,puzzles:pzOk,errors:errs};
+}
+let VERIFIED=null;
+function runSelfTest(){
+  if(VERIFIED)return VERIFIED;
+  VERIFIED=selfTest();
+  const row=el("verifyRow"),dot=el("verifyDot"),txt=el("verifyTxt");
+  if(row){
+    row.className="verify "+(VERIFIED.errors.length?"bad":"ok");
+    dot.textContent=VERIFIED.errors.length?"failed":"verified";
+    txt.textContent=VERIFIED.errors.length
+      ? VERIFIED.errors.length+" problem(s): "+VERIFIED.errors[0]
+      : LINES.length+" lines, "+VERIFIED.moves+" moves and "+VERIFIED.puzzles+
+        " puzzles replay legally; generator matches perft ("+VERIFIED.ms+" ms).";
+  }
+  if(VERIFIED.errors.length)crash(VERIFIED.errors[0]);
+  return VERIFIED;
+}
+function renderProgress(){
+  runSelfTest();
+  const t=totals();
+  el("pSolid").textContent=t.solid;el("pSeen").textContent=t.seen+"/"+t.all;el("pAcc").textContent=t.acc+"%";
+  renderWeak();
+  const c=el("pRows");c.innerHTML="";let ch=null;
+  for(const l of LINES){
+    if(l.id==="pz")continue;
+    if(l.ch!==ch){ch=l.ch;const h=document.createElement("div");h.className="chapter";h.textContent=ch;c.appendChild(h);}
+    const s=lineScore(l),pct=s.n?s.solid/s.n*100:0;
+    const r=document.createElement("div");r.className="prow";
+    r.innerHTML="<span>"+l.name+'</span><span class="pbar"><i style="width:'+pct+'%"></i></span><em>'+s.solid+"/"+s.n+"</em>";
+    c.appendChild(r);
+  }
+}
+function weakest(n){
+  // Same dedupe as totals(): a shared record must not appear once per line that
+  // trains it, or the weak list can show one board wearing several line names.
+  const out=[],seen=new Set();
+  for(let i=0;i<LINES.length;i++){
+    const l=LINES[i];
+    if(l.id==="pz")continue;
+    for(const p of drillPlies(l)){
+      const k=key(l,p);
+      if(seen.has(k))continue;
+      seen.add(k);
+      const r=rec(k);if(!r||r.ok+r.no===0)continue;
+      const score=r.no*3+(r.ms>SLOW?1.5:0)-r.streak;
+      if(score>0)out.push({li:i,ply:p,r:r,score:score,name:l.name,san:l.moves[p][1]});
+    }
+  }
+  return out.sort((a,b)=>b.score-a.score).slice(0,n);
+}
+function renderWeak(){
+  const c=el("pWeak");c.innerHTML="";
+  const w=weakest(5);
+  if(!w.length){const d=document.createElement("div");d.className="prow";
+    d.innerHTML="<span>Nothing has gone wrong yet. Drill a while and this fills itself.</span>";
+    c.appendChild(d);return;}
+  for(const x of w){
+    const b=document.createElement("button");b.className="weak";
+    b.innerHTML="<span>"+x.name+" \u00b7 move "+(Math.floor(x.ply/2)+1)+"</span><em>"+
+      x.r.no+" miss"+(x.r.no>1?"es":"")+(x.r.ms?" \u00b7 "+fmtMs(x.r.ms):"")+"</em>";
+    b.onclick=()=>{S.mode="study";S.li=x.li;S.ply=x.ply;S.sel=null;S.hint=0;
+      S.flip=LINES[x.li].you==="b";syncOpts();go("board");};
+    c.appendChild(b);
+  }
+}
+el("pExport").onclick=()=>{
+  // v:4 stamps the payload with the stats shape it was written in. Storage keys are
+  // versioned so a later format change can be told apart from the current one; backups
+  // made before this stamp existed carry no "v" at all but are still v4-shaped
+  // (fen-keyed) data, so validateImport() below treats those as valid rather than
+  // rejecting every backup a user already has.
+  el("pData").value=JSON.stringify(Object.assign({v:4},stats));
+  el("pData").select();
+};
+// A v4 key is either "pz:<id>:<ply>" or a fenOf()-derived string, which always
+// contains "/" (the FEN board-row separator). A v3 key was "<line id>:<ply>"
+// (e.g. "cz:5") and never contains either. Used to tell an unstamped-but-genuine
+// v4 backup (exported before the "v" marker existed) apart from a real v3 backup:
+// no code to remap v3 keys to v4 was ever written for that format bump, so this
+// shape check is what stands in for a real migration.
+function looksV4Key(k){return k.indexOf("pz:")===0||k.indexOf("/")>=0;}
+// Import is a trust boundary: validate the whole shape before anything touches
+// `stats`, and never partially assign it. Returns null when valid, else a short
+// reason string used to pick the message shown to the user.
+function validateImport(d){
+  if(!d||typeof d!=="object"||!d.pos||typeof d.pos!=="object")return "shape";
+  const keys=Object.keys(d.pos);
+  if(d.v!==undefined&&d.v!==4)return "version";
+  if(d.v===undefined&&keys.length&&!keys.every(looksV4Key))return "version";
+  for(const k of keys){
+    const r=d.pos[k];
+    if(!r||typeof r!=="object"||typeof r.ok!=="number"||typeof r.no!=="number")return "shape";
+  }
+  return null;
+}
+el("pImport").onclick=()=>{
+  let d=null;
+  try{d=JSON.parse(el("pData").value);}catch(e){d=null;}
+  const problem=validateImport(d);
+  if(problem==="version"){
+    el("pData").value="This backup is from an older version: its positions are keyed by "+
+      "line and move number, not by board, so nothing here would match and progress would "+
+      "look wiped. Nothing was changed — export a fresh backup from an updated copy of the trainer instead.";
+    return;
+  }
+  if(problem){
+    el("pData").value="That is not a valid backup. Export from another device and paste the whole line.";
+    return;
+  }
+  stats={pos:d.pos,
+    best:(d.best&&typeof d.best==="object")?d.best:{},
+    pz:(d.pz&&typeof d.pz==="object")?d.pz:{},
+    day:typeof d.day==="string"?d.day:"",
+    today:typeof d.today==="number"?d.today:0,
+    bestRun:typeof d.bestRun==="number"?d.bestRun:0,
+    theme:typeof d.theme==="number"?d.theme:0,
+    set:typeof d.set==="number"?d.set:0,
+    bookOnly:!!d.bookOnly};
+  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;
+  applyTheme();syncOpts(); // apply immediately; do not make the user reload to see it
+  save();renderProgress();el("pData").value="Imported.";
+};
+let resetArmed=false;
+el("pReset").onclick=function(){
+  if(!resetArmed){resetArmed=true;this.textContent="Tap again to erase everything";return;}
+  stats={pos:{},best:{},pz:{},day:"",today:0,bestRun:0,theme:S.theme,set:S.set};S.run=0;save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
+};
+
+/* ================= board rendering ================= */
+function render(anim){
+  const l=L(),pos=nowPos(),b=pos.b;
+  const last=S.free.length?S.free[S.free.length-1].uci:(S.ply>0?l.moves[S.ply-1][0]:null);
+  const dests=S.sel?legal(pos).filter(m=>sq(m.f)===S.sel):[];
+  const bd=el("board");bd.innerHTML="";
+  const order=[...Array(64).keys()];if(S.flip)order.reverse();
+  for(const i of order){
+    const name=sq(i),dark=((i%8)+Math.floor(i/8))%2===1;
+    const d=document.createElement("div");
+    d.className="sq "+(dark?"d":"l");d.dataset.sq=name;
+    if(last){
+      if(name===last.slice(0,2))d.appendChild(mark("from"));
+      if(name===last.slice(2,4))d.appendChild(mark("to"));
+    }
+    if(S.sel===name)d.appendChild(mark("sel"));
+    if(S.cursor===name)d.classList.add("cursor");
+    if(S.drag&&S.drag.from===name)d.classList.add("lift");
+    if(S.drag&&S.drag.over===name&&S.drag.over!==S.drag.from)d.appendChild(mark("over"));
+    const dm=dests.find(m=>sq(m.t)===name);
+    if(dm){const dt=document.createElement("span");
+      dt.className="dot"+(b[ix(name)]||dm.ep?" cap":"");d.appendChild(dt);}
+    const p=b[i];
+    if(p){
+      const s=pieceEl2(p,"pc "+(p===p.toUpperCase()?"w":"b"));
+      if(anim&&last&&name===last.slice(2,4))s.dataset.anim=last;
+      d.appendChild(s);
+    }else if(S.ghost&&l.targets.length&&!S.free.length){
+      const t=l.targets.find(x=>x[0]===name);
+      if(t)d.appendChild(pieceEl2(t[1],"ghost "+(t[1]===t[1].toUpperCase()?"wg":"")));
+    }
+    if(S.hint>=2&&yourTurn()&&S.ply<l.moves.length&&name===l.moves[S.ply][0].slice(0,2))
+      d.appendChild(mark("hint"));
+    if(S.flip?i%8===7:i%8===0){const c=document.createElement("span");c.className="coord r";c.textContent=8-Math.floor(i/8);d.appendChild(c);}
+    if(S.flip?Math.floor(i/8)===0:Math.floor(i/8)===7){const c=document.createElement("span");c.className="coord f";c.textContent=F[i%8];d.appendChild(c);}
+    const pc2=b[i];
+    if(pc2&&isW(pc2)===pos.w&&(S.mode==="study"||(yourTurn()&&S.ply<l.moves.length)))d.classList.add("grab");
+    if(!("PointerEvent" in window))d.onclick=()=>tap(name);
+    bd.appendChild(d);
+  }
+  if(anim&&last)slide(last);
+  drawArrow(S.arrow);
+  renderTray(b,l);
+  renderOff();
+  renderCtl();
+  renderNote();
+  renderSheet();
+  renderSess();
+  const bar=el("progBar");
+  if(!S.pending){bar.style.transition="width .25s";bar.style.width=(S.ply/l.moves.length*100)+"%";}
+}
+function renderOff(){
+  const o=el("offbook");
+  if(!S.free.length){o.classList.remove("on");o.innerHTML="";return;}
+  o.classList.add("on");
+  o.innerHTML="<span>Off book: "+S.free.map(x=>x.san).join(" ")+"</span>";
+  const b=document.createElement("button");
+  b.textContent="Take back";
+  b.style.cssText="background:none;border:1px solid rgba(224,161,60,.5);color:var(--amber);padding:4px 9px;font:inherit";
+  b.onclick=()=>{S.free.pop();S.fpos=S.free.length?posFromFree():null;S.sel=null;render(false);};
+  o.appendChild(b);
+}
+function posFromFree(){
+  let p=posAt(L(),S.ply);
+  for(const f of S.free){const m=findMove(p,f.uci);if(!m)break;p=make(p,m);}
+  return p;
+}
+
+/* ---------- keyboard play ---------- */
+function moveCursor(df,dr){
+  const cur=S.cursor||(S.flip?"e7":"e2");
+  let f=F.indexOf(cur[0]),r=parseInt(cur[1],10);
+  f=Math.max(0,Math.min(7,f+(S.flip?-df:df)));
+  r=Math.max(1,Math.min(8,r+(S.flip?-dr:dr)));
+  S.cursor=F[f]+r;render(false);
+  const sqEl=document.querySelector('[data-sq="'+S.cursor+'"]');
+  const pc=nowPos().b[ix(S.cursor)];
+  el("board").setAttribute("aria-label",S.cursor+(pc?", "+(isW(pc)?"white ":"black ")+NAME[pc.toLowerCase()]:", empty"));
+  void sqEl;
+}
+addEventListener("keydown",e=>{
+  if(S.screen!=="board")return;
+  if(document.activeElement!==el("board"))return;
+  const k=e.key;
+  if(k==="ArrowRight"){e.preventDefault();moveCursor(1,0);}
+  else if(k==="ArrowLeft"){e.preventDefault();moveCursor(-1,0);}
+  else if(k==="ArrowUp"){e.preventDefault();moveCursor(0,1);}
+  else if(k==="ArrowDown"){e.preventDefault();moveCursor(0,-1);}
+  else if(k==="Enter"||k===" "){e.preventDefault();if(S.cursor)tap(S.cursor);}
+  else if(k==="h"||k==="H"){e.preventDefault();if(S.mode!=="study")hint();}
+  else if(k==="Escape"){S.sel=null;render(false);}
+});
+function renderSess(){
+  const s=el("sess");
+  if(S.mode==="study"){s.textContent="";return;}
+  const t=totals();
+  s.innerHTML="<span>streak <b>"+S.run+"</b>"+(S.lastMs?" \u00b7 last <b>"+fmtMs(S.lastMs)+"</b>":"")+
+    "</span><span>today <b>"+(stats.today||0)+"</b> \u00b7 solid <b>"+t.solid+"/"+t.all+"</b></span>";
+}
+function sqFromPoint(x,y){
+  const r=el("board").getBoundingClientRect();
+  if(x<r.left||x>r.right||y<r.top||y>r.bottom)return null;
+  let f=Math.floor((x-r.left)/(r.width/8)),k=Math.floor((y-r.top)/(r.height/8));
+  f=Math.max(0,Math.min(7,f));k=Math.max(0,Math.min(7,k));
+  if(S.flip){f=7-f;k=7-k;}
+  return F[f]+(8-k);
+}
+function killGhosts(){document.querySelectorAll(".pc.drag,.drag").forEach(n=>n.remove());}
+function startDrag(e,name,pc){
+  killGhosts();
+  const r=el("board").getBoundingClientRect(),cell=r.width/8;
+  const g=pieceEl2(pc,"pc drag"+(SETS[S.set][3]?" "+(isW(pc)?"w":"b"):""));
+  g.style.width=g.style.height=cell*.86+"px";
+  g.style.left=e.clientX+"px";g.style.top=e.clientY+"px";
+  document.body.appendChild(g);
+  S.drag={from:name,ghost:g,over:name,moved:false,x:e.clientX,y:e.clientY};
+}
+function moveDrag(e){
+  const d=S.drag;if(!d)return;
+  d.ghost.style.left=e.clientX+"px";d.ghost.style.top=e.clientY+"px";
+  if(Math.abs(e.clientX-d.x)+Math.abs(e.clientY-d.y)>6)d.moved=true;
+  const over=sqFromPoint(e.clientX,e.clientY);
+  if(over!==d.over){d.over=over;render(false);}
+}
+function endDrag(){
+  const d=S.drag;
+  killGhosts();
+  S.drag=null;
+  return d||null;
+}
+function bindPointer(){
+  if(!("PointerEvent" in window))return;
+  const bd=el("board");
+  bd.addEventListener("dragstart",e=>e.preventDefault());
+  bd.addEventListener("pointerdown",e=>{
+    if(e.button&&e.button!==0)return;
+    if(skipNext())return;
+    const name=sqFromPoint(e.clientX,e.clientY);
+    if(!name)return;
+    const pos=nowPos(),pc=pos.b[ix(name)];
+    const movable=pc&&isW(pc)===pos.w&&(S.mode==="study"||(yourTurn()&&S.ply<L().moves.length));
+    if(movable){
+      e.preventDefault();
+      try{bd.setPointerCapture(e.pointerId);}catch(err){}
+      S.sel=name;startDrag(e,name,pc);render(false);
+    }else{
+      S.tapDown=name;
+    }
+  });
+  bd.addEventListener("pointermove",e=>{if(S.drag){e.preventDefault();moveDrag(e);}});
+  const finish=e=>{
+    const drop=sqFromPoint(e.clientX,e.clientY),d=endDrag();
+    if(d){
+      render(false);
+      if(drop&&drop!==d.from){S.sel=d.from;tap(drop);}
+      else if(d.moved){S.sel=null;render(false);}
+      return;
+    }
+    if(S.tapDown&&S.tapDown===drop)tap(drop);
+    S.tapDown=null;
+  };
+  bd.addEventListener("pointerup",finish);
+  addEventListener("pointerup",e=>{if(S.drag)finish(e);},true);
+  addEventListener("pointercancel",()=>{if(S.drag){endDrag();S.sel=null;render(false);}});
+  addEventListener("blur",()=>{if(S.drag){endDrag();S.sel=null;render(false);}});
+  bd.addEventListener("pointercancel",()=>{endDrag();S.tapDown=null;render(false);});
+}
+function flash(name,cls){
+  const cell=document.querySelector('[data-sq="'+name+'"]');
+  if(!cell)return;
+  const m=mark(cls);cell.appendChild(m);setTimeout(()=>m.remove(),620);
+}
+function armNext(ms){
+  clearTimeout(S.pending);
+  const bar=el("progBar");
+  bar.style.transition="none";bar.style.width="100%";
+  void bar.offsetWidth;
+  bar.style.transition="width "+ms+"ms linear";bar.style.width="0%";
+  S.pending=setTimeout(()=>{S.pending=0;S.arrow=null;shuffle(false);},ms);
+  // good() calls render(true) BEFORE arming the wait, so renderCtl() built the
+  // Hint/Skip buttons while S.pending was still falsy - refresh them now that it
+  // is set, or they stay live (targeting the opponent's ply) for the whole wait
+  // (finding 6).
+  if(S.mode==="shuffle")renderCtl();
+}
+function skipNext(){
+  if(!S.pending)return false;
+  clearTimeout(S.pending);S.pending=0;S.arrow=null;shuffle(false);return true;
+}
+// No timer here on purpose — armWait just marks S.pending so a tap
+// (via skipNext) advances immediately; the position stays on screen until read.
+function armWait(){
+  clearTimeout(S.pending);
+  // Honest bar: armWait has no countdown, so pinning the bar at 100% (as the
+  // timed armNext does, to show time running out) would read as "complete"
+  // for as long as the user takes to read the note. Show real ply progress
+  // instead, same formula render() uses once S.pending clears.
+  const l=L(),bar=el("progBar");
+  bar.style.transition="width .25s";
+  bar.style.width=(S.ply/l.moves.length*100)+"%";
+  S.pending=1;
+  // Same stale-controls problem as armNext() above: this runs after good()'s
+  // render(true), so the Hint/Skip pair rendered for the ply just answered is
+  // still on screen unless rebuilt here.
+  if(S.mode==="shuffle")renderCtl();
+}
+function mark(c){const m=document.createElement("span");m.className="mk "+c;return m;}
+function slide(u){
+  const cell=el("board").clientWidth/8,p=document.querySelector('[data-anim="'+u+'"]');
+  if(!p)return;
+  let dx=(F.indexOf(u[0])-F.indexOf(u[2]))*cell,dy=((8-+u[1])-(8-+u[3]))*cell;
+  if(S.flip){dx=-dx;dy=-dy;}
+  p.style.transform="translate("+dx+"px,"+dy+"px)";
+  requestAnimationFrame(()=>{p.classList.add("slide");p.style.transform="";});
+}
+function drawArrow(u){
+  const svg=el("arrows");
+  [...svg.querySelectorAll("line")].forEach(n=>n.remove());
+  if(!u)return;
+  const pt=s=>{let f=F.indexOf(s[0]),r=8-parseInt(s[1],10);if(S.flip){f=7-f;r=7-r;}return[f+.5,r+.5];};
+  const a=pt(u.slice(0,2)),c=pt(u.slice(2,4));
+  const ln=document.createElementNS("http://www.w3.org/2000/svg","line");
+  ln.setAttribute("x1",a[0]);ln.setAttribute("y1",a[1]);
+  ln.setAttribute("x2",c[0]);ln.setAttribute("y2",c[1]);
+  ln.setAttribute("stroke","rgba(224,161,60,.8)");ln.setAttribute("stroke-width",".14");
+  ln.setAttribute("marker-end","url(#ah)");
+  svg.appendChild(ln);
+}
+function renderTray(b,l){
+  const st=fenBoard(l.start),cnt={};
+  for(const p of st)if(p)cnt[p]=(cnt[p]||0)+1;
+  for(const p of b)if(p)cnt[p]=(cnt[p]||0)-1;
+  const t=el("tray");t.children[0].innerHTML="";t.children[1].innerHTML="";
+  let dw=0,db=0;
+  for(const p in cnt)for(let i=0;i<cnt[p];i++){
+    const black=p!==p.toUpperCase();
+    t.children[black?0:1].appendChild(pieceEl2(p,black?"b":"w"));
+    if(black)dw+=VAL[p];else db+=VAL[p.toLowerCase()];
+  }
+  const diff=db-dw;
+  if(diff){const tag=document.createElement("span");tag.textContent=" +"+Math.abs(diff);
+    t.children[diff<0?0:1].appendChild(tag);}
+  el("tray").classList.toggle("empty",!dw&&!db);
+}
+function renderCtl(){
+  const c=el("ctl");c.innerHTML="";
+  const add=(label,fn,cls,dis)=>{
+    const b=document.createElement("button");
+    b.innerHTML=label;b.className=cls||"";b.disabled=!!dis;b.onclick=fn;c.appendChild(b);return b;
+  };
+  if(S.mode==="study"){
+    add("&#124;&#9664;",()=>{S.ply=0;clearFree();stop();render(false);},"",S.ply===0);
+    add("&#9664;",()=>{if(S.ply>0)S.ply--;clearFree();stop();render(false);},"",S.ply===0);
+    const pl=add(S.timer?"&#9208;":"&#9654;&#9654;",toggleplay);
+    add("&#9654;",()=>{if(S.ply<L().moves.length)S.ply++;clearFree();render(true);},"",S.ply>=L().moves.length);
+    add("&#9654;&#124;",()=>{S.ply=L().moves.length;clearFree();stop();render(false);},"",S.ply>=L().moves.length);
+    void pl;
+  }else if(S.mode==="line"||S.mode==="puzzle"){
+    const done=S.ply>=L().moves.length;
+    // Back one intentionally does NOT reset S.passKeys: replaying forward from here
+    // through positions already graded this pass must fall back to touch() (finding 12),
+    // not grade again. S.arrow is cleared because the position on screen is changing.
+    add("Back one",()=>{S.ply=Math.max(0,S.ply-2);S.sel=null;S.tries=0;S.hint=0;S.arrow=null;render(false);},"wide",S.ply===0);
+    if(done&&S.mode==="line")add("Next line &#8594;",()=>{S.li=(S.li+1)%LINES.length;startLine();},"wide");
+    else if(!done)add(hintLabel(),hint,"wide",false);
+    add("Restart",()=>{S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);if(!yourTurn())setTimeout(autoReply,250);},"wide");
+    if(done&&S.mode==="puzzle")add("Next puzzle &#8594;",()=>startPuzzle(S.pz+1),"wide");
+  }else if(S.pending){
+    // Waiting for a tap after a correct answer: S.ply already points past your
+    // move, at the opponent's reply, so Hint/Skip must not be live here — Hint
+    // would target and reveal the opponent's move instead of yours (finding 6).
+    add("Continue",()=>{skipNext();},"wide");
+  }else{
+    add(hintLabel(),hint,"wide",false);
+    add("Skip &#8594;",()=>{S.arrow=null;shuffle(false);},"wide");
+  }
+}
+function toggleplay(){
+  if(S.timer){stop();render(false);return;}
+  if(S.ply>=L().moves.length)S.ply=0;
+  S.timer=setInterval(()=>{
+    if(S.ply>=L().moves.length){stop();render(false);return;}
+    S.ply++;render(true);
+  },1150);
+  render(false);
+}
+function stop(){if(S.timer){clearInterval(S.timer);S.timer=null;}}
+function openingName(){
+  const per=typeof NAMES!=="undefined"&&NAMES[L().id];
+  if(!per)return "";
+  let best="";
+  for(const k in per)if(+k<=S.ply)best=per[k];
+  return best;
+}
+function renderNote(){
+  const l=L(),m=l.moves;
+  if(S.mode==="puzzle"){
+    const p=l.pz,done=S.ply>=m.length;
+    el("nSrc").innerHTML='<a href="https://lichess.org/training/'+p.id+
+      '" target="_blank" rel="noopener">lichess puzzle</a><br><span class="kind">rating '+p.r+"</span>";
+    el("nMove").textContent=done?"Solved":((l.you==="w"?"White":"Black")+" to play");
+    el("nText").textContent=done?m.map(x=>x[1]).join(" ")+"  \u00b7  "+p.t
+      :(S.ply===0?m[0][2]:"Keep going.");
+    return;
+  }
+  if(S.mode==="shuffle"){
+    el("nSrc").textContent=l.ch;
+    el("nMove").textContent=(l.you==="w"?"White":"Black")+" to play";
+    const played=S.ply>0?"They just played "+m[S.ply-1][1]+". ":"";
+    el("nText").textContent=played+((S.tries||S.hint)?l.name+" \u00b7 "+l.src:"Find the repertoire move.");
+    return;
+  }
+  el("nSrc").innerHTML=(SRC[l.id]?'<a href="'+SRC[l.id]+'" target="_blank" rel="noopener">'+l.src+"</a>":l.src)+
+    (KIND[l.id]?'<br><span class="kind">'+KIND[l.id]+"</span>":"")+
+    (ecoNow()?'<br><span class="eco">'+ecoNow()+"</span>":"");
+  if(S.ply===0){
+    el("nMove").textContent=S.mode==="line"?"Your move":"Start";
+    el("nText").textContent=S.mode==="line"
+      ?"Play this line from memory as "+(l.you==="w"?"White":"Black")+"."
+      :"Step with the controls, or open Notation below.";
+  }else{
+    const p=m[S.ply-1];
+    el("nMove").textContent=Math.ceil(S.ply/2)+(S.ply%2?". ":"... ")+p[1];
+    el("nText").textContent=p[2]||"";
+  }
+}
+const libCache={};
+let libInFlight=null; // {moves, promise} - dedupes a repeat request for the same position
+function currentMoves(){return L().moves.slice(0,S.ply).map(m=>m[0]).join(",");}
+async function loadLib(){
+  const l=L(),moves=currentMoves();
+  const box=el("lib");
+  if(l.start!==START){box.innerHTML="This position is a diagram, not a game score, so the database cannot look it up.";return;}
+  if(libCache[moves]){paintLib(libCache[moves]);return;}
+  box.innerHTML="Asking the masters database...";
+  // This is the app's only online part, and the only fetch on the page - a step
+  // forward/back while a request is still in flight must not let a slow reply for
+  // the old position paint over the position now on screen (finding 11). Reuse
+  // one in-flight promise per moves-key rather than firing a duplicate request,
+  // and re-check the current position after the await before painting anything.
+  const inflight=(libInFlight&&libInFlight.moves===moves)?libInFlight.promise:null;
+  const p=inflight||fetch("https://explorer.lichess.ovh/masters?moves=5&topGames=0&play="+moves)
+    .then(r=>{if(!r.ok)throw 0;return r.json();});
+  if(!inflight)libInFlight={moves:moves,promise:p};
+  try{
+    const d=await p;
+    libCache[moves]=d;
+    if(currentMoves()===moves&&L().start===START)paintLib(d);
+  }catch(e){
+    if(currentMoves()===moves&&L().start===START)
+      box.innerHTML="Database unreachable. It needs a connection to lichess.org; everything else here works offline.";
+  }finally{
+    if(libInFlight&&libInFlight.moves===moves)libInFlight=null;
+  }
+}
+function paintLib(d){
+  const box=el("lib"),tot=d.white+d.draws+d.black;
+  if(!tot){box.innerHTML="No master games have reached this position. You are already off the map, which is not always bad.";return;}
+  const next=S.ply<L().moves.length?L().moves[S.ply][0]:null;
+  const pc=n=>Math.round(n/tot*100);
+  let h='<div class="hd"><span>'+tot.toLocaleString()+" master games</span><span>"+
+    (d.opening?d.opening.eco+" "+d.opening.name:"")+'</span></div><div class="wdl">'+
+    '<i style="width:'+pc(d.white)+'%;background:#e8e2d2"></i>'+
+    '<i style="width:'+pc(d.draws)+'%;background:#6b7c8c"></i>'+
+    '<i style="width:'+pc(d.black)+'%;background:#1b232d"></i></div>';
+  const max=Math.max(...d.moves.map(m=>m.white+m.draws+m.black),1);
+  for(const m of d.moves){
+    const n=m.white+m.draws+m.black,ours=next&&m.uci===next.slice(0,4);
+    h+='<div class="lrow'+(ours?" ours":"")+'"><b>'+m.san+'</b><span class="bar"><i style="width:'+
+      Math.round(n/max*100)+'%"></i></span><em>'+(n>=1000?Math.round(n/1000)+"k":n)+"</em></div>";
+  }
+  if(next&&!d.moves.some(m=>m.uci===next.slice(0,4)))
+    h+='<div class="lrow ours"><b>'+L().moves[S.ply][1]+"</b><span>rare or unplayed at master level</span></div>";
+  box.innerHTML=h;
+}
+el("libBox").addEventListener("toggle",function(){if(this.open)loadLib();});
+function ecoNow(){
+  const e=(typeof ECO!=="undefined")&&ECO[L().id];
+  if(!e)return "";
+  let cur="";
+  for(const x of e)if(x[0]<=Math.max(S.ply,1)&&x[1])cur=x[1]+" "+x[2];
+  return cur;
+}
+function renderSheet(){
+  const l=L(),m=l.moves;
+  el("sheetBox").style.display=(S.mode==="shuffle"||S.mode==="puzzle")?"none":"";
+  const lb=el("libBox");
+  lb.style.display=S.mode==="study"&&L().start===START?"":"none";
+  if(lb.open&&S.mode==="study")loadLib();
+  if(S.mode==="shuffle"||S.mode==="puzzle")return;
+  const rows=el("rows");rows.innerHTML="";
+  for(let i=0;i<m.length;i+=2){
+    const r=document.createElement("div");r.className="row";
+    const n=document.createElement("span");n.className="num";n.textContent=(i/2+1)+".";r.appendChild(n);
+    for(const k of [i,i+1]){
+      const c=document.createElement("span");
+      if(k<m.length){
+        c.className="ply "+(k+1===S.ply?"cur":(k+1<S.ply?"past":"future"));
+        c.textContent=(S.mode==="line"&&k+1>S.ply)?"\u00b7\u00b7\u00b7":m[k][1];
+        if(S.mode==="study"){c.style.cursor="pointer";c.onclick=()=>{S.ply=k+1;clearFree();stop();render(false);};}
+      }
+      r.appendChild(c);
+    }
+    rows.appendChild(r);
+  }
+}
+
+/* ================= drilling ================= */
+function tap(name){
+  if(skipNext())return;
+  const pos=nowPos(),study=S.mode==="study";
+  if(!study&&(!yourTurn()||S.ply>=L().moves.length))return;
+  const pc=pos.b[ix(name)],mine=pc&&(isW(pc)===pos.w);
+  if(!S.sel){if(mine){S.sel=name;render(false);}return;}
+  if(S.sel===name){S.sel=null;render(false);return;}
+  if(mine){S.sel=name;render(false);return;}
+  const m=legal(pos).find(x=>sq(x.f)===S.sel&&sq(x.t)===name&&(!x.p||x.p==="q"));
+  const wanted=S.ply<L().moves.length?L().moves[S.ply][0].slice(0,4):null;
+  if(!m){
+    S.sel=null;render(false);
+    el("nMsg").innerHTML='<span class="neutral">Not a legal move; nothing counted.</span>';
+    return;
+  }
+  if(study){
+    if(!S.free.length&&wanted===S.sel+name){S.sel=null;S.ply++;render(true);return;}
+    const t=san(pos,m);
+    S.free.push({uci:uciOf(m),san:t});S.fpos=make(pos,m);S.sel=null;render(true);
+    el("nMsg").innerHTML='<span class="neutral">'+t+". Off the line.</span>";
+    return;
+  }
+  if(S.sel+name===wanted){good();return;}
+  if(S.mode==="shuffle"){
+    const alt=altAt(pos,S.sel+name);
+    // bookExcluded mirrors shuffle()'s own candidate filter (app.js, S.bookOnly check):
+    // an alt from a line drill-book-only mode was told to exclude must not be credited,
+    // or S.li ends up pointing at exactly the kind of line the mode hides.
+    if(alt&&!bookExcluded(LINES[alt[0]])){
+      S.li=alt[0];S.ply=alt[1];
+      // The board just answered must not be served straight back: shuffle() only
+      // zeroed S.lastKey's own exact key, but the alt reply is graded under a
+      // different key (same board, different expected move) - update it here too.
+      S.lastKey=key(LINES[alt[0]],alt[1]);
+      good();return;
+    }
+  }
+  offBook(name,san(pos,m));
+}
+function touch(k,ms){
+  if(k.indexOf("pz:")===0)return;
+  const r=stats.pos[k]||{ok:0,no:0,streak:0,last:0,ms:0};
+  if(ms)r.ms=r.ms?Math.round(r.ms*.6+ms*.4):ms;
+  stats.pos[k]=r;save();
+}
+function bumpToday(){
+  const d=new Date().toDateString();
+  if(stats.day!==d){stats.day=d;stats.today=0;}
+  stats.today++;save();renderSess();
+}
+function pzRec(){const p=L().pz;if(!p)return null;stats.pz=stats.pz||{};
+  return stats.pz[p.id]=stats.pz[p.id]||{ok:0,no:0,ms:0};}
+function grade(k,right,ms){
+  if(k.indexOf("pz:")===0)return;
+  const r=stats.pos[k]||{ok:0,no:0,streak:0,last:0,ms:0};
+  if(right){r.ok++;r.streak++;}else{r.no++;r.streak=0;}
+  if(ms)r.ms=r.ms?Math.round(r.ms*.6+ms*.4):ms;
+  r.last=Date.now();stats.pos[k]=r;save();
+}
+// Drill's Back one/Restart replay positions already graded this pass. A second
+// grade() for the same key lets streak/"solid" be farmed and pushes r.last to
+// now, postponing the shared record's next review across every other line that
+// keys onto it. S.passKeys tracks what has already been graded since the line
+// was (re)started; a repeat within the same pass falls back to touch(), which
+// still keeps the timing average honest without moving streak/last.
+function gradeOncePerPass(k,right,ms){
+  if(S.mode==="line"){
+    S.passKeys=S.passKeys||new Set();
+    if(S.passKeys.has(k)){touch(k,ms);return;}
+    S.passKeys.add(k);
+  }
+  grade(k,right,ms);
+}
+function elapsed(){return S.t0?Date.now()-S.t0:0;}
+function armClock(){S.t0=Date.now();}
+function fmtMs(m){return m>=10000?Math.round(m/1000)+"s":(m/1000).toFixed(1)+"s";}
+function good(){
+  const clean=S.hint===0&&S.tries===0,hadMiss=S.tries>0;
+  const ms=elapsed();S.lastMs=ms;
+  S.arrow=null; // the position is being answered now, so any reveal arrow is done
+  if(clean)gradeOncePerPass(key(L(),S.ply),true,ms);
+  else if(S.hint<3)touch(key(L(),S.ply),ms);
+  if(S.mode!=="study"){
+    if(clean){S.run++;if(S.run>(stats.bestRun||0))stats.bestRun=S.run;}else S.run=0;
+    bumpToday();
+  }
+  const san=L().moves[S.ply][1];
+  const to=L().moves[S.ply][0].slice(2,4);
+  S.sel=null;S.ply++;S.tries=0;S.hint=0;
+  render(true);flash(to,"good");
+  el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+san+(clean?"":" (with help)")+(ms?",":".")+"</span>"+
+    (ms?' <span class="neutral">'+fmtMs(ms)+(clean&&ms>SLOW?", slow: it will come back sooner":"")+".</span>":"");
+  if(S.mode==="line"||S.mode==="puzzle"){
+    // stats.best is keyed by l.id; for puzzle mode that id is "pz:<id>", so without
+    // this guard every puzzle solve grows stats.best with puzzle ids nothing reads.
+    if(S.mode==="line"){
+      const b=stats.best[L().id]||0;
+      if(S.ply>b){stats.best[L().id]=S.ply;save();}
+    }
+    if(S.ply>=L().moves.length){
+      if(S.mode==="puzzle"){
+        const r=pzRec();if(r){r.ok++;if(ms)r.ms=ms;save();}
+        armPz(1500);
+        el("nMsg").innerHTML='<span class="ok">Solved'+(clean?", clean":"")+". "+fmtMs(ms)+"</span>";}
+      else el("nMsg").innerHTML='<span class="ok">Line complete.</span>';
+      return;}
+    setTimeout(autoReply,260);
+  }else{
+    const note=L().moves[S.ply-1][2];
+    el("nText").textContent=note||L().name;
+    if(hadMiss||note){
+      // A miss or an annotation is something to read; wait for a
+      // tap instead of racing the auto-advance past it.
+      armWait();
+      el("nMsg").innerHTML+=' <span class="neutral wait">Tap to continue.</span>';
+    }else{
+      armNext(850);
+      el("nMsg").innerHTML+=' <span class="neutral">Tap to continue.</span>';
+    }
+  }
+}
+function offBook(name,t){
+  if(S.tries===0&&S.hint<3)gradeOncePerPass(key(L(),S.ply),false);
+  if(S.mode==="puzzle"&&S.tries===0){const r=pzRec();if(r){r.no++;save();}}
+  if(S.tries===0){S.run=0;bumpToday();}
+  S.tries++;S.sel=null;
+  render(false);flash(name,"bad");
+  el("nMsg").innerHTML='<span class="no">'+t+(S.mode==="puzzle"
+      ?" is legal, but the tactic needs something else.</span>"
+      :" is legal, but it is not the repertoire move.</span>");
+}
+const PLAN={
+ w:{"d4":"Claim the centre. Everything else is built on this advance.",
+    "Nf3":"Cover e5 before doing anything ambitious.",
+    "e3":"Solid, and it buries a bishop. That is the price of the system.",
+    "Bd3":"Point something at h7.",
+    "c3":"Prop up the centre so the pieces are free to leave.",
+    "b3":"The other way to solve the buried bishop.",
+    "Bb2":"Claim the long diagonal towards their king.",
+    "Nbd2":"A third attacker on e4.",
+    "Nc3":"A third attacker on e4.",
+    "Ne5":"The outpost this whole system lives on.",
+    "f4":"Cement the knight and open the rook's road.",
+    "Rf3":"The last piece joins by lifting, not developing.",
+    "Qe2":"Connect the rooks and back the coming break.",
+    "Qf3":"Connect the rooks and look at h3 or g4.",
+    "Re1":"Add a piece to the file the break will open.",
+    "a3":"Take b4 from their knight before it goes there.",
+    "h3":"Ask the bishop a question while you still can.",
+    "Bg2":"Rebuild on the diagonal you just opened.",
+    "e4":"The break the opening exists for.",
+    "e5":"Gain space and evict the piece guarding their king.",
+    "d5":"Close the centre and decide where the game will be played.",
+    "c4":"Take the centre properly; the quiet system has nothing here."},
+ b:{"g6":"The bishops belong on the long diagonals.",
+    "b6":"The bishops belong on the long diagonals.",
+    "Bg7":"Fianchetto, and aim through the centre.",
+    "Bb7":"Fianchetto, and aim through the centre.",
+    "d6":"Third rank, not fourth. Nothing there can be attacked profitably.",
+    "e6":"Third rank, not fourth. Nothing there can be attacked profitably.",
+    "a6":"Take b5 away from their pieces for good.",
+    "h6":"Take g5 away from their pieces for good.",
+    "Nd7":"Stay low, behind the wall.",
+    "Ne7":"Stay low, behind the wall.",
+    "Nf6":"Hit their centre at once instead of crouching.",
+    "f5":"The break: strike where their structure is committed.",
+    "c5":"The break: strike where their structure is committed.",
+    "d5":"Lock the centre their advance just offered you.",
+    "e5":"Lock the centre their advance just offered you.",
+    "h5":"Meet the storm at its base before it lands.",
+    "Kh7":"Step off the file the break is about to open.",
+    "Kh8":"Step off the file the break is about to open.",
+    "Qe8":"Reroute behind the wall before breaking.",
+    "Na6":"Head for c5, where their bishop and pawn both live."}};
+function clueLeaks(text,ctx){
+  // One leak check every candidate clue passes through, whatever source it
+  // came from (note, position fact, plan) — case-insensitive, and castling counts as
+  // naming the move even when the note spells it "castling" instead of "O-O".
+  const low=text.toLowerCase();
+  return low.indexOf(ctx.bare)>=0||low.indexOf(ctx.to)>=0||low.indexOf(ctx.from)>=0||
+    low.indexOf(ctx.pieceName)>=0||(ctx.isCastle&&(low.indexOf("castl")>=0||low.indexOf("o-o")>=0));
+}
+function moveClue(){
+  const l=L(),ply=S.ply;
+  if(ply>=l.moves.length)return null;
+  const u=l.moves[ply][0],sanTxt=l.moves[ply][1];
+  const pos=posAt(l,ply),m=findMove(pos,u);
+  if(!m)return null;
+  const to=sq(m.t),from=sq(m.f),pc=pos.b[m.f],t=pc.toLowerCase();
+  const bare=sanTxt.replace(/[+#!?]/g,"");
+  const ctx={bare:bare.toLowerCase(),to,from,pieceName:NAME[t],isCastle:!!m.c};
+  const safe=txt=>(txt&&!clueLeaks(txt,ctx))?txt:null;
+  const note=l.moves[ply][2]||"";
+  if(note){
+    const first=safe(note.split(". ")[0].replace(/\.$/,""));
+    if(first&&first.length>14)return first+".";
+  }
+  const after=make(pos,m);
+  const check=attacked(after.b,kingIdx(after.b,after.w),!after.w);
+  const cap=!!pos.b[m.t]||m.ep;
+  const prev=ply>0?l.moves[ply-1][0]:null;
+  if(m.c)return safe("Get off the centre file before anything else in the position happens.");
+  if(m.p)return safe("Something reaches the last rank.");
+  if(cap&&prev&&prev.slice(2,4)===to){
+    const c=safe("Recapture at once, before the material is consolidated.");
+    if(c)return c;
+  }
+  if(cap&&check)return safe("There is a capture, and it arrives with check.");
+  if(cap)return safe("Something of theirs can be taken.");
+  if(check)return safe("The move gives check.");
+  const plan=safe(PLAN[l.you]&&PLAN[l.you][bare]);
+  if(plan)return plan;
+  if(t==="p"){
+    const opp=isW(pc)?"p":"P",d=isW(pc)?-8:8;
+    const contested=[m.t+d-1,m.t+d+1,m.t-1,m.t+1].some(j=>j>=0&&j<64&&
+      Math.abs((j%8)-(m.t%8))===1&&pos.b[j]===opp);
+    if(contested)return safe("A break: the move offers a trade rather than a quiet gain.");
+  }
+  return null;
+}
+function hintLabel(){
+  if(S.hint===0)return moveClue()?"Hint":"Which piece";
+  return ["Hint","Which piece","Show me"][Math.min(S.hint,2)];
+}
+function hint(){
+  // Guards the "h" keyboard shortcut the same way renderCtl guards the button:
+  // while S.pending is set (armWait/armNext), S.ply already points at the
+  // opponent's reply, so a hint here would leak or grade the wrong ply (finding 6).
+  if(S.pending)return;
+  if(S.ply>=L().moves.length)return;
+  const u=L().moves[S.ply][0],from=u.slice(0,2);
+  const piece=posAt(L(),S.ply).b[ix(from)].toLowerCase();
+  if(S.hint===0){
+    const clue=moveClue();
+    S.hint=1;
+    if(clue){render(false);el("nMsg").innerHTML='<span class="neutral">'+clue+"</span>";return;}
+  }
+  S.hint++;
+  if(S.hint===2){
+    render(false);
+    el("nMsg").innerHTML='<span class="neutral">Move the '+NAME[piece]+" on "+from+".</span>";
+  }else{
+    gradeOncePerPass(key(L(),S.ply),false);
+    // Same persistent-arrow fix as offBook() (finding 7): set S.arrow before
+    // render() so it survives the tap that selects the named piece, instead of
+    // render()'s old unconditional drawArrow(null) wiping it immediately.
+    S.arrow=u;render(false);
+    el("nMsg").innerHTML='<span class="neutral">'+L().moves[S.ply][1]+". Play it to continue.</span>";
+  }
+}
+function autoReply(){
+  if(S.mode!=="line"&&S.mode!=="puzzle")return;
+  while(S.ply<L().moves.length&&!yourTurn())S.ply++;
+  render(true);armClock();
+  el("nMsg").innerHTML=S.ply>=L().moves.length
+    ?'<span class="ok">Line complete.</span>':'<span class="neutral">Your move.</span>';
+}
+// Structural-rule plies, derived from the line data rather than a hardcoded ply list:
+// White e5 -> Black answers ...d5, break ...c5; White d5 -> Black answers ...e5, break
+// ...f5 (README: "the two structural rules worth more than the move lists"). Only
+// Black's own lines carry the reply half of either rule.
+function isRulePly(l,p){
+  if(l.you!=="b"||p===0)return false;
+  const san=s=>s.replace(/[+#!?]/g,""),cur=san(l.moves[p][1]),prev=san(l.moves[p-1][1]);
+  if((cur==="d5"&&prev==="e5")||(cur==="e5"&&prev==="d5"))return true;
+  const need=cur==="c5"?["e5","d5"]:cur==="f5"?["d5","e5"]:null;
+  if(!need)return false;
+  for(let i=1;i<p;i++)if(san(l.moves[i][1])===need[1]&&san(l.moves[i-1][1])===need[0])return true;
+  return false;
+}
+function shuffle(first){
+  clearTimeout(S.pending);S.pending=0;
+  // Deliberately-losing lines: fine in Study/Drill where the framing is visible, but
+  const cand=[];
+  for(let i=0;i<LINES.length;i++){
+    const l=LINES[i];
+    if(l.id==="pz"||NO_SHUFFLE.has(l.id))continue;
+    if(bookExcluded(l))continue;
+    let seenNew=false;
+    for(const p of drillPlies(l)){
+      const k=key(l,p),st=state(k),frontier=st==="new"&&!seenNew;
+      if(st==="new")seenNew=true;
+      cand.push({i:i,p:p,k:k,st:st,frontier:frontier,rule:isRulePly(l,p)});
+    }
+  }
+  // Keys are shared across lines, so the same board must be one weighted draw, not
+  // one per line that transposes into it - otherwise a board reached by twenty lines
+  // outweighs a board reached by one, independent of how due or how new it is. Group
+  // by key; the first line/ply met (LINES order) is the representative, and a key
+  // counts as frontier/rule if any of its views does - both are properties of "is
+  // this worth introducing/boosting now", true if true anywhere it is asked.
+  const byKey=new Map();
+  for(const x of cand){
+    const g=byKey.get(x.k);
+    if(!g)byKey.set(x.k,{i:x.i,p:x.p,k:x.k,st:x.st,frontier:x.frontier,rule:x.rule});
+    else{if(x.frontier)g.frontier=true;if(x.rule)g.rule=true;}
+  }
+  const uniq=[...byKey.values()];
+  const anyDue=uniq.some(x=>x.st==="due");
+  const pool=[];
+  for(const x of uniq){
+    const r=rec(x.k);
+    let wt={new:2.2,due:3,learning:1.6,solid:.2}[x.st];
+    if(x.st==="new"){
+      if(anyDue)wt*=.25;
+      // Flat fraction for non-frontier new plies, not a depth-decayed curve
+      if(!x.frontier)wt*=.15;
+      // Floor: due(3) > learning(1.6) > new-frontier(0.55 when anyDue, else 2.2) >
+      // new-non-frontier(>=0.3) > solid(0.2). Without the floor, anyDue's 0.25 and
+      // the 0.15 non-frontier fraction compound to 0.0825 - below solid's 0.2, so a
+      // never-seen position would be served less than one already mastered whenever
+      // anything was due (the common case). The floor keeps new material always
+      // ranked above solid material while leaving the due-first, frontier-first,
+      // rule-boosted ordering the rest of this function was written for.
+      wt=Math.max(wt,.3);
+    }
+    if(r&&r.ms>SLOW)wt+=.8;
+    if(r)wt+=Math.min(r.no,4)*.7;
+    if(x.rule)wt+=.8;
+    if(x.k===S.lastKey)wt=0;
+    pool.push([x.i,x.p,x.k,wt]);
+  }
+  const sum=pool.reduce((a,x)=>a+x[3],0);
+  let t=Math.random()*sum,pick=pool[0];
+  for(const x of pool){t-=x[3];if(t<=0){pick=x;break;}}
+  S.li=pick[0];S.ply=pick[1];S.lastKey=pick[2];clearFree();
+  S.sel=null;S.tries=0;S.hint=0;S.flip=LINES[pick[0]].you==="b";
+  syncOpts();
+  if(!first)render(false);
+  armClock();
+  const t2=totals();
+  el("nMsg").innerHTML='<span class="neutral">'+t2.solid+" of "+t2.all+" positions solid.</span>";
+}
+
+/* ================= options sheet ================= */
+function applyTheme(){
+  const t=THEMES[S.theme],r=document.documentElement.style;
+  r.setProperty("--sqL",t[1]);r.setProperty("--sqD",t[2]);
+  r.setProperty("--pcW",t[3]);r.setProperty("--pcB",t[4]);
+  r.setProperty("--edgeW",t[5]);r.setProperty("--edgeB",t[6]);
+}
+function openOpts(o){el("opts").classList.toggle("on",o);el("scrim").classList.toggle("on",o);}
+el("navMore").onclick=()=>openOpts(true);
+el("scrim").onclick=()=>openOpts(false);
+function syncOpts(){
+  el("oFlip").setAttribute("aria-pressed",S.flip);el("oFlipS").textContent=S.flip?"on":"off";
+  el("oGhost").setAttribute("aria-pressed",S.ghost);el("oGhostS").textContent=S.ghost?"on":"off";
+  el("oThemeS").textContent=THEMES[S.theme][0];
+  el("oSetS").textContent=SETS[S.set][0];
+  el("oBookS").textContent=S.bookOnly?"on":"off";
+  el("oBook").setAttribute("aria-pressed",S.bookOnly);
+  el("oRestart").style.display=S.mode==="shuffle"?"none":"";
+}
+el("oFlip").onclick=()=>{S.flip=!S.flip;syncOpts();render(false);};
+el("oGhost").onclick=()=>{S.ghost=!S.ghost;syncOpts();render(false);};
+el("oTheme").onclick=()=>{S.theme=(S.theme+1)%THEMES.length;stats.theme=S.theme;save();applyTheme();syncOpts();};
+el("oSet").onclick=()=>{S.set=(S.set+1)%SETS.length;stats.set=S.set;save();syncOpts();
+  document.querySelectorAll(".ico[data-pc]").forEach(n=>{n.innerHTML="";n.appendChild(pieceEl2(n.dataset.pc,""));});
+  if(S.screen==="board")render(false);};
+el("oBook").onclick=()=>{S.bookOnly=!S.bookOnly;stats.bookOnly=S.bookOnly;save();syncOpts();};
+el("oRestart").onclick=()=>{openOpts(false);S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);
+  if(S.mode==="line"&&!yourTurn())setTimeout(autoReply,250);};
+el("oMenu").onclick=()=>{openOpts(false);go("menu");};
+addEventListener("visibilitychange",()=>{if(!document.hidden&&S.screen==="board"&&S.mode!=="study")armClock();});
+addEventListener("keydown",e=>{
+  if(S.screen!=="board"||S.mode!=="study")return;
+  // Mutually exclusive with the cursor-play handler above: that one only acts when
+  // the board itself has focus, so this one must stand down exactly then. Without
+  // this guard a focused board turned one ArrowRight into two conflicting actions
+  // at once - move the accessible-play cursor a square, and step the line a ply
+  // (finding 13, "double-fire").
+  if(document.activeElement===el("board"))return;
+  // clearFree() matches what the equivalent prev/next buttons in renderCtl() do:
+  // without it, stepping S.ply while off-book moves were on the board (S.free
+  // non-empty) left nowPos() still returning the stale free-play position, so the
+  // board showed a diagram belonging to neither the line nor the free branch.
+  if(e.key==="ArrowRight"){if(S.ply<L().moves.length){S.ply++;clearFree();render(true);}}
+  if(e.key==="ArrowLeft"){if(S.ply>0){S.ply--;clearFree();stop();render(false);}}
+});
+
+/* ================= storage ================= */
+/* Three tiers, tried in order: window.storage is the artifact host's async API,
+   localStorage is the hosted-page case, memory is the last resort when both are
+   absent or blocked. All three answer the same {value} shape, so nothing below
+   needs to know which one it got. Memory-only means progress dies with the tab. */
+const MEM={};
+const STORE=(()=>{
+  if(typeof window!=="undefined"&&window.storage)return window.storage;
+  try{
+    const probe="colle-hippo:probe";
+    localStorage.setItem(probe,"1");localStorage.removeItem(probe);
+    return {set:(k,v)=>Promise.resolve(localStorage.setItem(k,v)),
+            get:k=>Promise.resolve({value:localStorage.getItem(k)})};
+  }catch(e){
+    // A plain object, wiped on reload. Nothing better is available if the
+    // page is denied both APIs; the Progress screen's export is the escape hatch.
+    return {set:(k,v)=>Promise.resolve(MEM[k]=v),
+            get:k=>Promise.resolve({value:MEM[k]||null})};
+  }
+})();
+async function save(){try{await STORE.set("colle-hippo:v4",JSON.stringify(stats));}catch(e){}}
+async function load(){
+  try{
+    const r=await STORE.get("colle-hippo:v4");
+    if(r&&r.value){const d=JSON.parse(r.value);
+      stats={pos:d.pos||{},best:d.best||{},pz:d.pz||{},day:d.day||"",today:d.today||0,bestRun:d.bestRun||0,
+        theme:d.theme||0,set:d.set||0,bookOnly:!!d.bookOnly};
+      S.theme=stats.theme||0;S.set=stats.set||0;S.bookOnly=!!stats.bookOnly;
+      if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
+    }
+  }catch(e){stats={pos:{},best:{},pz:{},day:"",today:0,bestRun:0,theme:0};}
+  applyTheme();syncOpts();
+  document.querySelectorAll(".ico[data-pc]").forEach(n=>n.appendChild(pieceEl2(n.dataset.pc,"")));
+  bindPointer();
+  go("menu");
+}
+
+load();
+
+</script>
+</body>
+</html>

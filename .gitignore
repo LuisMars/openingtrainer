@@ -1,0 +1,6 @@
+node_modules/
+data-src/
+*.zst
+*.csv
+*.md
+!README.md

@@ -1,0 +1,16 @@
+{
+  "name": "colle-hippo-trainer",
+  "version": "1.0.0",
+  "description": "Offline single-file opening trainer: the Colle System as White, the Hippopotamus Defence as Black.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "verify": "node build.mjs && node test/verify.mjs",
+    "test": "node build.mjs && node test/verify.mjs && node test/ui.mjs",
+    "serve": "python3 -m http.server 8080 --directory docs"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  },
+  "license": "MIT"
+}

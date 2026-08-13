@@ -1,0 +1,17 @@
+#!/bin/sh
+# The gate. Runs the full suite, then refuses the commit if the built file that
+# GitHub Pages serves is not what src/ currently produces.
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+set -e
+
+npm test
+
+# npm test rebuilds docs/index.html. If that leaves a diff, the staged build is
+# stale and Pages would publish something src/ no longer produces.
+if ! git diff --quiet docs/; then
+  echo "" >&2
+  echo "docs/ is stale: the committed build does not match src/." >&2
+  echo "Stage the rebuilt file and commit again:  git add docs/" >&2
+  exit 1
+fi

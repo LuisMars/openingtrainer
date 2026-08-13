@@ -1,0 +1,60 @@
+<section class="screen on wrap" id="scMenu">
+  <div class="hero">
+    <p class="eyebrow">Repertoire trainer</p>
+    <h1>The Triangle<br>&amp; the Swamp</h1>
+    <p class="lede">Forty-seven lines, from game scores, book recommendations and the opening database. The Colle as White, the Hippopotamus as Black. Learn them, then let the trainer decide which position you have earned the right to forget.</p>
+  </div>
+  <div class="strip">
+    <div><b id="kDue">0</b><small>Untouched</small></div>
+    <div><b id="kSolid">0</b><small>Solid</small></div>
+    <div><b id="kAcc">0</b><small>Due now</small></div>
+    <div><b id="kToday">0</b><small>Today</small></div>
+  </div>
+  <button class="card key" id="cShuffle">
+    <span class="ico" data-pc="n"></span>
+    <span><h3>Shuffle drill</h3><p>A random position from any line. Speed counts: slow answers come back sooner.</p></span>
+    <span class="badge" id="bDue"></span>
+  </button>
+  <button class="card" id="cStudy">
+    <span class="ico" data-pc="b"></span>
+    <span><h3>Study a line</h3><p>Notes on every move, plus what the masters played.</p></span>
+  </button>
+  <button class="card" id="cDrill">
+    <span class="ico" data-pc="r"></span>
+    <span><h3>Drill a line</h3><p>Play one line from move one, from memory.</p></span>
+  </button>
+  <button class="card" id="cPuzzle">
+    <span class="ico" data-pc="k"></span>
+    <span><h3>Tactics from your openings</h3><p>Real puzzles from games in these structures.</p></span>
+    <span class="badge" id="bPz"></span>
+  </button>
+  <button class="card" id="cProgress">
+    <span class="ico" data-pc="q"></span>
+    <span><h3>Progress</h3><p>Solid, slipping, untouched, and your weak spots.</p></span>
+  </button>
+  <footer>
+    <b>Where each line comes from.</b> Every line carries a tag, and the tag is the claim.
+    <dl class="prov">
+      <dt><span class="kind">game</span></dt>
+      <dd>A real game score, checked move for move against its sources.</dd>
+      <dt><span class="kind">book</span></dt>
+      <dd>A published recommendation, cited in the note.</dd>
+      <dt><span class="kind">eco</span></dt>
+      <dd>A named variation, taken verbatim from
+        <a href="https://github.com/lichess-org/chess-openings">lichess-org/chess-openings</a> (CC0).</dd>
+      <dt><span class="kind">theory</span></dt>
+      <dd>Documented theory, assembled here.</dd>
+      <dt><span class="kind">model</span> <span class="kind">synthetic</span></dt>
+      <dd>Written for this trainer: legal and thematic, but nobody played them and no book prints them.</dd>
+    </dl>
+    Tactics are real positions from real games, filtered out of the
+    <a href="https://database.lichess.org/">lichess puzzle database</a> (CC0) and each linked back to its puzzle page.
+    Opening names come from the same CC0 data set. Piece graphics are Colin M. L. Burnett's standard set,
+    <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via the
+    <a href="https://github.com/lichess-org/lila/tree/master/public/piece/cburnett">lichess repository</a>;
+    board colours are the lichess and chess.com defaults. Legality comes from a move generator written for this app
+    and checked against the standard perft positions, and every move of every line and puzzle here was replayed
+    through it. It is not an engine: it knows what is legal, never what is good.
+  </footer>
+</section>
+
