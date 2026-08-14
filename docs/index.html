@@ -879,9 +879,9 @@ const PZ=[{"id":"7jxna","f":"r1b3k1/pp2rppp/1q3n2/3p4/3N4/PP1B3P/2P2PP1/R2Q1RK1 
 /* ================= state ================= */
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
-  run:0,bestRun:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
+  run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
   arrow:null,passKeys:null};
-let stats={pos:{},best:{},pz:{},day:"",today:0,bestRun:0,theme:0};
+let stats={pos:{},pz:{},day:"",today:0,theme:0};
 const THEMES=[
   ["Brown","#f0d9b5","#b58863","#f6f1e6","#12161b","#12161b","#ded5bd"],
   ["Blue","#dee3e6","#8ca2ad","#f8f6f0","#14181d","#14181d","#dfe4e8"],
@@ -923,7 +923,12 @@ function armPz(ms){
 }
 const L=()=>(S.mode==="puzzle"&&PZLINE)?PZLINE:LINES[S.li];
 const yourTurn=()=>(nowPos().w?"w":"b")===L().you;
-const HOUR=36e5, LADDER=[0,4,24,72,168,336];
+// Review intervals in hours, indexed by streak (state() clamps the index to the last
+// entry, so a longer streak just sits on the ceiling). The old ceiling was 336h (14d):
+// with 442 positions that is a permanent floor of ~30 reviews a day once everything is
+// learned, so the ladder runs on to 30d and 60d. "Solid" is decided by streak, not by
+// ladder position, so this does not change what counts as mastered.
+const HOUR=36e5, LADDER=[0,4,24,72,168,336,720,1440];
 const CHAPTERS=["Colle as White","Hippopotamus as Black"];
 LINES.sort((a,b)=>CHAPTERS.indexOf(a.ch)-CHAPTERS.indexOf(b.ch));
 
@@ -968,7 +973,6 @@ function bookExcluded(l){return S.bookOnly&&(KIND[l.id]==="game"||KIND[l.id]==="
 const KEYCACHE={},ALT={};
 (function(){
   LINES.forEach((l,li)=>{
-    if(l.id==="pz")return;
     for(const p of drillPlies(l)){
       const f=keyFen(posAt(l,p));
       KEYCACHE[l.id+":"+p]=f+":"+l.moves[p][0];
@@ -1002,7 +1006,7 @@ function totals(){
   // met (LINES order), same rule weakest() and shuffle() use.
   let fresh=0,due=0,learn=0,solid=0,seen=0,ok=0,tot=0,all=0;
   const done=new Set();
-  for(const l of LINES){if(l.id==="pz")continue;for(const p of drillPlies(l)){
+  for(const l of LINES){for(const p of drillPlies(l)){
     const k=key(l,p);
     if(done.has(k))continue;
     done.add(k);
@@ -1061,7 +1065,6 @@ function renderMenu(){
 function renderLines(){
   const c=el("lineList");c.innerHTML="";let ch=null;
   LINES.forEach((l,i)=>{
-    if(l.id==="pz")return;
     if(l.ch!==ch){ch=l.ch;const h=document.createElement("div");h.className="chapter";h.textContent=ch;c.appendChild(h);}
     const s=lineScore(l),pct=s.n?s.solid/s.n*100:0;
     const b=document.createElement("button");
@@ -1140,7 +1143,6 @@ function renderProgress(){
   renderWeak();
   const c=el("pRows");c.innerHTML="";let ch=null;
   for(const l of LINES){
-    if(l.id==="pz")continue;
     if(l.ch!==ch){ch=l.ch;const h=document.createElement("div");h.className="chapter";h.textContent=ch;c.appendChild(h);}
     const s=lineScore(l),pct=s.n?s.solid/s.n*100:0;
     const r=document.createElement("div");r.className="prow";
@@ -1154,7 +1156,6 @@ function weakest(n){
   const out=[],seen=new Set();
   for(let i=0;i<LINES.length;i++){
     const l=LINES[i];
-    if(l.id==="pz")continue;
     for(const p of drillPlies(l)){
       const k=key(l,p);
       if(seen.has(k))continue;
@@ -1226,11 +1227,9 @@ el("pImport").onclick=()=>{
     return;
   }
   stats={pos:d.pos,
-    best:(d.best&&typeof d.best==="object")?d.best:{},
     pz:(d.pz&&typeof d.pz==="object")?d.pz:{},
     day:typeof d.day==="string"?d.day:"",
     today:typeof d.today==="number"?d.today:0,
-    bestRun:typeof d.bestRun==="number"?d.bestRun:0,
     theme:typeof d.theme==="number"?d.theme:0,
     set:typeof d.set==="number"?d.set:0,
     bookOnly:!!d.bookOnly};
@@ -1241,7 +1240,7 @@ el("pImport").onclick=()=>{
 let resetArmed=false;
 el("pReset").onclick=function(){
   if(!resetArmed){resetArmed=true;this.textContent="Tap again to erase everything";return;}
-  stats={pos:{},best:{},pz:{},day:"",today:0,bestRun:0,theme:S.theme,set:S.set};S.run=0;save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
+  stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set};S.run=0;save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
 };
 
 /* ================= board rendering ================= */
@@ -1429,9 +1428,16 @@ function armNext(ms){
   // (finding 6).
   if(S.mode==="shuffle")renderCtl();
 }
+// shuffle(false) is the Shuffle-mode advance and picks a fresh line/ply out of LINES.
+// In puzzle mode S.pending is armed by armPz() and L() still returns PZLINE, so doing
+// that here left S.ply indexing another line's ply into the puzzle's move list. Advance
+// the way armPz's own timeout and the "Next puzzle" button do instead; startPuzzle wraps
+// past the last puzzle, so S.pz+1 is safe at the end of the set.
 function skipNext(){
   if(!S.pending)return false;
-  clearTimeout(S.pending);S.pending=0;S.arrow=null;shuffle(false);return true;
+  clearTimeout(S.pending);S.pending=0;S.arrow=null;
+  if(S.mode==="puzzle")startPuzzle(S.pz+1);else shuffle(false);
+  return true;
 }
 // No timer here on purpose — armWait just marks S.pending so a tap
 // (via skipNext) advances immediately; the position stays on screen until read.
@@ -1531,13 +1537,6 @@ function toggleplay(){
   render(false);
 }
 function stop(){if(S.timer){clearInterval(S.timer);S.timer=null;}}
-function openingName(){
-  const per=typeof NAMES!=="undefined"&&NAMES[L().id];
-  if(!per)return "";
-  let best="";
-  for(const k in per)if(+k<=S.ply)best=per[k];
-  return best;
-}
 function renderNote(){
   const l=L(),m=l.moves;
   if(S.mode==="puzzle"){
@@ -1675,12 +1674,16 @@ function tap(name){
     return;
   }
   if(S.sel+name===wanted){good();return;}
-  if(S.mode==="shuffle"){
-    const alt=altAt(pos,S.sel+name);
-    // bookExcluded mirrors shuffle()'s own candidate filter (app.js, S.bookOnly check):
-    // an alt from a line drill-book-only mode was told to exclude must not be credited,
-    // or S.li ends up pointing at exactly the kind of line the mode hides.
-    if(alt&&!bookExcluded(LINES[alt[0]])){
+  // A move some other line trains from this very board is book, not a mistake. Shuffle
+  // switches to that line and credits it; drill stays on this line and says so without
+  // grading, so the user retries instead of being told a repertoire move was wrong.
+  // ALT excludes NO_SHUFFLE ids, so the deliberate-mistake lines never count as book.
+  const alt=S.mode==="puzzle"?null:altAt(pos,S.sel+name);
+  // bookExcluded mirrors shuffle()'s own candidate filter (app.js, S.bookOnly check):
+  // an alt from a line drill-book-only mode was told to exclude must not be credited,
+  // or S.li ends up pointing at exactly the kind of line the mode hides.
+  if(alt&&!bookExcluded(LINES[alt[0]])){
+    if(S.mode==="shuffle"){
       S.li=alt[0];S.ply=alt[1];
       // The board just answered must not be served straight back: shuffle() only
       // zeroed S.lastKey's own exact key, but the alt reply is graded under a
@@ -1688,6 +1691,11 @@ function tap(name){
       S.lastKey=key(LINES[alt[0]],alt[1]);
       good();return;
     }
+    const t=san(pos,m);
+    S.sel=null;render(false);
+    el("nMsg").innerHTML='<span class="neutral">'+t+" is book too — "+LINES[alt[0]].name+
+      " plays it here. This line wants "+L().moves[S.ply][1]+".</span>";
+    return;
   }
   offBook(name,san(pos,m));
 }
@@ -1735,7 +1743,7 @@ function good(){
   if(clean)gradeOncePerPass(key(L(),S.ply),true,ms);
   else if(S.hint<3)touch(key(L(),S.ply),ms);
   if(S.mode!=="study"){
-    if(clean){S.run++;if(S.run>(stats.bestRun||0))stats.bestRun=S.run;}else S.run=0;
+    if(clean)S.run++;else S.run=0;
     bumpToday();
   }
   const san=L().moves[S.ply][1];
@@ -1745,12 +1753,6 @@ function good(){
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+san+(clean?"":" (with help)")+(ms?",":".")+"</span>"+
     (ms?' <span class="neutral">'+fmtMs(ms)+(clean&&ms>SLOW?", slow: it will come back sooner":"")+".</span>":"");
   if(S.mode==="line"||S.mode==="puzzle"){
-    // stats.best is keyed by l.id; for puzzle mode that id is "pz:<id>", so without
-    // this guard every puzzle solve grows stats.best with puzzle ids nothing reads.
-    if(S.mode==="line"){
-      const b=stats.best[L().id]||0;
-      if(S.ply>b){stats.best[L().id]=S.ply;save();}
-    }
     if(S.ply>=L().moves.length){
       if(S.mode==="puzzle"){
         const r=pzRec();if(r){r.ok++;if(ms)r.ms=ms;save();}
@@ -1778,10 +1780,20 @@ function offBook(name,t){
   if(S.mode==="puzzle"&&S.tries===0){const r=pzRec();if(r){r.no++;save();}}
   if(S.tries===0){S.run=0;bumpToday();}
   S.tries++;S.sel=null;
+  // Say something about the move that is wanted instead of repeating the same
+  // refusal on every retry - the same leak-filtered clue Hint tier 1 would give,
+  // and never the move itself, because the position stays live for another try.
+  // Taking it spends hint tier 1 so the next Hint tap moves on to "which piece"
+  // rather than repeating what is already on screen. That costs nothing at
+  // grading: the miss was graded above while S.hint was still 0, and good()'s
+  // "clean" test is already false here because S.tries is non-zero.
+  const why=S.hint===0?moveClue():null;
+  if(why)S.hint=1;
   render(false);flash(name,"bad");
   el("nMsg").innerHTML='<span class="no">'+t+(S.mode==="puzzle"
       ?" is legal, but the tactic needs something else.</span>"
-      :" is legal, but it is not the repertoire move.</span>");
+      :" is legal, but it is not the repertoire move.</span>")+
+    (why?' <span class="neutral">'+why+"</span>":"");
 }
 const PLAN={
  w:{"d4":"Claim the centre. Everything else is built on this advance.",
@@ -1904,8 +1916,15 @@ function hint(){
 }
 function autoReply(){
   if(S.mode!=="line"&&S.mode!=="puzzle")return;
+  // The note on the move just played is on screen for the 260ms before the reply
+  // lands, which is not long enough to read it. Carry it across, labelled with its
+  // own move so it is not read as a comment on the reply, and keep the reply's note
+  // after it rather than in place of it.
+  const i=S.ply-1,mine=S.mode==="line"&&i>=0&&(i%2===0?"w":"b")===L().you&&L().moves[i][2]
+    ?L().moves[i][1]+": "+L().moves[i][2]:"";
   while(S.ply<L().moves.length&&!yourTurn())S.ply++;
   render(true);armClock();
+  if(mine)el("nText").textContent=(mine+" "+el("nText").textContent).trim();
   el("nMsg").innerHTML=S.ply>=L().moves.length
     ?'<span class="ok">Line complete.</span>':'<span class="neutral">Your move.</span>';
 }
@@ -1928,7 +1947,7 @@ function shuffle(first){
   const cand=[];
   for(let i=0;i<LINES.length;i++){
     const l=LINES[i];
-    if(l.id==="pz"||NO_SHUFFLE.has(l.id))continue;
+    if(NO_SHUFFLE.has(l.id))continue;
     if(bookExcluded(l))continue;
     let seenNew=false;
     for(const p of drillPlies(l)){
@@ -1971,6 +1990,20 @@ function shuffle(first){
     if(r&&r.ms>SLOW)wt+=.8;
     if(r)wt+=Math.min(r.no,4)*.7;
     if(x.rule)wt+=.8;
+    // Until this line a due review only competed with everything else: 3 against a
+    // learning key that has missed and hesitates (1.6+.8+2.8=5.2), multiplied by
+    // however many such keys exist, so "5 due now" on the menu bought roughly one due
+    // prompt in twenty draws and the spacing the ladder computes decayed. Damp the
+    // rest of the pool while anything is due - the same move the new branch above
+    // already makes, extended to the whole pool. A tenth leaves the hottest learning
+    // key worth about a fifth of the plainest due one, so due material leads without
+    // the session becoming a queue: measured, due goes from 5% to 34% of draws with
+    // sixty learning keys, so the rest still take most of them. New keys take this on
+    // top of their own anyDue cut,
+    // which is wanted - new material is the last thing a backlog needs - and the cut is
+    // uniform, so the floor above still ranks new above solid. anyDue is read off the
+    // same list, so at least one undamped candidate always remains.
+    if(anyDue&&x.st!=="due")wt*=.1;
     if(x.k===S.lastKey)wt=0;
     pool.push([x.i,x.p,x.k,wt]);
   }
@@ -2057,12 +2090,14 @@ async function load(){
   try{
     const r=await STORE.get("colle-hippo:v4");
     if(r&&r.value){const d=JSON.parse(r.value);
-      stats={pos:d.pos||{},best:d.best||{},pz:d.pz||{},day:d.day||"",today:d.today||0,bestRun:d.bestRun||0,
+      // Fields are read one by one, so a save written by an older build (which also
+      // carried unread "best" and "bestRun" keys) still loads with no progress lost.
+      stats={pos:d.pos||{},pz:d.pz||{},day:d.day||"",today:d.today||0,
         theme:d.theme||0,set:d.set||0,bookOnly:!!d.bookOnly};
       S.theme=stats.theme||0;S.set=stats.set||0;S.bookOnly=!!stats.bookOnly;
       if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
     }
-  }catch(e){stats={pos:{},best:{},pz:{},day:"",today:0,bestRun:0,theme:0};}
+  }catch(e){stats={pos:{},pz:{},day:"",today:0,theme:0};}
   applyTheme();syncOpts();
   document.querySelectorAll(".ico[data-pc]").forEach(n=>n.appendChild(pieceEl2(n.dataset.pc,"")));
   bindPointer();

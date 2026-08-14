@@ -118,6 +118,51 @@ for (let i = 0; i < n; i++) {
 }
 check("a puzzle can be solved", (await page.innerText("#nMsg")).startsWith("Solved"));
 
+// Solving arms armPz(1500), which sets S.pending. A tap during that window goes through
+// skipNext(); it used to call shuffle(false) unconditionally, which picked a line/ply out
+// of LINES while L() still returned PZLINE — S.ply then indexed another line's ply into
+// the puzzle's move list. A tap here must advance to the next puzzle, nothing else.
+const before = await page.evaluate(() => S.pz);
+const [tx, ty] = await centre("e4");
+await page.mouse.move(tx, ty);
+await page.mouse.down();
+await page.mouse.up();
+await page.waitForTimeout(250);
+const after = await page.evaluate(() => ({ mode: S.mode, id: L().id, ply: S.ply, pz: S.pz, n: PZ.length }));
+check(
+  "tapping after a solve advances to the next puzzle",
+  after.mode === "puzzle" && after.id.startsWith("pz:") && after.ply === 0 && after.pz === (before + 1) % after.n,
+  JSON.stringify(after),
+);
+
+// Shuffle must serve due reviews first, not merely let them compete: with 5 due keys
+// against 60 learning ones carrying the full miss+slow bonus stack, the due five used
+// to take about 5% of draws, so a "5 due now" menu meant ~200 prompts to clear them.
+const dueShare = await page.evaluate(() => {
+  const keys = [], seen = new Set();
+  for (const l of LINES) {
+    if (NO_SHUFFLE.has(l.id)) continue;
+    for (const p of drillPlies(l)) { const k = key(l, p); if (!seen.has(k)) { seen.add(k); keys.push(k); } }
+  }
+  const now = Date.now();
+  stats.pos = {};
+  for (let i = 0; i < 5; i++) stats.pos[keys[i * 7 + 3]] = { ok: 3, no: 0, streak: 3, last: now - 100 * 36e5, ms: 3000 };
+  let c = 0;
+  for (const k of keys) {
+    if (stats.pos[k] || c >= 60) continue;
+    stats.pos[k] = { ok: 1, no: c % 2 ? 0 : 4, streak: 1, last: now, ms: c % 2 ? 3000 : 9000 };
+    c++;
+  }
+  S.mode = "shuffle"; S.lastKey = null;
+  let due = 0;
+  const N = 600;
+  for (let i = 0; i < N; i++) { shuffle(true); if (state(S.lastKey) === "due") due++; }
+  clearTimeout(S.pending); S.pending = 0;
+  stats.pos = {};
+  return due / N;
+});
+check("shuffle serves due reviews ahead of the rest", dueShare > 0.2, dueShare.toFixed(3));
+
 check("no console or page errors", errors.length === 0, errors.join(" | "));
 await browser.close();
 if (fail) { console.error(`\n${fail} failure(s).`); process.exit(1); }

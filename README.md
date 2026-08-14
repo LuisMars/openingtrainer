@@ -13,7 +13,7 @@ one optional online panel works offline.
 | Mode | What happens |
 |---|---|
 | **Study a line** | Step through with a note on every move, the ECO name, an optional masters-database panel, and free play: make any legal move to explore, then take it back |
-| **Drill a line** | Play one line from move one from memory; the opponent answers automatically |
+| **Drill a line** | Play one line from move one from memory; the opponent answers automatically, and the note on the move you just played stays up through their reply instead of flashing away |
 | **Shuffle drill** | A weighted-random position from any line. How fast you answer is recorded and changes when the position comes back |
 | **Tactics** | 80 real positions from real games in these structures, from the lichess puzzle database |
 | **Progress** | Solid / seen / accuracy, per-line bars, your five weakest positions, and JSON export and import |
@@ -116,13 +116,21 @@ of the full data set.
 
 Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
 
-- **Ladder** of review intervals in hours: `0, 4, 24, 72, 168, 336`, indexed by streak.
+- **Ladder** of review intervals in hours: `0, 4, 24, 72, 168, 336, 720, 1440` (out to 30 and 60
+  days), indexed by streak, so material that is genuinely solid stops coming back every fortnight.
 - **Speed counts.** Answer in under 7 seconds and the position banks the full interval and can become
   *solid*. Answer correctly but slowly and the interval shrinks to 40%, and it never counts as solid.
 - **Shuffle weights**: due 3.0, new 2.2, learning 1.6, solid 0.2, plus 0.8 if you have been slow there.
-  The position you just saw is excluded.
+  The position you just saw is excluded. While anything is due, everything that is not due is cut to a
+  tenth, so a backlog is worked off rather than merely competing for draws — it still interleaves.
 - **Hint cost**: the first two tiers are neutral (no streak gain, no accuracy hit); "Show me" counts as a miss.
-- **Illegal moves cost nothing.** A legal but non-repertoire move counts as a miss and is named back to you.
+- **Illegal moves cost nothing.** A legal but non-repertoire move counts as a miss, is named back
+  to you, and comes with the same clue Hint's first tap would give — never the move itself — so a
+  second wrong try is not told exactly what the first one was. Taking it spends that first hint tier.
+- **Book elsewhere is not a miss.** If the move you played is the book move for a different line
+  trained from this exact board, it is not graded wrong: Drill names that line and lets you retry
+  with nothing recorded, Shuffle switches to that line and credits the answer. Puzzles and the
+  deliberate-mistake lines are excluded, so they can never be waved through this way.
 
 ### Hints, in three tiers
 
