@@ -32,6 +32,7 @@ const ORDER = [
   "src/data/pieces-cburnett.js",
   "src/data/eco.js",
   "src/data/puzzles.js",
+  "src/data/evals.js",
   "src/app.js",
 ];
 

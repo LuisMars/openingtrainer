@@ -17,7 +17,7 @@
   </button>
   <button class="card" id="cStudy">
     <span class="ico" data-pc="b"></span>
-    <span><h3>Study a line</h3><p>Notes on every move, plus what the masters played.</p></span>
+    <span><h3>Study a line</h3><p>Notes on every move, and free play to explore.</p></span>
   </button>
   <button class="card" id="cDrill">
     <span class="ico" data-pc="r"></span>
@@ -32,6 +32,20 @@
     <span class="ico" data-pc="q"></span>
     <span><h3>Progress</h3><p>Solid, slipping, untouched, and your weak spots.</p></span>
   </button>
+  <div class="chapter">Masters database</div>
+  <p class="lede">Optional. The trainer works fully offline; a lichess API token adds one thing,
+    master game statistics on the Study screen. The token is stored only in this browser and sent
+    only to lichess. Create one at
+    <a href="https://lichess.org/account/oauth/token/create" target="_blank" rel="noopener">lichess.org/account/oauth/token/create</a>
+    and grant it no scopes at all — an empty token is enough here. Never paste one that carries
+    write permissions.</p>
+  <input class="data" id="tokIn" type="password" autocomplete="off" spellcheck="false" placeholder="lip_..." aria-label="Lichess API token">
+  <div class="ctl" style="margin-top:6px">
+    <button class="wide" id="tokShow">Show</button>
+    <button class="wide" id="tokSave">Save</button>
+    <button class="wide" id="tokClear">Clear</button>
+  </div>
+  <div class="msg" id="tokMsg" role="status" aria-live="polite"></div>
   <footer>
     <b>Where each line comes from.</b> Every line carries a tag, and the tag is the claim.
     <dl class="prov">
@@ -44,7 +58,7 @@
         <a href="https://github.com/lichess-org/chess-openings">lichess-org/chess-openings</a> (CC0).</dd>
       <dt><span class="kind">theory</span></dt>
       <dd>Documented theory, assembled here.</dd>
-      <dt><span class="kind">model</span> <span class="kind">synthetic</span></dt>
+      <dt><span class="kind model">model</span> <span class="kind synthetic">synthetic</span></dt>
       <dd>Written for this trainer: legal and thematic, but nobody played them and no book prints them.</dd>
     </dl>
     Tactics are real positions from real games, filtered out of the

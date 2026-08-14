@@ -186,6 +186,127 @@ function perft(p,d){
   return n;
 }
 
+/* ===== fixed-depth material search =====
+   Exists so the trainer can say something concrete about a wrong move instead of a
+   bare refusal. Alpha-beta on material only (VAL), no positional terms, with a
+   quiescence extension on captures so the search never stops mid-exchange and
+   misreports a recapture as a loss. One hard node budget covers a whole verdict
+   (both searches inside matVerdict); when it runs out the caller gets null, never
+   a half-searched claim - on a slow phone, silence is the honest answer. Mate is
+   folded into the same scale as MATE minus plies from the root, so a nearer mate
+   outranks a farther one and any score beyond MATE-64 can only mean a forced mate
+   inside the search depth - which is the one evaluation claim this search licenses. */
+const MATE=1000,MAT_CAP=60000,MAT_STOP={};
+let matNodes=0;
+function matBal(b){
+  let s=0;
+  for(const pc of b)if(pc)s+=isW(pc)?VAL[pc.toLowerCase()]:-VAL[pc.toLowerCase()];
+  return s;
+}
+// Winning-looking captures first (victim over attacker), quiet moves next, losing-
+// looking captures last. The middle slot matters as much as the first: at a node
+// whose bound is already level material, a QUIET move is what proves the cutoff,
+// and trying QxP-style losing captures ahead of it made half the verdicts blow the
+// node budget in testing - measured, this ordering is what keeps a four-ply search
+// of a full opening position inside it.
+function matOrder(p,ms){
+  const v=m=>{
+    const cap=m.ep?1:(p.b[m.t]?VAL[p.b[m.t].toLowerCase()]:0);
+    return cap?cap*10-VAL[p.b[m.f].toLowerCase()]:5;
+  };
+  return ms.sort((a,b)=>v(b)-v(a));
+}
+/* Quiescence: captures only, so the search never stands on a position where half
+   an exchange is still hanging. Two shaping rules keep it from exploding - both
+   were measured to matter, not guessed. After two quiescence plies only recaptures
+   on the square just captured on are tried: an exchange still runs to the end
+   (that is the whole point of quiescing), but unrelated capture flurries across
+   the board stop multiplying. And a capture that cannot lift the score to alpha
+   even if the victim came free is skipped. Both trim the tree towards "exchanges
+   resolve, nothing else", which is exactly the claim the caller makes with the
+   result. Mate at the horizon: only checked when stand-pat did not already cut,
+   because the check costs a full legal(); a mate missed by an early stand-pat cut
+   can only make the verdict more cautious, never overclaim. */
+function matQuiesce(p,alpha,beta,ply,qd,lastTo){
+  if(++matNodes>MAT_CAP)throw MAT_STOP;
+  const stand=(p.w?1:-1)*matBal(p.b);
+  if(stand>=beta)return stand;
+  const ms=legal(p);
+  if(!ms.length)return inCheck(p)?-(MATE-ply):0;
+  if(stand>alpha)alpha=stand;
+  matOrder(p,ms);
+  for(const m of ms){
+    const v=m.ep?1:(p.b[m.t]?VAL[p.b[m.t].toLowerCase()]:0);
+    if(!v)continue;
+    if(qd>=1&&m.t!==lastTo)continue;
+    if(stand+v<alpha)continue;
+    const s=-matQuiesce(make(p,m),-beta,-alpha,ply+1,qd+1,m.t);
+    if(s>=beta)return s;
+    if(s>alpha)alpha=s;
+  }
+  return alpha;
+}
+function matSearch(p,depth,alpha,beta,ply){
+  if(++matNodes>MAT_CAP)throw MAT_STOP;
+  if(depth===0)return matQuiesce(p,alpha,beta,ply,0,-1);
+  const ms=legal(p);
+  if(!ms.length)return inCheck(p)?-(MATE-ply):0;
+  matOrder(p,ms);
+  for(const m of ms){
+    const s=-matSearch(make(p,m),depth-1,-beta,-alpha,ply+1);
+    if(s>=beta)return s;
+    if(s>alpha)alpha=s;
+  }
+  return alpha;
+}
+/* matVerdict(pos, m): pos is the position m was played FROM. Compares the mover's
+   best searched score before the move against the best they can still get after
+   it, and names the opponent reply that enforces the difference. Returns null when
+   the node budget ran out (no claim can be made), otherwise {swing, san, uci, mate}:
+   swing is pawns of material the move loses against best play (under 1 means the
+   search proved nothing worth saying), mate is 0 or the ply count of a forced mate
+   the opponent has after the move. Both sides are searched to the same four plies,
+   so "does not come back inside four plies" is exactly what a swing proves. */
+function matVerdict(pos,m){
+  matNodes=0;
+  try{
+    const before=matSearch(pos,4,-MATE,MATE,0);
+    const after=make(pos,m);
+    const replies=legal(after);
+    if(!replies.length)return {swing:0,san:"",uci:"",mate:0};
+    // Seed the reply order with a cheap quiescence score of each: the true best
+    // reply almost always surfaces first, so every later one fails low against a
+    // tight window instead of being searched in full. Measured, this and the
+    // ordering rules above are the difference between fitting the node budget on
+    // a full opening position and blowing it on half of them.
+    const seed=replies.map(r=>[-matQuiesce(make(after,r),-MATE,MATE,1,1,r.t),r]);
+    seed.sort((a,b)=>b[0]-a[0]);
+    let best=null,bestS=-MATE-1;
+    for(const [,r] of seed){
+      const s=-matSearch(make(after,r),3,-MATE,-bestS,1);
+      if(s>bestS){bestS=s;best=r;}
+    }
+    // A mover who had a forced mate and let it slip shows up as a huge swing with
+    // no mate for the opponent. That is not a material claim and must not be
+    // phrased as one; report nothing rather than a wrong reason.
+    const swing=before>MATE-64&&bestS<MATE-64?0:before-(-bestS);
+    return {swing:swing,san:san(after,best),uci:uciOf(best),
+      mate:bestS>MATE-64?MATE-bestS:0};
+  }catch(e){
+    if(e===MAT_STOP)return null;
+    throw e;
+  }
+}
+/* The refutation names the opponent's reply while the user's own position is still
+   live for a retry, so it must never smuggle in the move they were supposed to
+   play. Same idea as clueLeaks in app.js, narrowed to what a refutation string can
+   actually leak: the expected move's SAN, its origin square or its destination. */
+function refuteLeaks(text,uci,sanTxt){
+  const low=text.toLowerCase();
+  return low.indexOf(sanTxt.replace(/[+#!?]/g,"").toLowerCase())>=0||
+    low.indexOf(uci.slice(0,2))>=0||low.indexOf(uci.slice(2,4))>=0;
+}
+
 function fenOf(p){
   let rows=[];
   for(let r=0;r<8;r++){

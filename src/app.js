@@ -2,7 +2,7 @@
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
   run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
-  arrow:null,passKeys:null};
+  arrow:null,passKeys:null,evNote:null};
 let stats={pos:{},pz:{},day:"",today:0,theme:0};
 const THEMES=[
   ["Brown","#f0d9b5","#b58863","#f6f1e6","#12161b","#12161b","#ded5bd"],
@@ -193,13 +193,13 @@ function renderLines(){
     b.className="lbtn"+(pct===100?" done":"");
     b.innerHTML='<span class="nm">'+l.name+'</span><span class="meta">'+
       '<span class="pbar"><i style="width:'+pct+'%"></i></span>'+
-      "<span>"+s.solid+"/"+s.n+" solid</span><span class='kind' style='margin-left:auto'>"+KIND[l.id]+"</span></span>";
+      "<span>"+s.solid+"/"+s.n+" solid</span><span class='kind "+KIND[l.id]+"' style='margin-left:auto'>"+KIND[l.id]+"</span></span>";
     b.onclick=()=>{S.li=i;startLine();};
     c.appendChild(b);
   });
 }
 function startLine(){
-  S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();clearFree();
+  S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();S.evNote=null;clearFree();
   S.flip=L().you==="b";syncOpts();
   el("nMsg").textContent="";go("board");armClock();
   if(S.mode==="line"&&!yourTurn())setTimeout(autoReply,300);
@@ -297,20 +297,29 @@ function renderWeak(){
     c.appendChild(d);return;}
   for(const x of w){
     const b=document.createElement("button");b.className="weak";
+    // The miss log turns a percentage into a habit: name the wrong move the user
+    // keeps reaching for, once it has been played at least twice.
+    let habit="";
+    if(x.r.w){
+      let top=null;
+      for(const s in x.r.w)if(top===null||x.r.w[s]>x.r.w[top])top=s;
+      if(top!==null&&x.r.w[top]>=2)habit=" \u00b7 usually "+top+" ("+x.r.w[top]+"\u00d7)";
+    }
     b.innerHTML="<span>"+x.name+" \u00b7 move "+(Math.floor(x.ply/2)+1)+"</span><em>"+
-      x.r.no+" miss"+(x.r.no>1?"es":"")+(x.r.ms?" \u00b7 "+fmtMs(x.r.ms):"")+"</em>";
+      x.r.no+" miss"+(x.r.no>1?"es":"")+(x.r.ms?" \u00b7 "+fmtMs(x.r.ms):"")+habit+"</em>";
     b.onclick=()=>{S.mode="study";S.li=x.li;S.ply=x.ply;S.sel=null;S.hint=0;
       S.flip=LINES[x.li].you==="b";syncOpts();go("board");};
     c.appendChild(b);
   }
 }
 el("pExport").onclick=()=>{
-  // v:4 stamps the payload with the stats shape it was written in. Storage keys are
-  // versioned so a later format change can be told apart from the current one; backups
-  // made before this stamp existed carry no "v" at all but are still v4-shaped
-  // (fen-keyed) data, so validateImport() below treats those as valid rather than
-  // rejecting every backup a user already has.
-  el("pData").value=JSON.stringify(Object.assign({v:4},stats));
+  // v:5 stamps the payload with the stats shape it was written in. Storage keys are
+  // versioned so a later format change can be told apart from the current one. v5 is
+  // v4 plus an optional per-record "w" miss log; keys kept their fen shape, so
+  // validateImport() below accepts a v4 backup unchanged, and backups made before the
+  // stamp existed carry no "v" at all but are still v4-shaped (fen-keyed) data, so
+  // those import too rather than rejecting every backup a user already has.
+  el("pData").value=JSON.stringify(Object.assign({v:5},stats));
   el("pData").select();
 };
 // A v4 key is either "pz:<id>:<ply>" or a fenOf()-derived string, which always
@@ -326,13 +335,27 @@ function looksV4Key(k){return k.indexOf("pz:")===0||k.indexOf("/")>=0;}
 function validateImport(d){
   if(!d||typeof d!=="object"||!d.pos||typeof d.pos!=="object")return "shape";
   const keys=Object.keys(d.pos);
-  if(d.v!==undefined&&d.v!==4)return "version";
+  if(d.v!==undefined&&d.v!==4&&d.v!==5)return "version";
   if(d.v===undefined&&keys.length&&!keys.every(looksV4Key))return "version";
   for(const k of keys){
     const r=d.pos[k];
     if(!r||typeof r!=="object"||typeof r.ok!=="number"||typeof r.no!=="number")return "shape";
   }
   return null;
+}
+// Sanitise a record's miss log at the import trust boundary: keep only string->
+// positive-number entries, re-bound to the same limits grade() enforces on write
+// (5 distinct SANs, highest counts kept, capped at 99). Returns null when nothing
+// valid remains, in which case the caller drops just this field - a mangled miss
+// log must not cost the user the rest of the backup.
+function sanW(w){
+  if(!w||typeof w!=="object")return null;
+  const pairs=Object.keys(w).filter(s=>typeof w[s]==="number"&&Number.isFinite(w[s])&&w[s]>0);
+  if(!pairs.length)return null;
+  pairs.sort((a,b)=>w[b]-w[a]);
+  const out={};
+  for(const s of pairs.slice(0,5))out[s]=Math.min(99,Math.round(w[s]));
+  return out;
 }
 el("pImport").onclick=()=>{
   let d=null;
@@ -347,6 +370,10 @@ el("pImport").onclick=()=>{
   if(problem){
     el("pData").value="That is not a valid backup. Export from another device and paste the whole line.";
     return;
+  }
+  for(const k of Object.keys(d.pos)){
+    const r=d.pos[k];
+    if(r.w!==undefined){const w=sanW(r.w);if(w)r.w=w;else delete r.w;}
   }
   stats={pos:d.pos,
     pz:(d.pz&&typeof d.pz==="object")?d.pz:{},
@@ -411,6 +438,7 @@ function render(anim){
   renderOff();
   renderCtl();
   renderNote();
+  renderPlan();
   renderSheet();
   renderSess();
   const bar=el("progBar");
@@ -418,7 +446,10 @@ function render(anim){
 }
 function renderOff(){
   const o=el("offbook");
-  if(!S.free.length){o.classList.remove("on");o.innerHTML="";return;}
+  // A free entry marked ok:1 is setupGood()'s credited setup move, shown through
+  // this plumbing only so the board reflects what the user played; it is not off
+  // book and gets no banner or take-back.
+  if(!S.free.length||S.free[0].ok){o.classList.remove("on");o.innerHTML="";return;}
   o.classList.add("on");
   o.innerHTML="<span>Off book: "+S.free.map(x=>x.san).join(" ")+"</span>";
   const b=document.createElement("button");
@@ -547,8 +578,9 @@ function armNext(ms){
   // good() calls render(true) BEFORE arming the wait, so renderCtl() built the
   // Hint/Skip buttons while S.pending was still falsy - refresh them now that it
   // is set, or they stay live (targeting the opponent's ply) for the whole wait
-  // (finding 6).
-  if(S.mode==="shuffle")renderCtl();
+  // (finding 6). renderPlan() has the same dependence on S.pending: the plan
+  // panel only exists in Shuffle's post-answer window, which starts here.
+  if(S.mode==="shuffle"){renderCtl();renderPlan();}
 }
 // shuffle(false) is the Shuffle-mode advance and picks a fresh line/ply out of LINES.
 // In puzzle mode S.pending is armed by armPz() and L() still returns PZLINE, so doing
@@ -575,8 +607,9 @@ function armWait(){
   S.pending=1;
   // Same stale-controls problem as armNext() above: this runs after good()'s
   // render(true), so the Hint/Skip pair rendered for the ply just answered is
-  // still on screen unless rebuilt here.
-  if(S.mode==="shuffle")renderCtl();
+  // still on screen unless rebuilt here. renderPlan() likewise: the plan panel's
+  // Shuffle visibility is S.pending, which was still falsy during that render.
+  if(S.mode==="shuffle"){renderCtl();renderPlan();}
 }
 function mark(c){const m=document.createElement("span");m.className="mk "+c;return m;}
 function slide(u){
@@ -625,7 +658,9 @@ function renderCtl(){
   if(S.mode==="study"){
     add("&#124;&#9664;",()=>{S.ply=0;clearFree();stop();render(false);},"",S.ply===0);
     add("&#9664;",()=>{if(S.ply>0)S.ply--;clearFree();stop();render(false);},"",S.ply===0);
-    const pl=add(S.timer?"&#9208;":"&#9654;&#9654;",toggleplay);
+    // VS15 on the pause glyph: no embedded font carries U+23F8, so Android
+    // otherwise renders it as a colour emoji next to monochrome siblings.
+    const pl=add(S.timer?"&#9208;&#xfe0e;":"&#9654;&#9654;",toggleplay);
     add("&#9654;",()=>{if(S.ply<L().moves.length)S.ply++;clearFree();render(true);},"",S.ply>=L().moves.length);
     add("&#9654;&#124;",()=>{S.ply=L().moves.length;clearFree();stop();render(false);},"",S.ply>=L().moves.length);
     void pl;
@@ -671,6 +706,9 @@ function renderNote(){
     return;
   }
   if(S.mode==="shuffle"){
+    // After an answer good() paints a context block into nText; keep it on
+    // screen until Continue clears S.pending rather than overwriting it here.
+    if(S.pending)return;
     el("nSrc").textContent=l.ch;
     el("nMove").textContent=(l.you==="w"?"White":"Black")+" to play";
     const played=S.ply>0?"They just played "+m[S.ply-1][1]+". ":"";
@@ -678,7 +716,7 @@ function renderNote(){
     return;
   }
   el("nSrc").innerHTML=(SRC[l.id]?'<a href="'+SRC[l.id]+'" target="_blank" rel="noopener">'+l.src+"</a>":l.src)+
-    (KIND[l.id]?'<br><span class="kind">'+KIND[l.id]+"</span>":"")+
+    (KIND[l.id]?'<br><span class="kind '+KIND[l.id]+'">'+KIND[l.id]+"</span>":"")+
     (ecoNow()?'<br><span class="eco">'+ecoNow()+"</span>":"");
   if(S.ply===0){
     el("nMove").textContent=S.mode==="line"?"Your move":"Start";
@@ -691,12 +729,21 @@ function renderNote(){
     el("nText").textContent=p[2]||"";
   }
 }
+/* ================= masters database (token-gated) ================= */
+/* Lichess closed the opening explorer to anonymous requests in April 2026, so the
+   panel only exists when the user has stored a personal API token (menu screen)
+   and every request carries it as a Bearer header - never in the URL, and never
+   to any host but lichess's explorer. With no token stored the panel is hidden
+   and the app makes no network requests at all; the offline promise holds. */
+let libToken=null;
+const LIB_URL="https://explorer.lichess.org/masters?moves=5&topGames=0&play=";
 const libCache={};
 let libInFlight=null; // {moves, promise} - dedupes a repeat request for the same position
 function currentMoves(){return L().moves.slice(0,S.ply).map(m=>m[0]).join(",");}
 async function loadLib(){
   const l=L(),moves=currentMoves();
   const box=el("lib");
+  if(!libToken)return; // panel is hidden without a token; belt and braces
   if(l.start!==START){box.innerHTML="This position is a diagram, not a game score, so the database cannot look it up.";return;}
   if(libCache[moves]){paintLib(libCache[moves]);return;}
   box.innerHTML="Asking the masters database...";
@@ -706,8 +753,8 @@ async function loadLib(){
   // one in-flight promise per moves-key rather than firing a duplicate request,
   // and re-check the current position after the await before painting anything.
   const inflight=(libInFlight&&libInFlight.moves===moves)?libInFlight.promise:null;
-  const p=inflight||fetch("https://explorer.lichess.ovh/masters?moves=5&topGames=0&play="+moves)
-    .then(r=>{if(!r.ok)throw 0;return r.json();});
+  const p=inflight||fetch(LIB_URL+moves,{headers:{Authorization:"Bearer "+libToken}})
+    .then(r=>{if(!r.ok)throw {status:r.status};return r.json();});
   if(!inflight)libInFlight={moves:moves,promise:p};
   try{
     const d=await p;
@@ -715,7 +762,11 @@ async function loadLib(){
     if(currentMoves()===moves&&L().start===START)paintLib(d);
   }catch(e){
     if(currentMoves()===moves&&L().start===START)
-      box.innerHTML="Database unreachable. It needs a connection to lichess.org; everything else here works offline.";
+      box.innerHTML=(e&&(e.status===401||e.status===403))
+        ?"lichess rejected the token. Check it in the settings on the menu screen; everything else here works offline."
+        :(e&&e.status)
+          ?"The database answered with status "+e.status+"."
+          :"Database unreachable. It needs a connection to lichess; everything else here works offline.";
   }finally{
     if(libInFlight&&libInFlight.moves===moves)libInFlight=null;
   }
@@ -741,6 +792,36 @@ function paintLib(d){
   box.innerHTML=h;
 }
 el("libBox").addEventListener("toggle",function(){if(this.open)loadLib();});
+/* ---------- the middlegame plan ---------- */
+/* Each line's plan: prose describes the middlegame it aims at, and it names
+   concrete moves - shown before the user has answered, it is an answer sheet.
+   So: Study shows it whenever the line has one; Drill only once the line is
+   complete; Shuffle only inside the post-answer window (S.pending set); puzzles
+   never (PZLINE carries no plan). Collapsed by default, and the open state is
+   reset when the line changes so a plan left open cannot bleed into the next
+   position. Rendered with textContent - the strings carry no markup. */
+let planFor=null;
+function renderPlan(){
+  const box=el("planBox"),l=L();
+  if(planFor!==l.id){box.open=false;planFor=l.id;}
+  let show=false;
+  if(l.plan&&S.mode!=="puzzle"){
+    if(S.mode==="study")show=true;
+    else if(S.mode==="line")show=S.ply>=l.moves.length;
+    else if(S.mode==="shuffle")show=!!S.pending;
+  }
+  box.style.display=show?"":"none";
+  el("planTxt").textContent=show?l.plan:"";
+}
+/* Opening a reading panel during Shuffle's 850ms auto-advance would let the
+   position swap under the reader's finger. If S.pending is a real timer (not
+   armWait's 1 sentinel), cancel it and switch to armWait semantics: the board
+   now waits for a tap, and armWait itself rebuilds the controls. */
+function holdForReading(){
+  if(this.open&&S.mode==="shuffle"&&S.pending&&S.pending!==1)armWait();
+}
+el("planBox").addEventListener("toggle",holdForReading);
+el("libBox").addEventListener("toggle",holdForReading);
 function ecoNow(){
   const e=(typeof ECO!=="undefined")&&ECO[L().id];
   if(!e)return "";
@@ -752,8 +833,8 @@ function renderSheet(){
   const l=L(),m=l.moves;
   el("sheetBox").style.display=(S.mode==="shuffle"||S.mode==="puzzle")?"none":"";
   const lb=el("libBox");
-  lb.style.display=S.mode==="study"&&L().start===START?"":"none";
-  if(lb.open&&S.mode==="study")loadLib();
+  lb.style.display=(libToken&&S.mode==="study"&&L().start===START)?"":"none";
+  if(lb.open&&libToken&&S.mode==="study"&&L().start===START)loadLib();
   if(S.mode==="shuffle"||S.mode==="puzzle")return;
   const rows=el("rows");rows.innerHTML="";
   for(let i=0;i<m.length;i+=2){
@@ -819,7 +900,20 @@ function tap(name){
       " plays it here. This line wants "+L().moves[S.ply][1]+".</span>";
     return;
   }
-  offBook(name,san(pos,m));
+  // One search verdict serves both consumers below: the setup test needs "not
+  // punished", the refutation inside offBook needs "punished, and by what".
+  const v=matVerdict(pos,m);
+  if(S.mode!=="puzzle"&&setupMove(pos,m,v)){
+    const t=san(pos,m);
+    if(S.mode==="shuffle"){setupGood(pos,m,t);return;}
+    // Drill: mirror the book-alternative branch above exactly - acknowledge, grade
+    // nothing either way, leave the streak alone, and do not advance, because the
+    // stored continuation would diverge from the board. The user retries.
+    S.sel=null;render(false);
+    el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. This line's order plays "+L().moves[S.ply][1]+" here.</span>";
+    return;
+  }
+  offBook(name,san(pos,m),v);
 }
 function touch(k,ms){
   if(k.indexOf("pz:")===0)return;
@@ -834,10 +928,24 @@ function bumpToday(){
 }
 function pzRec(){const p=L().pz;if(!p)return null;stats.pz=stats.pz||{};
   return stats.pz[p.id]=stats.pz[p.id]||{ok:0,no:0,ms:0};}
-function grade(k,right,ms){
+function grade(k,right,ms,wrongSan){
   if(k.indexOf("pz:")===0)return;
   const r=stats.pos[k]||{ok:0,no:0,streak:0,last:0,ms:0};
   if(right){r.ok++;r.streak++;}else{r.no++;r.streak=0;}
+  // The miss log: which wrong move was actually played, so Progress can name a
+  // habit instead of only a percentage. Bounded on write - at most 5 distinct
+  // SANs per record, counts capped at 99, lowest count evicted when a 6th
+  // arrives - so a record can never grow without limit. Hint tier 3 passes no
+  // SAN (nothing was played) and records nothing here.
+  if(!right&&wrongSan){
+    const w=r.w=r.w||{};
+    if(w[wrongSan])w[wrongSan]=Math.min(99,w[wrongSan]+1);
+    else{
+      const ks=Object.keys(w);
+      if(ks.length>=5){let low=ks[0];for(const s of ks)if(w[s]<w[low])low=s;delete w[low];}
+      w[wrongSan]=1;
+    }
+  }
   if(ms)r.ms=r.ms?Math.round(r.ms*.6+ms*.4):ms;
   r.last=Date.now();stats.pos[k]=r;save();
 }
@@ -847,13 +955,13 @@ function grade(k,right,ms){
 // keys onto it. S.passKeys tracks what has already been graded since the line
 // was (re)started; a repeat within the same pass falls back to touch(), which
 // still keeps the timing average honest without moving streak/last.
-function gradeOncePerPass(k,right,ms){
+function gradeOncePerPass(k,right,ms,wrongSan){
   if(S.mode==="line"){
     S.passKeys=S.passKeys||new Set();
     if(S.passKeys.has(k)){touch(k,ms);return;}
     S.passKeys.add(k);
   }
-  grade(k,right,ms);
+  grade(k,right,ms,wrongSan);
 }
 function elapsed(){return S.t0?Date.now()-S.t0:0;}
 function armClock(){S.t0=Date.now();}
@@ -862,6 +970,10 @@ function good(){
   const clean=S.hint===0&&S.tries===0,hadMiss=S.tries>0;
   const ms=elapsed();S.lastMs=ms;
   S.arrow=null; // the position is being answered now, so any reveal arrow is done
+  // The stored eval is keyed by the position the move was played FROM, so read it
+  // before S.ply moves on. Shown only after a miss: a clean book answer is not
+  // relitigated with numbers (commit b40bcaa exists for that reason).
+  const ev=(S.mode!=="puzzle"&&hadMiss)?evalFor(nowPos()):null;
   if(clean)gradeOncePerPass(key(L(),S.ply),true,ms);
   else if(S.hint<3)touch(key(L(),S.ply),ms);
   if(S.mode!=="study"){
@@ -870,6 +982,7 @@ function good(){
   }
   const san=L().moves[S.ply][1];
   const to=L().moves[S.ply][0].slice(2,4);
+  const evTxt=ev?evalNote(ev,san):null;
   S.sel=null;S.ply++;S.tries=0;S.hint=0;
   render(true);flash(to,"good");
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+san+(clean?"":" (with help)")+(ms?",":".")+"</span>"+
@@ -880,12 +993,59 @@ function good(){
         const r=pzRec();if(r){r.ok++;if(ms)r.ms=ms;save();}
         armPz(1500);
         el("nMsg").innerHTML='<span class="ok">Solved'+(clean?", clean":"")+". "+fmtMs(ms)+"</span>";}
-      else el("nMsg").innerHTML='<span class="ok">Line complete.</span>';
+      else{
+        el("nMsg").innerHTML='<span class="ok">Line complete.</span>';
+        // No auto-reply is coming to carry it, so the engine block for a missed
+        // final move lands on the note directly.
+        if(evTxt)el("nText").textContent=(el("nText").textContent+" "+evTxt).trim();
+      }
       return;}
+    // Drill: the reply lands in 260ms and repaints the note, so hand the engine
+    // block to autoReply the same way it already carries the answered move's own
+    // annotation across that repaint.
+    S.evNote=evTxt;
     setTimeout(autoReply,260);
   }else{
-    const note=L().moves[S.ply-1][2];
-    el("nText").textContent=note||L().name;
+    // Shuffle serves a bare position, so the answer is the one moment to say
+    // where it came from and what the opponent does next (the reply's note is
+    // never seen otherwise - Continue jumps to a fresh position).
+    const l=L(),note=l.moves[S.ply-1][2],next=l.moves[S.ply];
+    let ctx='<span class="neutral">'+[l.name,l.src].filter(Boolean).join(" \u00b7 ")+
+      (KIND[l.id]?' <span class="kind '+KIND[l.id]+'">'+KIND[l.id]+"</span>":"")+"</span>";
+    if(l.start!==START){
+      ctx+="<br>From a set position.";
+    }else{
+      const from=S.ply>12?S.ply-10:0,toks=[];
+      for(let i=from;i<S.ply;i++){
+        let t=(i%2===0?(i/2+1)+".":(i===from?Math.ceil(i/2)+"...":""))+l.moves[i][1];
+        if(i===S.ply-1)t="<b>"+t+"</b>";
+        toks.push(t);
+      }
+      ctx+="<br>"+(from?"\u2026 ":"")+toks.join(" ");
+    }
+    if(note)ctx+="<br>"+note;
+    else{
+      // No authored annotation for this move: fall back to PLAN's generic prose,
+      // labelled as such - it must never read as this line's own annotation.
+      const g=PLAN[l.you][l.moves[S.ply-1][1].replace(/[+#!?]/g,"")];
+      if(g)ctx+='<br><span class="neutral">In general: '+g+"</span>";
+    }
+    if(next){
+      const who=l.start===START?(S.ply%2?"Black":"White"):(l.you==="w"?"Black":"White");
+      const nn=l.start===START?(S.ply%2?Math.ceil(S.ply/2)+"...":(S.ply/2+1)+"."):"";
+      ctx+="<br>"+who+" replies "+nn+next[1]+".";
+      if(next[2])ctx+=" "+next[2];
+      else{
+        // The reply is the other colour's move, so its PLAN lives in the other table.
+        const g=PLAN[l.you==="w"?"b":"w"][next[1].replace(/[+#!?]/g,"")];
+        if(g)ctx+=' <span class="neutral">In general: '+g+"</span>";
+      }
+    }else{
+      ctx+="<br>The line ends here.";
+    }
+    if(evTxt)ctx+='<br><span class="neutral">'+evTxt+"</span>";
+    if(ecoNow())ctx+='<br><span class="eco">'+ecoNow()+"</span>";
+    el("nText").innerHTML=ctx;
     if(hadMiss||note){
       // A miss or an annotation is something to read; wait for a
       // tap instead of racing the auto-advance past it.
@@ -897,8 +1057,68 @@ function good(){
     }
   }
 }
-function offBook(name,t){
-  if(S.tries===0&&S.hint<3)gradeOncePerPass(key(L(),S.ply),false);
+/* ---------- stored engine evaluations ---------- */
+/* EVL (src/data/evals.js) is keyed by exactly what keyFen() produces, one row per
+   trained position: top moves as [uci,san,cp,mate] with a short SAN pv for the
+   best move. Every score is SIDE-TO-MOVE relative - positive favours whoever is
+   to move in that position - so nothing here flips by colour, ever. All display
+   goes through fmtScore(), the one formatting choke point, so a stored mate can
+   never be printed as a pawn count. Never shown in puzzle mode. */
+function evalFor(pos){return (typeof EVL!=="undefined"&&EVL[keyFen(pos)])||null;}
+// Kept free of nested braces on purpose: test/verify.mjs extracts this function's
+// source by regex to unit-test it outside the browser.
+function fmtScore(e){
+  if(e.mate!==null&&e.mate!==undefined)return e.mate>0?"mate in "+e.mate:"gets mated in "+(-e.mate);
+  return (e.cp<0?"-":"+")+(Math.abs(e.cp)/100).toFixed(1);
+}
+/* The post-answer engine block, shown by good() only after a miss: the answer is
+   known, so the engine's first choice may be named. When the repertoire move is
+   also in the stored top five, both numbers stand side by side - that is the
+   honest statement, and the repertoire move is never called best when it is not. */
+function evalNote(ev,repSan){
+  const sc=r=>fmtScore({cp:r[2],mate:r[3]});
+  const best=ev.m[0],bare=repSan.replace(/[+#!?]/g,"");
+  const rep=ev.m.find(r=>r[1].replace(/[+#]/g,"")===bare);
+  let s="Engine (Stockfish 16, depth "+ev.d+"): ";
+  if(rep===best)s+=repSan+" is also its first choice, "+sc(best)+".";
+  else if(rep)s+="first choice "+best[1]+" "+sc(best)+" \u00b7 this move "+repSan+" "+sc(rep)+".";
+  else s+="first choice "+best[1]+" "+sc(best)+"; "+repSan+" is outside its best five.";
+  if(ev.pv&&ev.pv.length)s+=" Its line: "+ev.pv.join(" ")+".";
+  return s;
+}
+/* What a wrong move concretely costs, said only when the material search
+   (matVerdict, src/engine.js) proves it. The sentence claims exactly what was
+   searched: the opponent's best first reply, and either a material swing that does
+   not come back inside four plies, or a forced mate the search itself confirmed -
+   the one evaluation claim allowed here, because it has been checked. A search that
+   ran out of budget (v null) or found less than a pawn stays silent: an invented
+   reason is worse than none. Suppressed whenever the text would leak the move the
+   user was supposed to play - the position is still live for a retry, so the
+   refutation may name the OPPONENT's move and nothing else. */
+function refutation(v){
+  if(!v||v.swing<1)return null;
+  const reply=(L().you==="w"?"...":"")+v.san;
+  let txt;
+  if(v.mate)txt=v.mate===1?reply+" answers it, and it is mate."
+    :reply+" answers it and forces mate in "+(v.mate===3?"two":Math.ceil(v.mate/2))+".";
+  else txt=reply+" answers it, and "+(v.swing===1?"a pawn's worth of material does not come back"
+    :v.swing+" points of material do not come back")+" inside four plies.";
+  const w=S.ply<L().moves.length?L().moves[S.ply]:null;
+  return (w&&refuteLeaks(txt,w[0],w[1]))?null:txt;
+}
+function offBook(name,t,v){
+  // Stored engine eval for the position the wrong move was played from. On a hit
+  // the refutation's material search is skipped entirely - the stored eval is
+  // strictly better information; on a miss everything below behaves exactly as
+  // before, with no "engine unavailable" text. The eval sentence itself is shown
+  // on the graded attempt only, and may talk about the PLAYED move alone: the
+  // position is still live for a retry, and the engine's first choice is usually
+  // the repertoire move, so naming it here would hand over the answer outside
+  // the hint ladder. A played move outside the stored top five gets no number -
+  // asserting one would be an evaluation nobody checked.
+  const hit=S.mode!=="puzzle"?evalFor(nowPos()):null;
+  const ev=(hit&&S.tries===0)?hit:null;
+  if(S.tries===0&&S.hint<3)gradeOncePerPass(key(L(),S.ply),false,0,t);
   if(S.mode==="puzzle"&&S.tries===0){const r=pzRec();if(r){r.no++;save();}}
   if(S.tries===0){S.run=0;bumpToday();}
   S.tries++;S.sel=null;
@@ -911,12 +1131,73 @@ function offBook(name,t){
   // "clean" test is already false here because S.tries is non-zero.
   const why=S.hint===0?moveClue():null;
   if(why)S.hint=1;
+  const punish=hit?null:refutation(v);
+  let evTxt=null;
+  if(ev){
+    const bare=t.replace(/[+#]/g,""),row=ev.m.find(x=>x[1].replace(/[+#]/g,"")===bare);
+    evTxt=row?"Engine (Stockfish 16, depth "+ev.d+"): "+t+" "+fmtScore({cp:row[2],mate:row[3]})+"."
+      :"Engine (Stockfish 16, depth "+ev.d+"): "+t+" is outside its best five here.";
+  }
   render(false);flash(name,"bad");
   el("nMsg").innerHTML='<span class="no">'+t+(S.mode==="puzzle"
       ?" is legal, but the tactic needs something else.</span>"
       :" is legal, but it is not the repertoire move.</span>")+
+    (punish?' <span class="no">'+punish+"</span>":"")+
+    (evTxt?' <span class="neutral">'+evTxt+"</span>":"")+
     (why?' <span class="neutral">'+why+"</span>":"");
 }
+/* A setup line's targets say where the formation wants each piece; grading against
+   one fixed move order marks correct chess wrong - the Hippo's wall goes up in
+   almost any order, and the user rightly complained when the trainer punished that.
+   A move qualifies when the line has a formation to build (targets non-empty), the
+   move puts the right piece on one of its squares, the piece was not merely
+   shuffling from one target square to another, and the material search does not
+   show it being punished - a quiet building move played while something concrete
+   is happening is a mistake, and falls through to the refutation instead. A null
+   verdict (node budget ran out) also disqualifies: unproven-safe is not safe. */
+function setupMove(pos,m,v){
+  const l=L();
+  if(!l.targets||!l.targets.length)return false;
+  const pc=pos.b[m.f];
+  if(!l.targets.some(x=>x[0]===sq(m.t)&&x[1]===pc))return false;
+  if(l.targets.some(x=>x[0]===sq(m.f)&&x[1]===pc))return false;
+  return !!v&&v.swing<1;
+}
+/* Shuffle's credit for a qualifying setup move. good() cannot run here: it would
+   advance S.ply along the line's own move, and the board would then show a move
+   the user did not play. Grade in place instead (it is correct chess; punishing it
+   was the bug this fixes) and show the position after the USER's move through the
+   free-move plumbing, with ok:1 so renderOff keeps its take-back banner away.
+   S.lastKey needs no update, unlike the book-alternative branch in tap(): the key
+   graded is the very one shuffle() served, so the same board is already barred
+   from coming straight back. skipNext -> shuffle(false) -> clearFree() cleans up. */
+function setupGood(pos,m,t){
+  const clean=S.hint===0&&S.tries===0;
+  const ms=elapsed();S.lastMs=ms;
+  S.arrow=null;
+  if(clean)grade(key(L(),S.ply),true,ms);
+  else if(S.hint<3)touch(key(L(),S.ply),ms);
+  if(clean)S.run++;else S.run=0;
+  bumpToday();
+  S.free=[{uci:uciOf(m),san:t,ok:1}];S.fpos=make(pos,m);
+  S.sel=null;S.tries=0;S.hint=0;
+  render(true);flash(sq(m.t),"good");
+  const l=L(),want=l.moves[S.ply][1];
+  el("nText").innerHTML='<span class="neutral">'+[l.name,l.src].filter(Boolean).join(" · ")+
+    (KIND[l.id]?' <span class="kind '+KIND[l.id]+'">'+KIND[l.id]+"</span>":"")+"</span>"+
+    "<br>The "+(l.you==="b"?"wall":"setup")+" is a formation, not a move order: "+t+
+    " fills one of its squares, and a four-ply material check finds no punishment for it here. "+
+    "This line plays "+want+" first.";
+  el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+t+
+    (clean?"":" (with help)")+(ms?",</span> <span class='neutral'>"+fmtMs(ms)+".</span>":"</span>")+
+    ' <span class="neutral wait">Tap to continue.</span>';
+  armWait();
+}
+// PLAN is unsourced generic per-move prose written for this trainer: what a move
+// is usually for in this repertoire, keyed by bare SAN alone. It is shown as a
+// labelled "In general" fallback in Shuffle when a line has no authored note, and
+// filtered through safe() before being used as a hint. It is not theory, carries
+// no source, and must never be presented as a line's own annotation.
 const PLAN={
  w:{"d4":"Claim the centre. Everything else is built on this advance.",
     "Nf3":"Cover e5 before doing anything ambitious.",
@@ -1047,6 +1328,7 @@ function autoReply(){
   while(S.ply<L().moves.length&&!yourTurn())S.ply++;
   render(true);armClock();
   if(mine)el("nText").textContent=(mine+" "+el("nText").textContent).trim();
+  if(S.evNote){el("nText").textContent=(el("nText").textContent+" "+S.evNote).trim();S.evNote=null;}
   el("nMsg").innerHTML=S.ply>=L().moves.length
     ?'<span class="ok">Line complete.</span>':'<span class="neutral">Your move.</span>';
 }
@@ -1207,10 +1489,64 @@ const STORE=(()=>{
             get:k=>Promise.resolve({value:MEM[k]||null})};
   }
 })();
-async function save(){try{await STORE.set("colle-hippo:v4",JSON.stringify(stats));}catch(e){}}
+async function save(){try{await STORE.set("colle-hippo:v5",JSON.stringify(stats));}catch(e){}}
+
+/* ================= lichess token (menu settings) ================= */
+/* The token deliberately lives under its own key, outside the colle-hippo:v5
+   stats blob: it is a credential, not progress, so it must not travel in an
+   export/import backup and must survive "Reset all progress". Same three-tier
+   STORE as everything else. Saving is gated on a live self-test: lichess's
+   explorer refuses anonymous requests, and rather than trust that a Bearer
+   token gets through, the Save button proves it with one real request and
+   reports the outcome as it happened. Nothing runs at load beyond reading the
+   stored value back - no request leaves this app until the user saves a token
+   or opens the panel, so the no-token case stays at zero network calls. */
+const TOK_KEY="colle-hippo:lichess-token";
+function tokSay(cls,txt){el("tokMsg").innerHTML='<span class="'+cls+'">'+txt+"</span>";}
+el("tokShow").onclick=function(){
+  const i=el("tokIn"),show=i.type==="password";
+  i.type=show?"text":"password";this.textContent=show?"Hide":"Show";
+};
+el("tokSave").onclick=async()=>{
+  const t=el("tokIn").value.trim();
+  if(!t){tokSay("neutral","Paste a token first, or use Clear to remove the stored one.");return;}
+  tokSay("neutral","Asking the database with this token…");
+  let r;
+  try{
+    r=await fetch(LIB_URL,{headers:{Authorization:"Bearer "+t}});
+  }catch(e){
+    tokSay("no","lichess could not be reached. That is a connection problem, not a verdict on the token; nothing was saved. Try again when you are online.");
+    return;
+  }
+  if(r.status===401||r.status===403){
+    tokSay("no","lichess rejected the token ("+r.status+"). It was not saved. Check it was copied whole, then try again.");
+    return;
+  }
+  if(!r.ok){
+    tokSay("no","The database answered with status "+r.status+", which is neither success nor a rejection. The token was not saved.");
+    return;
+  }
+  try{await r.json();}catch(e){
+    tokSay("no","lichess answered, but not with data this app can read. The token was not saved.");
+    return;
+  }
+  libToken=t;
+  try{await STORE.set(TOK_KEY,t);}catch(e){}
+  tokSay("ok","Token accepted. The masters database panel is now available on the Study screen.");
+};
+el("tokClear").onclick=async()=>{
+  libToken=null;el("tokIn").value="";
+  try{await STORE.set(TOK_KEY,"");}catch(e){}
+  tokSay("neutral","Token cleared. The trainer is fully offline again.");
+};
 async function load(){
   try{
-    const r=await STORE.get("colle-hippo:v4");
+    // v5 first; else adopt a v4 blob verbatim - a v4 record is a valid v5 record
+    // without the optional "w" miss log (keys did not change shape), so the v4->v5
+    // migration is adoption plus an immediate rewrite under the v5 key. No data
+    // is dropped and nothing is remapped.
+    let r=await STORE.get("colle-hippo:v5"),fromV4=false;
+    if(!(r&&r.value)){r=await STORE.get("colle-hippo:v4");fromV4=!!(r&&r.value);}
     if(r&&r.value){const d=JSON.parse(r.value);
       // Fields are read one by one, so a save written by an older build (which also
       // carried unread "best" and "bestRun" keys) still loads with no progress lost.
@@ -1218,8 +1554,17 @@ async function load(){
         theme:d.theme||0,set:d.set||0,bookOnly:!!d.bookOnly};
       S.theme=stats.theme||0;S.set=stats.set||0;S.bookOnly=!!stats.bookOnly;
       if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
+      if(fromV4)save();
     }
   }catch(e){stats={pos:{},pz:{},day:"",today:0,theme:0};}
+  // Read the stored lichess token back. A local read only - the token is never
+  // tested or sent anywhere at load, so a token-less start makes no network calls
+  // and a stored token still costs nothing until the panel is actually opened.
+  try{
+    const t=await STORE.get(TOK_KEY);
+    if(t&&t.value){libToken=t.value;el("tokIn").value=libToken;
+      tokSay("neutral","A token is stored. The masters database panel is available on the Study screen.");}
+  }catch(e){}
   applyTheme();syncOpts();
   document.querySelectorAll(".ico[data-pc]").forEach(n=>n.appendChild(pieceEl2(n.dataset.pc,"")));
   bindPointer();

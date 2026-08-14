@@ -1,8 +1,10 @@
 # The Triangle & the Swamp
 
 A single-file opening trainer for two systems: the **Colle** as White and the **Hippopotamus** as Black.
-Open `docs/index.html` in any browser. No install, no build step, no server. Everything except
-one optional online panel works offline.
+Open `docs/index.html` in any browser. No install, no build step, no server. It works offline and
+makes no network requests at all — fonts and engine evaluations are baked into the page. The one
+exception is opt-in: paste a lichess API token in Settings and the Study screen gains a masters
+statistics panel. Without a token, nothing leaves the page.
 
 **52 lines · 442 trainable positions · 80 tactics puzzles.**
 
@@ -12,7 +14,7 @@ one optional online panel works offline.
 
 | Mode | What happens |
 |---|---|
-| **Study a line** | Step through with a note on every move, the ECO name, an optional masters-database panel, and free play: make any legal move to explore, then take it back |
+| **Study a line** | Step through with a note on every move, the ECO name, the line's middlegame plan, an optional masters-database panel, and free play: make any legal move to explore, then take it back |
 | **Drill a line** | Play one line from move one from memory; the opponent answers automatically, and the note on the move you just played stays up through their reply instead of flashing away |
 | **Shuffle drill** | A weighted-random position from any line. How fast you answer is recorded and changes when the position comes back |
 | **Tactics** | 80 real positions from real games in these structures, from the lichess puzzle database |
@@ -99,6 +101,7 @@ into the swamp — which is what finally gives Black something to hit.
 | Piece graphics (standard set) | Colin M. L. Burnett, via the [lichess repository](https://github.com/lichess-org/lila/tree/master/public/piece/cburnett) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) |
 | Opening names (ECO) | [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) | CC0 |
 | Tactics puzzles | [lichess open database](https://database.lichess.org/) | CC0 |
+| Stockfish evaluations | computed at build time by [Stockfish 16](https://stockfishchess.org/) (lichess's [`lila-stockfish-web`](https://www.npmjs.com/package/lila-stockfish-web) small-net WASM build, a dev dependency) | engine GPL-3.0, lila build AGPL-3.0; build-time tools, not shipped in the page |
 | Masters statistics | [lichess opening explorer API](https://lichess.org/api#tag/Opening-Explorer) | live, optional, the only online part |
 | Board colours | lichess and chess.com defaults | — |
 
@@ -109,6 +112,19 @@ do with these structures — so they were removed by hand and the filter now mat
 that remain: ratings 803 to 2116, 48 with White to play and 32 with Black, including 14 where the solution
 starts with a bishop landing on h7. Opening names were resolved against the lines at build time, so a few kilobytes ship instead
 of the full data set.
+
+The evaluations in `src/data/evals.js` are Stockfish 16 scores computed once at build time
+(`tools/build-evals.mjs`) by a local engine — lichess's `lila-stockfish-web` sf16-7 build (a 433 KB WASM
+plus one 6.5 MB NNUE network, package version and network checksum both pinned) — so the page itself never
+runs an engine and never touches the network. Every trained position is covered, each searched
+single-threaded to depth 20 with a cleared hash, which makes this step reproducible, unlike the puzzle
+set: the same engine version and network at the same depth regenerates the same table. Stockfish and its
+network are GPL-3.0 and the lila build AGPL-3.0; they are used here as build tools, the way a compiler
+is — the page ships only the numbers they produced, none of their code. The table was originally fetched
+from the lichess cloud-eval API; those responses were kept and the local engine's output was validated
+against them before the switch (best-move agreement on the cached positions, with the handful of
+divergences all near-equal alternatives). All scores are stored from the side to move's point of view,
+with forced mates kept distinct from centipawn scores.
 
 ---
 
@@ -164,10 +180,20 @@ solutions were validated the same way.
 
 ## Limits
 
-- **There is no engine.** The generator knows what is legal, never what is good. Only the recorded moves are
-  accepted as repertoire answers; a rival plan cannot be graded, only recognised as legal.
+- **There is no engine in the page.** The generator knows what is legal, never what is good; what the page
+  knows about quality is the precomputed table in `src/data/evals.js`, which covers the trained positions
+  and nothing else. Only the recorded moves are accepted as repertoire answers; a rival plan off the table
+  cannot be graded live, only recognised as legal.
+- **Engine numbers appear only after you get one wrong.** Miss a move and the feedback names the
+  engine's first choice, its score against yours and the line it plays; answer correctly and it says
+  nothing, because relitigating a book move you already found teaches nothing. Never in Tactics.
+- **Progress names your habits, not just your percentages.** A weak position records which wrong move
+  you actually played, so the Progress screen can say "usually Bd3 (4×)" rather than a bare miss rate.
+  Five distinct wrong moves are kept per position; rarer ones are evicted.
 - Progress lives in this browser's storage. Export from the Progress screen after any serious session.
-- The masters panel needs a connection; everything else works on a plane.
+- Everything works on a plane. The masters panel is the only online feature, it needs a lichess
+  token you supply yourself, and it does not exist until you do — lichess made the opening explorer
+  login-only in April 2026.
 - If *objectively best* is your only criterion, neither opening survives contact: the Colle is equal at best
   and the Hippo concedes something real. They are chosen for practical reasons — one plan against almost
   everything, very little theory, opponents out of book early. That is a different argument from correctness.
@@ -226,6 +252,7 @@ thing wrong at least once already.
 
 ## Not in this build
 
-No engine analysis, no PGN import, no user-added lines. Either is real work rather than a switch: an
-evaluation panel needs Stockfish-WASM fetched from a CDN, which ends the offline property, and import needs
+No live engine analysis, no PGN import, no user-added lines. Either is real work rather than a switch:
+evaluations for the trained positions are precomputed at build time, but analysing an arbitrary position
+needs Stockfish-WASM fetched from a CDN, which ends the offline property, and import needs
 a PGN parser plus storage for user lines alongside the built-in ones.

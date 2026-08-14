@@ -13,8 +13,8 @@ const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"
 const upto = js.indexOf("/* ================= state ================= */");
 const bundle = js.slice(0, upto);
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix});")(ctx);
-const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft } = ctx;
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE});")(ctx);
+const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE } = ctx;
 
 let fail = 0;
 const bad = (m) => { console.error("  ✗ " + m); fail++; };
@@ -97,7 +97,109 @@ for (const z of PZ) {
 }
 console.log(`✓ ${pz}/${PZ.length} puzzles replay legally with matching display notation`);
 
-// 5. no unimplemented references left in the bundle (catches a call left behind
+// 5. the material search behind "refute the wrong move": hand-set positions where
+// the refutation is unambiguous. matVerdict(pos, m) compares best-play material
+// before a move against best play after it; these pin the reply it names and the
+// swing it reports, so a regression in the search fails loudly here rather than
+// shipping a wrong claim to the user.
+{
+  const cases = [
+    // Black rook walks onto the d1 queen's back rank: hangs outright, nothing comes back
+    ["hanging rook", "r3k3/8/8/8/8/8/8/3Q2K1 b - -", "a8a1", "Qxa1", 5],
+    // a quiet pawn move ignores the b5 knight's fork on c7: king and rook, rook falls
+    ["knight fork", "r3k3/7p/8/1N6/8/8/8/6K1 b - -", "h7h6", "Nc7+", 5],
+  ];
+  for (const [label, fen, uci, wantSan, wantSwing] of cases) {
+    const p = fenPos(fen);
+    const m = findMove(p, uci);
+    if (!m) { bad(`refute ${label}: ${uci} is not legal`); continue; }
+    const v = matVerdict(p, m);
+    if (!v) { bad(`refute ${label}: search hit its node budget`); continue; }
+    if (v.san.replace(/[+#]/g, "") !== wantSan.replace(/[+#]/g, ""))
+      bad(`refute ${label}: names ${v.san}, expected ${wantSan}`);
+    if (v.swing !== wantSwing)
+      bad(`refute ${label}: swing ${v.swing}, expected ${wantSwing}`);
+  }
+  // fool's mate: the one evaluation claim the search may make is a mate it confirmed
+  let fp = startPos();
+  for (const u of ["f2f3", "e7e5"]) fp = make(fp, findMove(fp, u));
+  const fm = matVerdict(fp, findMove(fp, "g2g4"));
+  if (!fm || fm.mate !== 1 || fm.san !== "Qh4#")
+    bad(`refute fool's mate: got ${JSON.stringify(fm)}, expected mate in 1 by Qh4#`);
+  // a sound opening move produces no claim at all - silence is the correct output
+  const quiet = matVerdict(startPos(), findMove(startPos(), "e2e4"));
+  if (!quiet) bad("refute 1.e4: search hit its node budget on the start position");
+  else if (quiet.swing >= 1) bad(`refute 1.e4: swing ${quiet.swing} - a sound move must stay silent`);
+  // the leak guard: a refutation naming the expected move's square is suppressed,
+  // and one that shares nothing with the expected move is not
+  if (!refuteLeaks("Qxa1 answers it", "b1a1", "Ra1")) bad("refuteLeaks misses a destination-square leak");
+  if (refuteLeaks("Nc7+ answers it", "e8g8", "O-O")) bad("refuteLeaks suppresses a clean refutation");
+  console.log("✓ material search refutes the hand-set blunders and stays silent on sound moves");
+}
+
+// 6. the stored engine evaluations: every key is a parseable position, every
+// stored move is legal there with the SAN this engine produces, every PV replays
+// legally starting from the best move, and every score is exactly one of cp/mate.
+// EVL_PROBE is the sign-convention canary: a position where the side to move is
+// decisively lost, shipped with its stored negative score. Scores are
+// SIDE-TO-MOVE relative; if a regeneration ever flips them White-relative, the
+// probe's cp goes positive and this fails before the flip can ship.
+{
+  let rows = 0, pvs = 0, evlFail = fail;
+  for (const [k, e] of Object.entries(EVL)) {
+    let p;
+    try { p = fenPos(k); } catch { bad(`EVL key does not parse: ${k}`); continue; }
+    if (!(e.m && e.m.length) ) { bad(`EVL ${k}: no moves stored`); continue; }
+    for (const [uci, sanTxt, cp, mate] of e.m) {
+      const m = findMove(p, uci);
+      if (!m) { bad(`EVL ${k}: ${uci} is not legal`); continue; }
+      if (san(p, m) !== sanTxt) bad(`EVL ${k}: ${uci} labelled ${sanTxt}, generator says ${san(p, m)}`);
+      if ((cp === null) === (mate === null)) bad(`EVL ${k}: ${sanTxt} must have exactly one of cp/mate, has ${cp}/${mate}`);
+      rows++;
+    }
+    if (!(e.pv && e.pv.length)) { bad(`EVL ${k}: no pv`); continue; }
+    if (e.pv[0] !== e.m[0][1]) bad(`EVL ${k}: pv starts ${e.pv[0]}, best move is ${e.m[0][1]}`);
+    let q = p, ok = true;
+    for (const tok of e.pv) {
+      const m = ok && legal(q).find((x) => san(q, x) === tok);
+      if (!m) { bad(`EVL ${k}: pv move ${tok} does not replay`); ok = false; break; }
+      q = make(q, m);
+    }
+    if (ok) pvs++;
+  }
+  try { fenPos(EVL_PROBE.fen); } catch { bad("EVL_PROBE fen does not parse"); }
+  if (EVL_PROBE.pov !== "stm") bad(`EVL_PROBE pov is "${EVL_PROBE.pov}", expected "stm"`);
+  if ((EVL_PROBE.cp === null) === (EVL_PROBE.mate === null)) bad("EVL_PROBE must have exactly one of cp/mate");
+  if (!(EVL_PROBE.cp < 0))
+    bad(`EVL_PROBE cp is ${EVL_PROBE.cp}: the side to move is lost, so a side-to-move score must be negative — the sign convention has flipped`);
+  if (fail === evlFail)
+    console.log(`✓ ${Object.keys(EVL).length} stored evaluations: keys parse, ${rows} moves legal with matching SAN, ${pvs} PVs replay, probe sign holds`);
+}
+
+// 7. fmtScore is the one formatting choke point for stored evals; a mate must
+// never print as a pawn count. The function is written brace-free so it can be
+// lifted out of app.js (which needs a DOM the sandbox above does not have).
+{
+  const src = js.match(/function fmtScore\(e\)\{[^}]*\}/);
+  if (!src) bad("fmtScore not found in the bundle (or no longer regex-extractable)");
+  else {
+    const fmtScore = new Function("return " + src[0])();
+    const eq = (got, want, label) => { if (got !== want) bad(`fmtScore ${label}: "${got}", expected "${want}"`); };
+    eq(fmtScore({ cp: 34, mate: null }), "+0.3", "cp 34");
+    eq(fmtScore({ cp: -120, mate: null }), "-1.2", "cp -120");
+    eq(fmtScore({ cp: 0, mate: null }), "+0.0", "cp 0");
+    for (const [e, label] of [[{ cp: null, mate: 3 }, "mate 3"], [{ cp: null, mate: -2 }, "mate -2"]]) {
+      const s = fmtScore(e);
+      if (!s.includes("mate")) bad(`fmtScore ${label}: "${s}" does not say mate`);
+      if (/\d\.\d/.test(s)) bad(`fmtScore ${label}: "${s}" prints a mate with a decimal`);
+    }
+    eq(fmtScore({ cp: null, mate: 3 }), "mate in 3", "mate 3 wording");
+    eq(fmtScore({ cp: null, mate: -2 }), "gets mated in 2", "mate -2 wording");
+    console.log("✓ fmtScore: explicit sign on centipawns, mates never printed as pawn counts");
+  }
+}
+
+// 8. no unimplemented references left in the bundle (catches a call left behind
 // by a rename or a deleted function that a plain syntax check would miss)
 const declared = new Set([...js.matchAll(/function\s+([A-Za-z_$][\w$]*)/g)].map((m) => m[1]));
 [...js.matchAll(/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=/g)].forEach((m) => declared.add(m[1]));
@@ -111,6 +213,15 @@ const called = new Set([...code.matchAll(/(?<![\w.$])([a-z_$][\w$]*)\s*\(/g)].ma
 const missing = [...called].filter((n) => !declared.has(n) && !builtin.has(n)).sort();
 if (missing.length) bad(`calls with no definition: ${missing.join(", ")}`);
 else console.log("✓ no undefined calls in the bundle");
+
+// 9. no credential baked into the page. The masters panel authenticates with a
+// lichess personal access token the user pastes at runtime; it lives in browser
+// storage and must never reach the bundle. A token committed here would be
+// published to GitHub Pages and readable by anyone who views source, so this is
+// a shipping stop, not a warning. Matches lichess's own token prefixes.
+const secrets = [...html.matchAll(/\b(?:lip|lio)_[A-Za-z0-9]{15,}/g)].map((m) => m[0]);
+if (secrets.length) bad(`access token baked into the page: ${secrets.length} occurrence(s). Never commit a token; it belongs in browser storage only.`);
+else console.log("✓ no access token in the bundle");
 
 if (fail) { console.error(`\n${fail} problem(s). Do not ship.`); process.exit(1); }
 console.log("\nAll checks passed.");

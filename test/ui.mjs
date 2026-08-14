@@ -17,6 +17,29 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 400, height: 880 } });
 page.on("pageerror", (e) => errors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+// The app promises to work offline and makes no script-initiated network calls
+// (the masters-database panel was removed when lichess closed anonymous access
+// to the opening explorer, April 2026). Stub fetch before any page script runs
+// and count every call; the check at the end of this file asserts zero.
+await page.addInitScript(() => {
+  window.__fetchCalls = [];
+  window.fetch = (...a) => {
+    window.__fetchCalls.push(String(a[0]));
+    return Promise.reject(new Error("fetch is forbidden: this app is offline-only"));
+  };
+});
+// The fetch stub above only sees script-initiated calls; a <link>, @font-face or
+// <img> fetch bypasses it entirely (the Google Fonts <link> tags shipped for months
+// while the stub reported a clean run). Intercept at the network layer instead:
+// the page is file://, so any request to another scheme is an external resource.
+// Abort it so the run behaves like a truly offline machine, and record it to fail.
+const external = [];
+await page.route("**/*", (route) => {
+  const u = route.request().url();
+  if (u.startsWith("file://")) return route.continue();
+  external.push(u);
+  return route.abort();
+});
 await page.goto(url);
 await page.waitForTimeout(700);
 
@@ -59,6 +82,9 @@ await page.click("#navBack");
 await page.click("#navBack");
 await page.click("#cShuffle");
 await page.waitForTimeout(500);
+// The plan panel names concrete moves, so in Shuffle it may exist only inside the
+// post-answer window - shown before the answer it is an answer sheet.
+const planBefore = await page.evaluate(() => el("planBox").style.display);
 let u = await page.evaluate(() => L().moves[S.ply][0]);
 await drag(u.slice(0, 2), u.slice(2, 4));
 // good() picks armWait() over armNext() whenever the move just played carries a note
@@ -66,6 +92,14 @@ await drag(u.slice(0, 2), u.slice(2, 4));
 // is a pass; only the wait mode is data-dependent on which line the shuffle happened to
 // pick, so the check below stays agnostic to which one fired.
 check("correct answer is graded", (await page.innerText("#nMsg")).toLowerCase().includes("tap to continue"));
+check("plan panel is hidden before a shuffle answer and shown after",
+  planBefore === "none" && (await page.evaluate(() => el("planBox").style.display)) === "",
+  planBefore);
+// The answer above was clean (no tries, no hint), so the stored-eval block must
+// not appear: correct play is not relitigated with numbers (commit b40bcaa).
+check("no engine block on a clean correct answer",
+  !(await page.innerText("#nText")).includes("Stockfish") &&
+  !(await page.innerText("#nMsg")).includes("Stockfish"));
 // armWait() sets S.pending without a timer, so nothing auto-advances until a tap; a
 // fixed sleep here would sometimes race a question that never arrives on its own, and
 // would leave S.ply pointing past the end of L().moves when that question was the last
@@ -77,9 +111,21 @@ await page.evaluate(() => {
   shuffle(false);
 });
 u = await page.evaluate(() => L().moves[S.ply][0]);
+// Pick a move that is guaranteed to be refused: not the wanted move, not a book
+// alternative (the ALT branch in tap() credits those), and not landing the right
+// piece on a setup target square (the setup branch may credit those too - the
+// target check alone over-excludes a little, which is fine for picking a certain
+// refusal without running the material search on every candidate).
 const alt = await page.evaluate((want) => {
   const pos = nowPos();
-  const other = legal(pos).filter((m) => sq(m.f) + sq(m.t) !== want.slice(0, 4));
+  const other = legal(pos).filter((m) => {
+    const uu = sq(m.f) + sq(m.t);
+    if (uu === want.slice(0, 4)) return false;
+    if (altAt(pos, uu)) return false;
+    const pc = pos.b[m.f];
+    if (L().targets.some((x) => x[0] === sq(m.t) && x[1] === pc)) return false;
+    return true;
+  });
   return sq(other[0].f) + sq(other[0].t);
 }, u);
 await drag(alt.slice(0, 2), alt.slice(2, 4));
@@ -104,6 +150,35 @@ const clues = await page.evaluate(() => {
 check("hints have content", clues.real / clues.total > 0.9, `${clues.real}/${clues.total}`);
 check("hints never leak the move", clues.leaks === 0);
 
+// a setup line accepts any safe move onto its target squares (the Hippo move-order
+// bug): drill acknowledges without grading or advancing, shuffle credits and grades.
+// hip-e4 ply 7 wants one wall move; Nd7 (b8d7) is a different one, safe, on target.
+const setup = await page.evaluate(() => {
+  const li = LINES.findIndex((l) => l.id === "hip-e4");
+  const out = {};
+  S.mode = "line"; S.li = li; S.ply = 7; S.sel = null; S.tries = 0; S.hint = 0;
+  S.passKeys = new Set(); clearFree(); stats.pos = {}; render(false);
+  const k = key(LINES[li], 7);
+  S.sel = "b8"; tap("d7");
+  out.drillMsg = el("nMsg").textContent;
+  out.drillPly = S.ply;
+  out.drillGraded = !!stats.pos[k];
+  S.mode = "shuffle"; S.sel = null; S.tries = 0; S.hint = 0; S.lastKey = k; render(false);
+  S.sel = "b8"; tap("d7");
+  out.shufMsg = el("nMsg").textContent;
+  out.shufText = el("nText").textContent;
+  out.shufGraded = !!(stats.pos[k] && stats.pos[k].ok === 1 && stats.pos[k].streak === 1);
+  out.pending = S.pending;
+  clearTimeout(S.pending); S.pending = 0; clearFree(); stats.pos = {}; S.run = 0;
+  return out;
+});
+check("drill acknowledges an out-of-order setup move without grading or advancing",
+  setup.drillMsg.includes("builds the setup") && setup.drillPly === 7 && !setup.drillGraded,
+  setup.drillMsg);
+check("shuffle credits an out-of-order setup move and grades it correct",
+  setup.shufMsg.includes("Correct") && setup.shufText.includes("formation") && setup.shufGraded && setup.pending === 1,
+  setup.shufMsg);
+
 // tactics
 await page.evaluate(() => go("menu"));
 await page.waitForSelector("#cPuzzle", { state: "visible" });
@@ -117,6 +192,7 @@ for (let i = 0; i < n; i++) {
   await page.waitForTimeout(320);
 }
 check("a puzzle can be solved", (await page.innerText("#nMsg")).startsWith("Solved"));
+check("plan panel never shows in tactics", (await page.evaluate(() => el("planBox").style.display)) === "none");
 
 // Solving arms armPz(1500), which sets S.pending. A tap during that window goes through
 // skipNext(); it used to call shuffle(false) unconditionally, which picked a line/ply out
@@ -162,6 +238,61 @@ const dueShare = await page.evaluate(() => {
   return due / N;
 });
 check("shuffle serves due reviews ahead of the rest", dueShare > 0.2, dueShare.toFixed(3));
+
+// The miss log on a stats record is bounded on write: at most 5 distinct wrong
+// SANs, lowest count evicted when a 6th arrives, counts capped at 99. The key is
+// fen-shaped (grade() skips "pz:" keys).
+const missLog = await page.evaluate(() => {
+  stats.pos = {};
+  const k = "8/8/8/8/8/8/8/8 w - - 0 1:e2e4";
+  grade(k, false, 0, "Bd3"); grade(k, false, 0, "Bd3");
+  for (const s of ["Nc3", "a3", "h3", "Qe2", "Re1"]) grade(k, false, 0, s);
+  const w = stats.pos[k].w;
+  const afterSix = { n: Object.keys(w).length, bd3: w.Bd3 };
+  for (let i = 0; i < 150; i++) grade(k, false, 0, "h3");
+  const cap = stats.pos[k].w.h3;
+  stats.pos = {};
+  return { afterSix, cap };
+});
+check("miss log: 6 distinct wrong moves keep 5, the repeated one keeps its count, cap 99",
+  missLog.afterSix.n === 5 && missLog.afterSix.bd3 === 2 && missLog.cap === 99,
+  JSON.stringify(missLog));
+
+// v4 -> v5 storage: a v4 blob is adopted verbatim (its records are valid v5
+// records without the "w" miss log) and rewritten under the v5 key. Skipped when
+// this Chromium denies localStorage on file:// - the in-page STORE then runs
+// memory-only and there is nothing to migrate.
+const canStore = await page.evaluate(() => {
+  try { localStorage.setItem("t", "1"); localStorage.removeItem("t"); return true; } catch { return false; }
+});
+if (canStore) {
+  await page.evaluate(() => {
+    localStorage.setItem("colle-hippo:v4", JSON.stringify({
+      pos: { "8/8/8/8/8/8/8/8 w - - 0 1:e2e4": { ok: 2, no: 1, streak: 1, last: 1, ms: 900 } },
+      pz: {}, day: "", today: 0, theme: 1,
+    }));
+    localStorage.removeItem("colle-hippo:v5");
+  });
+  await page.reload();
+  await page.waitForTimeout(700);
+  const mig = await page.evaluate(() => ({
+    rec: stats.pos["8/8/8/8/8/8/8/8 w - - 0 1:e2e4"],
+    v5: !!localStorage.getItem("colle-hippo:v5"),
+    theme: S.theme,
+  }));
+  check("v4 progress is adopted verbatim and rewritten as v5",
+    !!mig.rec && mig.rec.ok === 2 && mig.rec.no === 1 && mig.v5 && mig.theme === 1,
+    JSON.stringify(mig));
+  await page.evaluate(() => { localStorage.removeItem("colle-hippo:v4"); localStorage.removeItem("colle-hippo:v5"); });
+} else {
+  console.log("- v4 -> v5 migration not checkable here (localStorage denied on file://)");
+}
+
+// Enforce the offline promise: nothing in the whole run above may have called fetch,
+// and no request of any kind (fonts, images, stylesheets) may have left the page.
+const fetches = await page.evaluate(() => window.__fetchCalls);
+check("app never calls fetch", fetches.length === 0, fetches.join(" | "));
+check("no request leaves the page origin", external.length === 0, external.join(" | "));
 
 check("no console or page errors", errors.length === 0, errors.join(" | "));
 await browser.close();
