@@ -934,3 +934,38 @@ Coverage matrix: covered 82 -> 84, missing 242 -> 240.
 Remaining from the eleven proposals: six Hippopotamus lines (3.e5, 2.Nf3 setups,
 Bg5, the h4/g4 storm from the Be3 tabiya, and the flank first moves), plus two
 cheap pointer notes on the Colle side (3...Bb4+ and 1...e5, both already scored).
+
+## Coverage batch 3: the Hippopotamus side
+
+| Line | Answers | Measured |
+|---|---|---|
+| `h-3e5` | 3.e5, the space grab before it is prepared | 689 of 4,526 player games (15.2%) against **1 game in 6,574** in the master sample — the sharpest divergence in the data |
+| `h-bg5` | 4.Bg5, the pin against the ...Nf6 order | 118 of 690 player (17.1%), 147 of 1,686 master (8.7%) — the largest uncovered conditional share at any counted node |
+| `h-2nf3` | 2.Nf3 and the King's Indian Attack | 24.0% after 1.e4 g6 and 26.3% after 1.e4 d6 |
+| `h-g3` | flank first moves | 1.g3 is 2.32% of 10.16% of games opening with a move nothing here answered |
+
+**One line failed its own grading and was changed, not defended.** `h-bg5`
+ended on `...Nbd7`, a 32 cp concession. The table's first choice there is
+`...a6` — which is also a wall move, so the honest line and the thematic one
+turned out to be the same move. `...b5` follows and the queenside is where
+Black's play is against a queen already on d2.
+
+`h-3e5` carries the most useful single fact found in the whole research: after
+`3.e5 d6` the stored analysis has **Black better**, not merely equal. An early
+e5 against the crouch is a concession. That is checkable, it is in the table,
+and the note says exactly that and no more.
+
+All four: **every drilled move grades `best` or `equal`.** Thirteen positions
+analysed; `src/data/evals.js` is 279 rows, page 386 KB against the 400 KB budget.
+
+Repertoire over 466 drilled moves:
+`best 162, equal 273, concession 29, inferior 2, losing 0, unknown 0`.
+Coverage matrix: covered 84 -> 88, missing 240 -> 235.
+
+### The flaky shuffle check, fixed properly this time
+
+It played the move over the wire and read the panel afterwards, racing the
+850 ms auto-advance. My first fix read both fields in one evaluate, which made
+the check *honest* but still time-dependent — and it failed again under load.
+Playing and reading in a single evaluate removes the race rather than widening
+the tolerance. Confirmed over repeated runs.

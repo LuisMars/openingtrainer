@@ -449,7 +449,7 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
       p = make(p, m);
     });
   }
-  eq(n, 444, "drilled moves");
+  eq(n, 466, "drilled moves");
   eq(counts.unknown || 0, 0, "unknown drilled moves");
   // No drilled move reaches the lost region any more. The W4 content audit
   // deleted syn-greek (its Bxh7+ was -269 in a position kolt reaches and
@@ -457,7 +457,7 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // accepts, so nothing the trainer asks the user to play is a move the
   // shipped analysis calls lost.
   eq(counts.losing || 0, 0, "losing drilled moves");
-  eq(counts.best + counts.equal, 413, "best+equal drilled moves");
+  eq(counts.best + counts.equal, 435, "best+equal drilled moves");
   eq(counts.concession, 29, "concession drilled moves");
   // The only two left outside accept are meant to be: ohanlon's Rxd6 is a real
   // game move in a position the table still scores as won, and syn-hipdown is
