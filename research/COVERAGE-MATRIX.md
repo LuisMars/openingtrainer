@@ -379,7 +379,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| e4 | 58.9% (291474) | 73.1% (112838) | 48.1% (256028) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-bg5` (synthetic), `h-2nf3` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic) | yes |
+| e4 | 58.9% (291474) | 73.1% (112838) | 48.1% (256028) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-bg5` (synthetic), `h-2nf3` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic) | yes |
 | d4 | 25.4% (125718) | 21.4% (32987) | 32.1% (170669) | covered | `hip-g16` (game), `eco-averb` (eco), `eco-psam` (eco), `eco-rat` (eco), `syn-london` (synthetic) | yes |
 | c4 | 3.2% (15627) | 1.9% (2955) | 5.9% (31592) | covered | `syn-english` (synthetic) | yes |
 | Nf3 | 2.4% (11962) | 3.3% (5154) | 10.1% (53785) | covered | `hip66` (game) | yes |
@@ -419,7 +419,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| d4 | 42.2% (4284) | 95.8% (28996) | 88.9% (5979) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic) | yes |
+| d4 | 42.2% (4284) | 95.8% (28996) | 88.9% (5979) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic) | yes |
 | Nf3 | 24.0% (2433) | 3.6% (1087) | 2.9% (193) | covered | `h-2nf3` (synthetic) | yes |
 | Bc4 | 8.9% (906) | 0.1% (34) | 0.3% (18) | missing | — | no |
 | f4 | 8.1% (819) | 0.1% (16) | 0.3% (20) | missing | — | no |
@@ -449,7 +449,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 |---|---|---|---|---|---|---|
 | Nf3 | 26.0% (1177) | 49.6% (17669) | 24.7% (1622) | covered | `hip-g16` (game), `eco-mong` (eco) | yes |
 | e5 | 15.2% (689) | 0 / 35588 | 0.0% (1) | covered | `h-3e5` (synthetic) | yes |
-| Nc3 | 13.8% (623) | 18.4% (6556) | 60.9% (4002) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-paus` (eco), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic) | yes |
+| Nc3 | 13.8% (623) | 18.4% (6556) | 60.9% (4002) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-paus` (eco), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic) | yes |
 | c3 | 11.3% (513) | 9.7% (3444) | 3.3% (219) | missing | — | no |
 | c4 | 10.1% (457) | 9.6% (3425) | 4.9% (319) | transposes | — | yes |
 | f4 | 9.4% (425) | 5.7% (2027) | 1.5% (101) | covered | `eco-3pawn` (eco) | no |
@@ -597,7 +597,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Be3 | 35.8% (91) | — | 47.1% (976) | covered | `syn-hipdown` (synthetic) | yes |
+| Be3 | 35.8% (91) | — | 47.1% (976) | covered | `h-h4storm` (synthetic), `h-g4storm` (synthetic), `syn-hipdown` (synthetic) | yes |
 | Nf3 | 20.9% (53) | — | 14.0% (290) | covered | `hip-e4` (model), `hip-e5` (model), `syn-hipc5` (synthetic) | yes |
 | f4 | 18.1% (46) | — | 22.2% (459) | covered | `hip-f4` (theory), `eco-paus` (eco), `syn-e5punish` (synthetic) | yes |
 | Bg5 | 7.1% (18) | — | 3.2% (67) | missing | — | no |

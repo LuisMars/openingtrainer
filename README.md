@@ -7,7 +7,7 @@ exception and it is opt-in: paste a lichess API token in Settings and the Study 
 statistics panel, which fetches from `explorer.lichess.org` each time you open it. Without a stored
 token, nothing leaves the page.
 
-**59 lines · 466 trainable positions · 80 tactics puzzles.**
+**61 lines · 478 trainable positions · 80 tactics puzzles.**
 
 ---
 
@@ -28,7 +28,7 @@ piece set (Cburnett standard, or a custom engraved set), and **drill book lines 
 
 ---
 
-## The 59 lines and where each came from
+## The 61 lines and where each came from
 
 Every line carries a visible tag. The tag is the claim being made.
 
@@ -83,7 +83,7 @@ Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
 1...e6, the move order that waits (added after the coverage count showed it was
 the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 22)
+### `model` and `synthetic` — written for this trainer (3 + 24)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
 Zukertort against a Queen's Indian · locking the centre then ...f5 · ...h5 against the pawn storm ·
@@ -93,7 +93,8 @@ how the Hippo loses · meeting the h4 lunge against the Modern · the ...c4 clam
 when Black's ...e5 equaliser lands · against the Dutch (a Leningrad shape) · against 1...c5 ·
 4...Be7, where there is no bishop to shoot at · 2...Nc6, the knight in front of the c-pawn ·
 the King's Indian shell completed · 3.e5 before it is prepared · 4.Bg5 against the
-...Nf6 order · 2.Nf3 and the King's Indian Attack · flank openings. The last seven
+...Nf6 order · 2.Nf3 and the King's Indian Attack · flank openings · h4 and g4 straight out of the
+Be3 tabiya. The last nine
 were built from the coverage count: each answers a reply the repertoire measurably
 met and had no line for, and every move in them was graded before a word was
 written about it.

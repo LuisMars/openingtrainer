@@ -15,3 +15,8 @@ rn1qk1nr/pbp2pbp/1p1pp1p1/8/3PP1P1/2N1BP2/PPPQ3P/R3KBNR b KQkq - 0 1	c7c5 d6d5
 # force it explicitly or a regeneration would drop the -269 that justifies the
 # note now warning against it.
 r1b1r1k1/ppqn1ppp/2n1p3/2bpP3/8/2PB1N2/PP1NQPPP/R1B2RK1 w - - 0 1	d3h7
+
+# The storm tabiya after 5.h4: alternatives the notes name, so each carries a number.
+rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP2P/2N1B3/PPP2PP1/R2QKBNR b KQkq - 0 1	b7b5 g8f6 c7c5
+# The storm tabiya after 5.g4: alternatives the notes name, so each carries a number.
+rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP1P1/2N1B3/PPP2P1P/R2QKBNR b KQkq - 0 1	b7b5 g8f6 c7c5

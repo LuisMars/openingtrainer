@@ -969,3 +969,48 @@ It played the move over the wire and read the panel afterwards, racing the
 the check *honest* but still time-dependent — and it failed again under load.
 Playing and reading in a single evaluate removes the race rather than widening
 the tolerance. Confirmed over repeated runs.
+
+## Coverage batch 4: the storm straight out of the Be3 tabiya
+
+`h-h4storm` and `h-g4storm`. W1-D found these in the master sample — the h-pawn
+goes forward from that tabiya in 95 of 677 games (14.0%) and the g-pawn in 63
+(9.3%) — while the player tree reaches the node too rarely to say, which is
+recorded rather than papered over. `hip-150` covers the storm *prepared by f3*;
+these are the versions where White simply throws the pawn, and the difference is
+the lesson: with no f3 in, g4 was never taken away, so after ...h5 the knight
+takes its natural square and the setup resumes.
+
+`research/named-moves.tsv` gained the two tabiya keys with `b5`, `Nf6` and `c5`,
+so the alternatives the notes could name each carry a number.
+
+Every drilled move accepted. Four positions analysed; `src/data/evals.js` is
+283 rows, page 391 KB against the 400 KB budget.
+
+Repertoire over 478 drilled moves:
+`best 167, equal 280, concession 29, inferior 2, losing 0, unknown 0`.
+
+## The eleven coverage proposals, reconciled
+
+| Proposal | State |
+|---|---|
+| Colle 1...e6 | **built** (`c-1e6`) |
+| Colle 4...Be7 | **built** (`c-be7`) |
+| Colle 2...Nc6 | **built** (`c-2nc6`) |
+| Colle KID 4...O-O | **built** (`c-kid-oo`, playing c4 rather than the proposed Bd3, which graded 35 behind) |
+| Colle 1...d6 | folded into `c-kid-oo`; the proposal itself said a pointer, not a line |
+| Hippo 3.e5 | **built** (`h-3e5`) |
+| Hippo 2.Nf3 / KIA | **built** (`h-2nf3`) |
+| Hippo Bg5 | **built** (`h-bg5`) |
+| Hippo h4/g4 from the Be3 tabiya | **built** (`h-h4storm`, `h-g4storm`) |
+| Hippo flank first moves | **built** (`h-g3`); 1.e3 folds into the same shape, the rest are under the criterion's floor |
+| Hippo Réti 1.Nf3 g6 2.g3 | folded into `h-g3` as the proposal directed |
+
+Nine new lines, 34 drilled moves, all graded before any prose was written about
+them. Two proposals changed on contact with the analysis rather than being
+defended: `c-kid-oo`'s fourth move and `h-bg5`'s last.
+
+Still explicitly **not** done, and listed in `REPERTOIRE-PLAN.md`: the two
+pointer notes (3...Bb4+ and 1...e5), repair records for the deliberate-mistake
+lines, paired positions, frequency-weighted scheduling, and per-situation
+progress. 235 counted replies remain uncovered, which is expected — the plan
+stops at a teachable decision rather than expanding an unlimited tree.
