@@ -17,10 +17,15 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 400, height: 880 } });
 page.on("pageerror", (e) => errors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-// The app promises to work offline and makes no script-initiated network calls
-// (the masters-database panel was removed when lichess closed anonymous access
-// to the opening explorer, April 2026). Stub fetch before any page script runs
-// and count every call; the check at the end of this file asserts zero.
+// The app promises to work offline. That promise is conditional, and the
+// condition matters: the Masters database panel (src/html/board.html #libBox,
+// loadLib/paintLib in src/app.js) still exists and still fetches from
+// explorer.lichess.org - but only when the user has stored a lichess token AND
+// opened that panel on the Study screen. With no token, nothing reaches the
+// network, which is what the zero-fetch check below asserts and all it asserts.
+// An earlier version of this comment said the panel had been removed. It had
+// not; the claim was wrong and is corrected here rather than left to mislead
+// the next reader into thinking the fetch path is gone.
 await page.addInitScript(() => {
   window.__fetchCalls = [];
   window.fetch = (...a) => {
@@ -92,9 +97,21 @@ await drag(u.slice(0, 2), u.slice(2, 4));
 // is a pass; only the wait mode is data-dependent on which line the shuffle happened to
 // pick, so the check below stays agnostic to which one fired.
 check("correct answer is graded", (await page.innerText("#nMsg")).toLowerCase().includes("tap to continue"));
-check("plan panel is hidden before a shuffle answer and shown after",
-  planBefore === "none" && (await page.evaluate(() => el("planBox").style.display)) === "",
-  planBefore);
+// Read the panel and the post-answer window together, in one evaluate, because
+// they are only meaningful together: a clean answer with no note takes
+// armNext(850), whose timer advances to a fresh position and hides the plan
+// again. Reading the panel after a separate round trip therefore raced that
+// timer and failed whenever the machine was loaded enough to spend 850ms
+// getting back - a flaky check, not a flaky app. The claim worth making is
+// "while the post-answer window is open, the plan is shown", so assert both.
+{
+  const after = await page.evaluate(() => ({
+    display: el("planBox").style.display, pending: !!S.pending,
+  }));
+  check("plan panel is hidden before a shuffle answer and shown during the post-answer window",
+    planBefore === "none" && after.pending && after.display === "",
+    JSON.stringify({ before: planBefore, ...after }));
+}
 // The answer above was clean (no tries, no hint), so the stored-eval block must
 // not appear: correct play is not relitigated with numbers (commit b40bcaa).
 check("no engine block on a clean correct answer",
@@ -112,19 +129,19 @@ await page.evaluate(() => {
 });
 u = await page.evaluate(() => L().moves[S.ply][0]);
 // Pick a move that is guaranteed to be refused: not the wanted move, not a book
-// alternative (the ALT branch in tap() credits those), and not landing the right
-// piece on a setup target square (the setup branch may credit those too - the
-// target check alone over-excludes a little, which is fine for picking a certain
-// refusal without running the material search on every candidate).
+// alternative (the ALT branch in tap() credits those), not landing the right piece
+// on a setup target square (the setup branch may credit those too), and not one the
+// stored table puts first or inside its noise band, which playMove now accepts on
+// its own account. What is left is a move nothing in the app has a reason to credit.
 const alt = await page.evaluate((want) => {
-  const pos = nowPos();
+  const pos = nowPos(), row = evalFor(pos);
   const other = legal(pos).filter((m) => {
     const uu = sq(m.f) + sq(m.t);
     if (uu === want.slice(0, 4)) return false;
     if (altAt(pos, uu)) return false;
     const pc = pos.b[m.f];
     if (L().targets.some((x) => x[0] === sq(m.t) && x[1] === pc)) return false;
-    return true;
+    return GRADE.accept.indexOf(gradeMove(row, pos, m).verdict) < 0;
   });
   return sq(other[0].f) + sq(other[0].t);
 }, u);
@@ -147,7 +164,12 @@ const clues = await page.evaluate(() => {
   S.mode = "study"; S.li = 0; S.ply = 0;
   return { total, real, leaks };
 });
-check("hints have content", clues.real / clues.total > 0.9, `${clues.real}/${clues.total}`);
+// 0.9 was too loose to notice a real regression: rewording a shared PLAN string
+// to "no pawn can hit it yet" put a piece name in it, clueLeaks() rejected the
+// clue, and about 28 Hippopotamus wall positions silently lost their first-tier
+// hint - 436/442 down to 387/421, still comfortably over 0.9. The floor is now
+// close to the real figure so the next such slip fails instead of passing.
+check("hints have content", clues.real / clues.total > 0.97, `${clues.real}/${clues.total}`);
 check("hints never leak the move", clues.leaks === 0);
 
 // a setup line accepts any safe move onto its target squares (the Hippo move-order
@@ -178,6 +200,162 @@ check("drill acknowledges an out-of-order setup move without grading or advancin
 check("shuffle credits an out-of-order setup move and grades it correct",
   setup.shufMsg.includes("Correct") && setup.shufText.includes("formation") && setup.shufGraded && setup.pending === 1,
   setup.shufMsg);
+
+// ---- grading (W2/W3): the stored table decides, not a four-ply search ----
+// One prober for all of it: put the drill on a known line and ply, play a legal
+// move through playMove() exactly as a tap would, and report what the page did -
+// the message, whether the ply moved, and whether the record and the streak were
+// touched. Progress is wiped before each move and restored to empty after.
+const probe = (id, ply, sans, mode = "line") =>
+  page.evaluate(({ id, ply, sans, mode }) => {
+    const li = LINES.findIndex((l) => l.id === id);
+    const out = [];
+    for (const s of sans) {
+      S.mode = mode; S.li = li; S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0;
+      S.passKeys = new Set(); clearFree(); stats.pos = {}; S.run = 3; render(false);
+      const pos = posAt(LINES[li], ply);
+      const m = legal(pos).find((x) => san(pos, x).replace(/[+#]/g, "") === s.replace(/[+#!?]/g, ""));
+      if (!m) { out.push({ san: s, err: "illegal" }); continue; }
+      const k = key(LINES[li], ply);
+      const gate = setupGate(evalFor(pos), pos, m, LINES[li].targets);
+      playMove(pos, sq(m.t), m);
+      out.push({ san: s, reason: gate.reason, credit: gate.credit, ply: S.ply,
+        msg: el("nMsg").textContent, text: el("nText").textContent,
+        rec: stats.pos[k] || null, run: S.run, tries: S.tries, hint: S.hint });
+      if (S.pending) { clearTimeout(S.pending); S.pending = 0; }
+      clearFree();
+    }
+    stats.pos = {}; S.run = 0; S.mode = "study"; S.li = 0; S.ply = 0;
+    S.tries = 0; S.hint = 0; S.sel = null; clearFree(); render(false);
+    return out;
+  }, { id, ply, sans, mode });
+const refused = (r) => r.msg.includes("is legal, but");
+const free = (r) => !r.rec && r.run === 3 && r.tries === 0 && r.hint === 0;
+
+// Five comparable first moves: the whole top five is inside 9 cp, so every one of
+// them is chess. None may be marked wrong, and none may cost the record anything.
+const many = await probe("ck", 0, ["Nf3", "e4", "c4", "g3"]);
+check("several good moves are all accepted at one position",
+  many.every((r) => !refused(r) && r.ply === 0 && free(r)),
+  many.map((r) => r.san + ": " + r.msg.slice(0, 46)).join(" | "));
+check("the fifth-ranked move is accepted on its number, never on its rank",
+  !/rank|fifth|sixth|worst/i.test(many.find((r) => r.san === "g3").msg),
+  many.find((r) => r.san === "g3").msg);
+
+// Where the wall genuinely goes up in any order the gate stays open, and the row's
+// own stored continuation is what the page shows for the plan that follows.
+const wall = await probe("hip-e4", 5, ["a6", "c6"]);
+check("a free move order credits the wall move and names the stored line",
+  wall[0].credit && wall[0].msg.includes("builds the setup") &&
+    wall[0].msg.includes("Its line from here") &&
+    wall.every((r) => !refused(r) && r.ply === 5 && free(r)),
+  wall.map((r) => r.san + ": " + r.msg.slice(0, 40)).join(" | "));
+
+// A position that wants something concrete stays demanding: the wall move is not
+// credited for being a wall move, whatever it scores.
+const demand = await probe("hip66", 21, ["a6", "a5"]);
+check("an only-move position stays demanding",
+  demand[0].reason === "demanding" && !demand[0].msg.includes("builds the setup") &&
+    demand[0].msg.includes("asks for something concrete") && !refused(demand[1]),
+  demand[0].msg);
+
+// The hip-150 storm tabiya, the defect research/GRADING.md §6 settles: the engine
+// wants ...h5, so no wall move gets the move-order sentence here. ...h6 is not in
+// the table at all and must therefore cost nothing.
+const storm = await probe("hip-150", 13, ["Nd7", "a6", "h6", "h5"]);
+const stormH5 = await page.evaluate(() => {
+  const li = LINES.findIndex((l) => l.id === "hip-150");
+  const pos = posAt(LINES[li], 13), row = evalFor(pos);
+  const m = legal(pos).find((x) => san(pos, x) === "h5");
+  return gradeMove(row, pos, m).verdict;
+});
+check("the storm tabiya refuses the wall moves and accepts ...h5",
+  storm.slice(0, 3).every((r) => r.reason === "demanding" && !r.msg.includes("builds the setup")) &&
+    !refused(storm[3]) && stormH5 === "best",
+  storm.map((r) => r.san + ": " + r.reason).join(" | ") + " · h5 grades " + stormH5);
+check("an unanalysed move is said to be unanalysed and costs nothing",
+  storm[2].msg.includes("has not searched this move") && free(storm[2]) && storm[2].ply === 13,
+  storm[2].msg);
+
+// 4.c3 against 3...Bf5 is the autopilot move: scored, 36 cp behind 4.c4, playable
+// and priced. The number must be on screen and the drill must carry on.
+const conc = await probe("anti", 6, ["c3"]);
+check("a concession carries on with its cost stated in centipawns",
+  conc[0].msg.includes("36 centipawns") && conc[0].msg.includes("Playable") &&
+    conc[0].ply === 6 && !!conc[0].rec && conc[0].rec.no === 1,
+  conc[0].msg);
+// 4.c3 is scored rather than ranked, so its rank is 0. Nothing may present that as
+// a place in a list, here or anywhere else.
+check("a scored move's rank of 0 is never shown as a place",
+  !/rank|sixth|worst|last of/i.test(conc[0].msg), conc[0].msg);
+
+// Shuffle credits an accepted alternative the same way it credits a setup move:
+// the board shows the move the user actually played, and the record gets the tick.
+const shufGood = await probe("ck", 0, ["c4"], "shuffle");
+check("shuffle credits a good alternative and shows the move played",
+  shufGood[0].msg.includes("Correct") && shufGood[0].text.includes("sound here") &&
+    !!shufGood[0].rec && shufGood[0].rec.ok === 1,
+  shufGood[0].text.slice(0, 120));
+
+// A lost position: the best defence may be named, and nothing may read as a rescue.
+// The W4 audit deleted syn-greek, which used to supply this case, and no drilled
+// position is lost any longer - which is the point of that audit, but it leaves
+// the UI with no real lost position to show. Build one: a temporary line and a
+// stored row for it, both constructed here and torn down afterwards. The cp
+// values are inputs to the check, not evaluations of anything.
+const lostSetup = await page.evaluate(() => {
+  const fen = "6k1/5ppp/8/8/8/8/5PPP/3R2K1 b - - 0 1";   // Black a rook down
+  const pos = fenPos(fen);
+  const uci = (s) => { const m = legal(pos).find((x) => san(pos, x).replace(/[+#]/g, "") === s); return uciOf(m); };
+  const kh8 = uci("Kh8"), g6 = uci("g6");
+  LINES.push({ id: "tmp-lost", ch: "Colle as White", you: "b", name: "Constructed: a lost position",
+    src: "constructed", plan: "", start: fen, targets: [],
+    // two plies, so playing the first one grades rather than completing the line
+    moves: [[kh8, "Kh8", ""], [(() => {
+      const q = make(pos, legal(pos).find((x) => uciOf(x) === kh8));
+      const r = legal(q).find((x) => san(q, x).replace(/[+#]/g, "") === "Rd8");
+      return uciOf(r); })(), "Rd8+", ""]] });
+  EVL[posKey(pos)] = { d: 20, m: [[kh8, "Kh8", -650, null], [g6, "g6", -720, null]], pv: ["Kh8"] };
+  return { li: LINES.length - 1, fen };
+});
+// Probe a move other than the line's own, so the grading path runs rather than
+// the "correct" path: ...g6 is the row's second entry and 70cp behind.
+const lost = await probe("tmp-lost", 0, ["g6"]);
+const lostBest = await page.evaluate(({ fen }) => {
+  const pos = fenPos(fen), row = evalFor(pos);
+  const best = legal(pos).find((m) => uciOf(m) === row.m[0][0]);
+  const g = gradeMove(row, pos, best);
+  g.reply = replyAfter(pos, best, row, g);
+  return { line: gradeLine(g), verdict: g.verdict, situation: g.situation, after: g.after };
+}, lostSetup);
+check("the best move in a lost position grades best and stays lost",
+  lostBest.verdict === "best" && lostBest.situation === "lost" &&
+    lostBest.line.includes("stays lost") && !/saved|rescued|winning|equal footing/i.test(lostBest.line),
+  lostBest.line);
+check("a defence in a lost position is named without claiming a rescue",
+  lost[0].msg.includes("stays lost") && lost[0].msg.includes("not a rescue") &&
+    !/saved|rescued|winning/i.test(lost[0].msg),
+  lost[0].msg);
+await page.evaluate(({ fen }) => { LINES.pop(); delete EVL[posKey(fenPos(fen))]; }, lostSetup);
+
+// The end of an analysed branch: the line's own aim, and the two things the page
+// can actually offer next. No live analysis is promised anywhere in it.
+const ended = await page.evaluate(() => {
+  const li = LINES.findIndex((l) => l.id === "eco-mong3");
+  const ply = LINES[li].moves.length - 1;
+  S.mode = "line"; S.li = li; S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0;
+  S.passKeys = new Set(); clearFree(); stats.pos = {}; render(false);
+  const pos = posAt(LINES[li], ply), m = findMove(pos, LINES[li].moves[ply][0]);
+  playMove(pos, sq(m.t), m);
+  const msg = el("nMsg").textContent;
+  if (S.pending) { clearTimeout(S.pending); S.pending = 0; }
+  stats.pos = {}; S.run = 0; S.mode = "study"; S.li = 0; S.ply = 0; clearFree(); render(false);
+  return msg;
+});
+check("a finished line states the plan and offers another line or free exploration",
+  ended.includes("Line complete") && ended.includes("Study") && ended.includes("nothing is graded") &&
+    !/analys(e|i)s of your|engine will|we will look/i.test(ended),
+  ended);
 
 // tactics
 await page.evaluate(() => go("menu"));
@@ -258,6 +436,243 @@ check("miss log: 6 distinct wrong moves keep 5, the repeated one keeps its count
   missLog.afterSix.n === 5 && missLog.afterSix.bd3 === 2 && missLog.cap === 99,
   JSON.stringify(missLog));
 
+// ---------- foundation regressions (W1-A) ----------
+
+// A deferred callback armed in one session must not act in the next. Navigating
+// away cancels it outright; the epoch check below is the belt to that braces, for
+// a callback that escaped cancellation and fired anyway.
+const timers = await page.evaluate(async () => {
+  startPuzzle(0);
+  armPz(120);
+  const armed = !!S.pending;
+  go("menu");
+  const cleared = S.pending;
+  await new Promise((r) => setTimeout(r, 320));
+  let fired = 0;
+  later(() => { fired++; }, 60);
+  S.epoch++;
+  await new Promise((r) => setTimeout(r, 220));
+  return { armed, cleared, screen: S.screen, swallowsTap: skipNext(), fired };
+});
+check("leaving a screen cancels the pending auto-advance and frees the next tap",
+  timers.armed && timers.cleared === 0 && timers.screen === "menu" && timers.swallowsTap === false,
+  JSON.stringify(timers));
+check("a callback that outlived its session does not run", timers.fired === 0, JSON.stringify(timers));
+
+// Autoplay is the one control that used to step S.ply without clearing the free
+// branch, so nowPos() kept returning the off-book position while the notes and the
+// progress bar marched on.
+const play = await page.evaluate(() => {
+  go("board");
+  S.mode = "study"; S.li = 0; S.ply = 0; clearFree(); stop(); render(false);
+  const m = legal(nowPos()).find((x) => uciOf(x) === "g1f3");
+  S.sel = "g1"; tap("f3");
+  const off = S.free.length;
+  toggleplay();
+  const out = { off, free: S.free.length, playing: !!S.timer,
+    matches: nowPos().b.join("") === posAt(L(), S.ply).b.join("") };
+  stop(); clearFree(); S.sel = null; go("menu");
+  void m;
+  return out;
+});
+check("autoplay clears the free branch instead of leaving the board stale",
+  play.off === 1 && play.free === 0 && play.playing && play.matches, JSON.stringify(play));
+
+// Import is a trust boundary. Out-of-range theme/set indices are clamped (they are
+// used to index THEMES[]/SETS[] unchecked), counters are bounded, and a miss-log key
+// that is not a plausible SAN is dropped rather than stored and later printed.
+const guard = await page.evaluate(() => {
+  const k = "8/8/8/8/8/8/8/8 w - - 0 1:e2e4";
+  const saved = JSON.stringify(stats);
+  el("pData").value = JSON.stringify({ v: 5, theme: 99, set: 42, today: -5, bookOnly: true,
+    pz: { 1: { ok: "yes", no: 1, ms: 5 } },
+    pos: { [k]: { ok: 2, no: 3, streak: 1.7, last: 1, ms: 900,
+      w: { "<img src=x>": 9, Bd3: 4 } } } });
+  el("pImport").click();
+  const r = stats.pos[k];
+  const out = { theme: stats.theme, set: stats.set, today: stats.today,
+    streak: r.streak, w: Object.keys(r.w), pzOk: stats.pz["1"].ok, sTheme: S.theme, sSet: S.set };
+  el("pData").value = JSON.stringify({ v: 5, pos: { [k]: { ok: -1, no: 0 } } });
+  el("pImport").click();
+  out.rejected = el("pData").value.startsWith("That is not a valid backup");
+  stats = JSON.parse(saved);
+  return out;
+});
+check("import clamps theme/set indices and bounds every counter",
+  guard.theme === 0 && guard.set === 0 && guard.today === 0 && guard.streak === 1 &&
+  guard.pzOk === 0 && guard.sTheme === 0 && guard.sSet === 0, JSON.stringify(guard));
+check("import drops a miss-log key that is not a plausible move",
+  guard.w.length === 1 && guard.w[0] === "Bd3", JSON.stringify(guard.w));
+check("import refuses a record with a negative counter", guard.rejected === true);
+
+// The Progress screen prints the wrong move a record names. It is built with
+// textContent, so a key that arrived as markup stays text.
+const xss = await page.evaluate(() => {
+  const k = key(LINES[0], 0), saved = JSON.stringify(stats.pos);
+  stats.pos = {};
+  stats.pos[k] = { ok: 0, no: 3, streak: 0, last: Date.now(), ms: 1000,
+    w: { "<img src=x onerror='window.__xss=1'>": 3 } };
+  renderWeak();
+  const out = { imgs: el("pWeak").querySelectorAll("img").length,
+    asText: el("pWeak").textContent.includes("<img"), flag: !!window.__xss };
+  stats.pos = JSON.parse(saved);
+  return out;
+});
+check("a miss-log key cannot inject markup into the weak-spots list",
+  xss.imgs === 0 && xss.asText && !xss.flag, JSON.stringify(xss));
+
+// The crash bar prints an error message, and an error message can carry anything.
+const crashSafe = await page.evaluate(() => {
+  crash("<img src=x onerror='window.__c=1'>");
+  const out = { imgs: el("crash").querySelectorAll("img").length,
+    asText: el("crash").textContent.includes("<img"),
+    says: el("crash").textContent.includes("reloading is safe") || el("crash").textContent.includes("not storing") };
+  el("crash").classList.remove("on"); el("crash").innerHTML = "";
+  return out;
+});
+check("the crash bar prints an error message as text, not markup",
+  crashSafe.imgs === 0 && crashSafe.asText && crashSafe.says, JSON.stringify(crashSafe));
+
+// Promotion: the chooser offers four pieces and plays the one picked, rather than
+// queening silently. The shipped data asks for no promotion, so this is the only
+// place the branch is exercised.
+const promo = await page.evaluate(() => {
+  go("board");
+  S.mode = "study"; S.li = 0; S.ply = 0; S.flip = false; S.sel = null;
+  S.free = [{ uci: "h2h4", san: "h4" }];
+  S.fpos = fenPos("4k3/P7/8/8/8/8/8/4K3 w - -");
+  render(false);
+  S.sel = "a7"; tap("a8");
+  const box = el("promo"), btns = [...box.querySelectorAll("button")];
+  const out = { open: box.classList.contains("on"), n: btns.length,
+    labels: btns.map((b) => b.getAttribute("aria-label")) };
+  btns[3].click();
+  const last = S.free[S.free.length - 1];
+  out.uci = last.uci; out.san = last.san; out.stillOpen = box.classList.contains("on");
+  clearFree(); S.sel = null; go("menu");
+  return out;
+});
+check("a promotion asks which piece and plays the one chosen",
+  promo.open && promo.n === 4 && promo.uci === "a7a8n" && promo.san === "a8=N" && !promo.stillOpen,
+  JSON.stringify(promo));
+
+// ...and the answer is compared on the full uci, suffix included: queening when the
+// line wants a knight is a wrong move, not a right one.
+const promoGrade = await page.evaluate(() => {
+  const savedLine = PZLINE, savedMode = S.mode, savedStats = JSON.stringify(stats.pos);
+  // Hand-built because no user move in the shipped set promotes.
+  PZLINE = { id: "pz:w1a", ch: "Tactics", you: "w", name: "test",
+    pz: { id: "w1a", r: 1500, t: "test" }, src: "test",
+    start: "4k3/P7/8/8/8/8/8/4K3 w - -", targets: [],
+    moves: [["a7a8n", "a8=N", ""]] };
+  S.mode = "puzzle"; S.ply = 0; S.sel = null; S.tries = 0; S.hint = 0; S.flip = false;
+  clearFree(); render(false);
+  const pos = nowPos();
+  playMove(pos, "a8", legal(pos).find((x) => uciOf(x) === "a7a8q"));
+  const wrong = { ply: S.ply, msg: el("nMsg").textContent };
+  S.sel = null; S.tries = 0;
+  playMove(nowPos(), "a8", legal(nowPos()).find((x) => uciOf(x) === "a7a8n"));
+  const right = { ply: S.ply, msg: el("nMsg").textContent };
+  stopAll(); PZLINE = savedLine; S.mode = savedMode; stats.pos = JSON.parse(savedStats);
+  S.ply = 0; S.sel = null; clearFree(); go("menu");
+  return { wrong, right };
+});
+check("queening when a knight was wanted is not accepted",
+  promoGrade.wrong.ply === 0 && promoGrade.wrong.msg.includes("is legal") &&
+  promoGrade.right.ply === 1 && promoGrade.right.msg.includes("Solved"),
+  JSON.stringify(promoGrade));
+
+// The masters panel paints remote JSON. Strings go through esc(); the numbers have
+// to be coerced, because a string where a count belongs concatenates instead of
+// adding and lands in innerHTML verbatim. Also: lichess writes a promotion uci in
+// full ("e7e8q"), so the "ours" test compares the full uci now.
+const lib = await page.evaluate(() => {
+  const box = el("lib");
+  paintLib({
+    white: "<img src=x onerror='window.__lib=1'>", draws: "", black: "",
+    opening: { eco: "A00", name: "<b>x</b>" },
+    moves: [{ uci: "e2e4", san: "e4", white: "<b onmouseover='window.__lib=1'>", draws: "", black: "" }],
+  });
+  const dirty = { imgs: box.querySelectorAll("img").length, bolds: box.querySelectorAll("b[onmouseover]").length,
+    flag: !!window.__lib, text: box.textContent };
+  paintLib({ white: 10, draws: 2, black: 8, opening: null,
+    moves: [{ uci: "e2e4", san: "e4", white: 6, draws: 1, black: 3 }] });
+  const clean = { games: box.textContent.includes("20 master games"), row: box.textContent.includes("e4") };
+  box.innerHTML = "";
+  return { dirty, clean };
+});
+check("the masters panel cannot be made to inject markup through its numbers",
+  lib.dirty.imgs === 0 && lib.dirty.bolds === 0 && !lib.dirty.flag &&
+  lib.clean.games && lib.clean.row, JSON.stringify(lib));
+
+// A failed write is a write that did not happen, whichever tier took it. save()
+// used to swallow the error, so the menu and the crash bar went on claiming the
+// progress was kept.
+const writeFail = await page.evaluate(async () => {
+  const real = STORE.set, wasMem = MEMONLY;
+  MEMONLY = false;
+  STORE.set = () => Promise.reject(new Error("QuotaExceededError"));
+  await save();
+  const flagged = MEMONLY;
+  STORE.set = real;
+  go("menu");
+  const shown = el("mStore").textContent;
+  crash("test");
+  const says = el("crash").textContent;
+  el("crash").classList.remove("on"); el("crash").innerHTML = "";
+  MEMONLY = wasMem; go("menu");
+  return { flagged, shown, safe: says.includes("reloading is safe") };
+});
+check("a rejected write marks the session memory-only and the UI says so",
+  writeFail.flagged && writeFail.shown.includes("not letting the trainer store anything") && !writeFail.safe,
+  JSON.stringify(writeFail));
+
+// The promotion chooser closes over the position it was opened on. Stepping the
+// ply behind its back used to leave it live, and it then played from a board that
+// is no longer on screen.
+const stale = await page.evaluate(() => {
+  go("board");
+  S.mode = "study"; S.li = 0; S.ply = 0; S.flip = false; S.sel = null;
+  S.free = [{ uci: "h2h4", san: "h4" }];
+  S.fpos = fenPos("k7/4P3/8/8/8/8/8/4K3 w - -");
+  render(false);
+  S.sel = "e7"; tap("e8");
+  const opened = el("promo").classList.contains("on");
+  S.ply = 1; clearFree(); render(true);        // what ArrowRight does
+  const out = { opened, stillOpen: el("promo").classList.contains("on"), ply: S.ply, free: S.free.length };
+  S.ply = 0; clearFree(); S.sel = null; go("menu");
+  return out;
+});
+check("a ply change closes the promotion chooser instead of leaving it live",
+  stale.opened && !stale.stillOpen && stale.free === 0, JSON.stringify(stale));
+
+// Untrusted keys must not reach a prototype: pos["__proto__"] in a parsed backup
+// used to set the prototype of the map rather than store a record.
+const proto = await page.evaluate(() => {
+  const saved = JSON.stringify(stats);
+  const clean = cleanStats(JSON.parse('{"pos":{"__proto__":{"ok":1,"no":0},"a/b:e2e4":{"ok":2,"no":0}},' +
+    '"pz":{"__proto__":{"ok":1,"no":0,"ms":5}}}'));
+  const out = { keys: Object.keys(clean.pos).sort(), pzKeys: Object.keys(clean.pz),
+    polluted: ({}).ok !== undefined, protoIsNull: Object.getPrototypeOf(clean.pos) === null };
+  stats = JSON.parse(saved);
+  return out;
+});
+check("a __proto__ key in a backup is stored as a key, not a prototype",
+  proto.keys.length === 2 && proto.keys.includes("__proto__") && proto.pzKeys.length === 1 &&
+  !proto.polluted && proto.protoIsNull, JSON.stringify(proto));
+
+// Reset rebuilds `stats` from scratch; leaving bookOnly out of it wiped the setting
+// from storage while the options sheet still showed it on.
+const reset = await page.evaluate(() => {
+  S.bookOnly = true; stats.bookOnly = true;
+  el("pReset").click(); el("pReset").click();
+  const out = { stored: stats.bookOnly, live: S.bookOnly };
+  S.bookOnly = false; stats.bookOnly = false; save();
+  return out;
+});
+check("resetting progress keeps the book-lines-only setting",
+  reset.stored === true && reset.live === true, JSON.stringify(reset));
+
 // v4 -> v5 storage: a v4 blob is adopted verbatim (its records are valid v5
 // records without the "w" miss log) and rewritten under the v5 key. Skipped when
 // this Chromium denies localStorage on file:// - the in-page STORE then runs
@@ -284,13 +699,179 @@ if (canStore) {
     !!mig.rec && mig.rec.ok === 2 && mig.rec.no === 1 && mig.v5 && mig.theme === 1,
     JSON.stringify(mig));
   await page.evaluate(() => { localStorage.removeItem("colle-hippo:v4"); localStorage.removeItem("colle-hippo:v5"); });
+
+  // load() used to assign straight from JSON.parse, and applyTheme() ran outside its
+  // try/catch: a stored theme index from a newer build threw before go("menu") and
+  // left a blank page with no way back. Startup must reach the menu regardless.
+  await page.evaluate(() => {
+    localStorage.setItem("colle-hippo:v5", JSON.stringify({
+      pos: { "8/8/8/8/8/8/8/8 w - - 0 1:e2e4": { ok: 1, no: 0, streak: 1, last: 1, ms: 500 } },
+      pz: {}, day: "", today: 0, theme: 99, set: 42, bookOnly: true,
+    }));
+  });
+  await page.reload();
+  await page.waitForTimeout(700);
+  const boot = await page.evaluate(() => ({
+    menu: el("scMenu").classList.contains("on"), screen: S.screen,
+    theme: S.theme, set: S.set, book: S.bookOnly,
+    kept: !!stats.pos["8/8/8/8/8/8/8/8 w - - 0 1:e2e4"],
+  }));
+  check("an out-of-range stored theme does not brick startup",
+    boot.menu && boot.screen === "menu" && boot.theme === 0 && boot.set === 0 && boot.book === true && boot.kept,
+    JSON.stringify(boot));
+  await page.evaluate(() => localStorage.removeItem("colle-hippo:v5"));
+
+  // Loading must be lenient per record. A single bad field (a negative ms, which a
+  // backwards clock step between armClock() and the answer really does produce) used
+  // to make load() reject the whole blob and start empty — and the next save() then
+  // wrote that empty set straight over the user's progress, permanently.
+  const goodKey = "8/8/8/8/8/8/8/8 w - - 0 1:e2e4";
+  const badKey = "8/8/8/8/8/8/8/8 b - - 0 1:e7e5";
+  await page.evaluate(([g, b]) => {
+    localStorage.setItem("colle-hippo:v5", JSON.stringify({
+      pos: { [g]: { ok: 4, no: 1, streak: 2, last: 1, ms: 900 },
+        [b]: { ok: 1, no: 0, streak: 1, last: 1, ms: -40 },
+        broken: "not a record" },
+      pz: {}, day: "", today: 0, theme: 1,
+    }));
+  }, [goodKey, badKey]);
+  await page.reload();
+  await page.waitForTimeout(700);
+  const kept = await page.evaluate(async ([g, b]) => {
+    const before = { n: Object.keys(stats.pos).length, good: stats.pos[g], bad: stats.pos[b], theme: S.theme };
+    bumpToday();
+    await new Promise((r) => setTimeout(r, 120));
+    const stored = JSON.parse(localStorage.getItem("colle-hippo:v5"));
+    return { before, storedKeys: Object.keys(stored.pos).length, storedGood: stored.pos[g] };
+  }, [goodKey, badKey]);
+  check("one bad record does not cost the user the rest of a stored blob",
+    kept.before.n === 2 && kept.before.good.ok === 4 && kept.before.bad && kept.before.bad.ms === 0 &&
+    kept.before.theme === 1 && kept.storedKeys === 2 && kept.storedGood.ok === 4,
+    JSON.stringify(kept));
+
+  // An unreadable blob is the one thing refused outright, and then nothing is
+  // written over it: overwriting is the only irreversible thing here.
+  await page.evaluate(() => localStorage.setItem("colle-hippo:v5", "{ not json"));
+  await page.reload();
+  await page.waitForTimeout(700);
+  const held = await page.evaluate(async () => {
+    const out = { held: SAVE_HELD, note: el("mStore").textContent };
+    bumpToday();
+    await new Promise((r) => setTimeout(r, 120));
+    out.untouched = localStorage.getItem("colle-hippo:v5") === "{ not json";
+    el("pReset").click(); el("pReset").click();     // Reset is explicit consent to write
+    await new Promise((r) => setTimeout(r, 120));
+    out.afterReset = SAVE_HELD;
+    out.written = localStorage.getItem("colle-hippo:v5") !== "{ not json";
+    return out;
+  });
+  check("an unreadable stored blob is left alone until the user says otherwise",
+    held.held && held.note.includes("could not be read") && held.untouched &&
+    held.afterReset === false && held.written, JSON.stringify(held));
+  await page.evaluate(() => localStorage.removeItem("colle-hippo:v5"));
 } else {
-  console.log("- v4 -> v5 migration not checkable here (localStorage denied on file://)");
+  console.log("- v4 -> v5 migration and startup-resilience not checkable here (localStorage denied on file://)");
 }
 
 // Enforce the offline promise: nothing in the whole run above may have called fetch,
 // and no request of any kind (fonts, images, stylesheets) may have left the page.
 const fetches = await page.evaluate(() => window.__fetchCalls);
+// A backup has to survive the round trip, and it has to leave the token behind.
+// The Wave 3 gate asks for progress surviving export/import; nothing tested the
+// export side, only import of a hand-written blob.
+{
+  const r = await page.evaluate(async () => {
+    localStorage.setItem("colle-hippo:lichess-token", "lip_thisIsNotARealToken00");
+    const key = Object.keys(KEYCACHE)[0] || Object.keys(EVL)[0];
+    stats.pos[key] = { ok: 3, no: 1, streak: 2, last: 1700000000000, ms: 1234, w: { Bd3: 2 } };
+    stats.theme = 1; stats.set = 1; stats.bookOnly = true; stats.today = 4; stats.day = "2026-09-20";
+    await save();
+    go("progress"); el("pExport").onclick();
+    const blob = el("pData").value;
+    // wipe everything the backup should restore, then import it back
+    stats = { pos: {}, pz: {}, day: "", today: 0, theme: 0, set: 0, bookOnly: false };
+    S.theme = 0; S.set = 0; S.bookOnly = false; await save();
+    el("pData").value = blob; el("pImport").onclick();
+    const back = stats.pos[key];
+    return {
+      hasToken: /lip_|lio_/.test(blob),
+      said: el("pData").value,
+      rec: back, theme: stats.theme, set: stats.set, bookOnly: stats.bookOnly,
+      today: stats.today, day: stats.day,
+      tokenKept: localStorage.getItem("colle-hippo:lichess-token"),
+    };
+  });
+  check("a backup round-trips without carrying the lichess token",
+    r.hasToken === false && r.said === "Imported." &&
+    r.rec && r.rec.ok === 3 && r.rec.no === 1 && r.rec.streak === 2 && r.rec.ms === 1234 &&
+    r.rec.w && r.rec.w.Bd3 === 2 &&
+    r.theme === 1 && r.set === 1 && r.bookOnly === true && r.today === 4 &&
+    r.tokenKept === "lip_thisIsNotARealToken00",
+    JSON.stringify({ token: r.hasToken, rec: r.rec, theme: r.theme, bookOnly: r.bookOnly, tokenSurvived: !!r.tokenKept }));
+}
+
+// W5-A: interaction and accessible feedback. The grading rewrite changed what
+// the app says after a move, so check that the saying is actually reachable:
+// the verdict must land in a live region, the promotion dialog must be operable
+// from the keyboard, and Escape must get out of it.
+{
+  const a11y = await page.evaluate(() => {
+    const at = (id) => { const e = document.getElementById(id); return e && { role: e.getAttribute("role"), live: e.getAttribute("aria-live") }; };
+    const li = LINES.findIndex((l) => l.id === "ck");
+    S.mode = "line"; S.li = li; S.ply = 0; S.sel = null; S.tries = 0; S.hint = 0;
+    S.passKeys = new Set(); clearFree(); stats.pos = {}; render(false);
+    const pos = posAt(LINES[li], 0);
+    const m = legal(pos).find((x) => san(pos, x).replace(/[+#]/g, "") === "Nf3");
+    playMove(pos, sq(m.t), m);
+    return { nMsg: at("nMsg"), promo: at("promo"),
+      verdictInLive: el("nMsg").textContent.trim().length > 40,
+      sample: el("nMsg").textContent.trim().slice(0, 80) };
+  });
+  check("the verdict after a move lands in a live region",
+    a11y.nMsg && a11y.nMsg.role === "status" && a11y.nMsg.live === "polite" && a11y.verdictInLive,
+    JSON.stringify(a11y));
+
+  // The promotion chooser, driven entirely by the keyboard.
+  const promoKb = await page.evaluate(async () => {
+    const fen = "k7/4P3/8/8/8/8/8/4K3 w - - 0 1";
+    go("board"); S.screen = "board"; S.mode = "study"; S.li = 0; S.ply = 0; clearFree();
+    S.fpos = fenPos(fen); S.free = ["x"]; render(false);
+    const pos = nowPos();
+    askPromotion(pos, "e8", legal(pos).filter((m) => m.f === ix("e7") && m.t === ix("e8")));
+    const box = el("promo");
+    const btns = [...box.querySelectorAll("button")];
+    // the app should have moved focus into the dialog itself, without help
+    const focusedFirst = document.activeElement === btns[0];
+    const labels = btns.map((b) => b.getAttribute("aria-label"));
+    // activate the knight with the keyboard rather than a tap
+    const knight = btns.find((b) => /knight/.test(b.getAttribute("aria-label")));
+    knight.focus();
+    knight.click();                       // Enter/Space on a focused button is a click
+    const played = S.free[S.free.length - 1];
+    return { role: box.getAttribute("role"), label: box.getAttribute("aria-label"),
+      n: btns.length, labels, focusedFirst, closed: box.style.display === "none" || !box.childElementCount,
+      played };
+  });
+  check("the promotion chooser is a labelled dialog whose buttons work from the keyboard",
+    promoKb.role === "dialog" && /promotion/i.test(promoKb.label || "") && promoKb.n === 4 &&
+      promoKb.focusedFirst && promoKb.labels.every((l) => /^Promote to /.test(l || "")) &&
+      promoKb.closed && promoKb.played && /n$/.test(promoKb.played.uci || ""),
+    JSON.stringify(promoKb));
+
+  // Escape must close it rather than leaving a modal dialog stranded on screen.
+  const esc = await page.evaluate(() => {
+    const fen = "k7/4P3/8/8/8/8/8/4K3 w - - 0 1";
+    go("board"); S.screen = "board"; S.mode = "study"; S.li = 0; S.ply = 0; clearFree();
+    S.fpos = fenPos(fen); S.free = ["x"]; render(false);
+    const pos = nowPos();
+    askPromotion(pos, "e8", legal(pos).filter((m) => m.f === ix("e7") && m.t === ix("e8")));
+    const open = !!el("promo").childElementCount;
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    return { open, stillOpen: !!el("promo").childElementCount };
+  });
+  check("Escape closes the promotion chooser", esc.open && !esc.stillOpen, JSON.stringify(esc));
+}
+
 check("app never calls fetch", fetches.length === 0, fetches.join(" | "));
 check("no request leaves the page origin", external.length === 0, external.join(" | "));
 

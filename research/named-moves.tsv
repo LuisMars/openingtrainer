@@ -1,0 +1,17 @@
+# Moves a line's own note names as the answer to a threat, but which the
+# ordinary top-five search never reports. Without a number here the note is
+# asserting something the shipped table cannot support.
+# Format: <keyFen><TAB><uci> <uci>…   Consumed by:
+#   node tools/build-evals.mjs --force research/named-moves.tsv
+#
+# hip-150, the Be3/Qd2/f3/g4 storm tabiya. Its note prescribes three counters,
+# ...h5, ...c5 and ...d5. Only ...h5 is in the stored five (best, -68); the
+# other two were in neither list, so both graded "unknown" and setupGate could
+# say nothing about them. W1-D raised this; these two entries answer it.
+rn1qk1nr/pbp2pbp/1p1pp1p1/8/3PP1P1/2N1BP2/PPPQ3P/R3KBNR b KQkq - 0 1	c7c5 d6d5
+
+# The Greek gift in the Koltanowski clamp position (kolt ply 22). syn-greek used
+# to drill 12.Bxh7+ here, which is why the row carries it; the line is gone, so
+# force it explicitly or a regeneration would drop the -269 that justifies the
+# note now warning against it.
+r1b1r1k1/ppqn1ppp/2n1p3/2bpP3/8/2PB1N2/PP1NQPPP/R1B2RK1 w - - 0 1	d3h7

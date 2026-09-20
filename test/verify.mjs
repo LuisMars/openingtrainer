@@ -13,8 +13,9 @@ const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"
 const upto = js.indexOf("/* ================= state ================= */");
 const bundle = js.slice(0, upto);
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE});")(ctx);
-const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE } = ctx;
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE,gradeMove,posKey});")(ctx);
+const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE, gradeMove, posKey } = ctx;
+const keyOf = posKey;
 
 let fail = 0;
 const bad = (m) => { console.error("  ✗ " + m); fail++; };
@@ -145,12 +146,21 @@ console.log(`✓ ${pz}/${PZ.length} puzzles replay legally with matching display
 // SIDE-TO-MOVE relative; if a regeneration ever flips them White-relative, the
 // probe's cp goes positive and this fails before the flip can ship.
 {
-  let rows = 0, pvs = 0, evlFail = fail;
+  let rows = 0, pvs = 0, extra = 0, evlFail = fail;
   for (const [k, e] of Object.entries(EVL)) {
     let p;
     try { p = fenPos(k); } catch { bad(`EVL key does not parse: ${k}`); continue; }
     if (!(e.m && e.m.length) ) { bad(`EVL ${k}: no moves stored`); continue; }
-    for (const [uci, sanTxt, cp, mate] of e.m) {
+    // e.x holds repertoire moves outside the ranked five, each searched on its
+    // own. Same legality and score rules; it must never restate a ranked move,
+    // or a grader reading both would double-count it.
+    if (e.x !== undefined) {
+      if (!Array.isArray(e.x) || !e.x.length) { bad(`EVL ${k}: x present but not a non-empty list`); continue; }
+      const ranked = new Set(e.m.map((y) => y[0]));
+      for (const y of e.x) if (ranked.has(y[0])) bad(`EVL ${k}: ${y[0]} is in both m and x`);
+      extra += e.x.length;
+    }
+    for (const [uci, sanTxt, cp, mate] of [...e.m, ...(e.x || [])]) {
       const m = findMove(p, uci);
       if (!m) { bad(`EVL ${k}: ${uci} is not legal`); continue; }
       if (san(p, m) !== sanTxt) bad(`EVL ${k}: ${uci} labelled ${sanTxt}, generator says ${san(p, m)}`);
@@ -173,7 +183,9 @@ console.log(`✓ ${pz}/${PZ.length} puzzles replay legally with matching display
   if (!(EVL_PROBE.cp < 0))
     bad(`EVL_PROBE cp is ${EVL_PROBE.cp}: the side to move is lost, so a side-to-move score must be negative — the sign convention has flipped`);
   if (fail === evlFail)
-    console.log(`✓ ${Object.keys(EVL).length} stored evaluations: keys parse, ${rows} moves legal with matching SAN, ${pvs} PVs replay, probe sign holds`);
+    console.log(`✓ ${Object.keys(EVL).length} stored evaluations: keys parse, ${rows} moves legal with matching SAN` +
+      (extra ? ` (${extra} of them repertoire moves outside the ranked list)` : "") +
+      `, ${pvs} PVs replay, probe sign holds`);
 }
 
 // 7. fmtScore is the one formatting choke point for stored evals; a mate must
@@ -222,6 +234,83 @@ else console.log("✓ no undefined calls in the bundle");
 const secrets = [...html.matchAll(/\b(?:lip|lio)_[A-Za-z0-9]{15,}/g)].map((m) => m[0]);
 if (secrets.length) bad(`access token baked into the page: ${secrets.length} occurrence(s). Never commit a token; it belongs in browser storage only.`);
 else console.log("✓ no access token in the bundle");
+
+// 10. the page must not advertise a line or puzzle count it does not ship. The
+// prose in src/html/ drifted to "47 lines" while LINES grew to 52, which is a
+// promise to the user that the data no longer keeps.
+const counts = [["line", LINES.length], ["puzzle", PZ.length]];
+const WORDS = { 40: "Forty", 50: "Fifty", 60: "Sixty", 70: "Seventy", 80: "Eighty", 90: "Ninety" };
+// attribute text counts too: the meta description carried the same stale number.
+const text = html.replace(/<script>[\s\S]*<\/script>/, " ").replace(/<|>/g, " ");
+for (const [what, n] of counts) {
+  for (const m of text.matchAll(new RegExp(`([A-Za-z-]+|\\d+)\\s+${what}s\\b`, "gi"))) {
+    const said = /^\d+$/.test(m[1]) ? +m[1]
+      : Object.entries(WORDS).reduce((acc, [v, w]) =>
+          m[1].toLowerCase().startsWith(w.toLowerCase())
+            ? +v + ("one two three four five six seven eight nine".split(" ")
+                .indexOf(m[1].toLowerCase().split("-")[1]) + 1) : acc, NaN);
+    if (Number.isFinite(said) && said !== n) bad(`page says "${m[0]}" but ships ${n}`);
+  }
+}
+if (!fail) console.log(`✓ page's stated counts match the data (${LINES.length} lines, ${PZ.length} puzzles)`);
+
+// 11. W5-B release checks on the analysis itself.
+// (a) Depth is part of the reproducibility contract: one depth for the whole
+//     table, or two rows are not comparable and lossCp is meaningless.
+// (b) The sign convention, checked across the table rather than only at the one
+//     probe position: a parent's best score and its child's should NEGATE, since
+//     both are side-to-move relative. If a regeneration ever flipped them
+//     White-relative these would match unsigned instead.
+// (c) Every move the trainer asks the user to play must have a score. It is
+//     allowed to be unanalysed - that is a first-class neutral outcome - but the
+//     repertoire's own moves are the ones build-evals searches individually, so
+//     an unanalysed one means that pass did not run.
+{
+  const depths = new Set(Object.values(EVL).map((r) => r.d));
+  if (depths.size !== 1) bad(`EVL mixes search depths: ${[...depths].join(", ")}`);
+
+  let negating = 0, matching = 0;
+  for (const [k, r] of Object.entries(EVL)) {
+    if (r.m[0][2] === null) continue;
+    let p; try { p = fenPos(k); } catch { continue; }
+    const m = findMove(p, r.m[0][0]);
+    if (!m) continue;
+    const child = EVL[keyOf(make(p, m))];
+    if (!child || child.m[0][2] === null) continue;
+    if (Math.abs(r.m[0][2] + child.m[0][2]) <= 40) negating++;
+    else if (Math.abs(r.m[0][2] - child.m[0][2]) <= 40) matching++;
+  }
+  if (negating && negating <= matching)
+    bad(`parent/child scores match unsigned ${matching} times against ${negating} negating: the sign convention looks White-relative`);
+
+  let unscored = 0;
+  for (const l of LINES) {
+    let p = l.start === START ? startPos() : fenPos(l.start);
+    l.moves.forEach((mv, i) => {
+      const m = findMove(p, mv[0]);
+      if (!m) return;
+      if ((i % 2 === 0 ? "w" : "b") === l.you &&
+          gradeMove(EVL[keyOf(p)], p, m).verdict === "unknown") unscored++;
+      p = make(p, m);
+    });
+  }
+  if (unscored) bad(`${unscored} drilled repertoire moves have no score; run tools/build-evals.mjs`);
+  if (!fail) console.log(`\u2713 analysis: one depth (${[...depths][0]}), ${negating} parent/child pairs negate, every drilled move scored`);
+}
+
+// 12. The annotation-mark policy, enforced rather than trusted. CLAUDE.md:
+// "Do not add a new mark to a move unless the line's own source uses it." A
+// `model` or `synthetic` line was written for this trainer, so no source exists
+// that could have written one - a mark there is this repo's own verdict wearing
+// a citation's clothes. The W4 audit removed five on exactly that ground.
+{
+  const marked = [];
+  for (const l of LINES) l.moves.forEach((m, i) => { if (/[!?]/.test(m[1])) marked.push([l.id, i, m[1], KIND[l.id]]); });
+  const unsourceable = marked.filter(([, , , k]) => k === "model" || k === "synthetic");
+  if (unsourceable.length)
+    bad(`annotation marks on lines with no possible source: ${unsourceable.map(([id, i, sanTxt, k]) => `${id}:${i} ${sanTxt} (${k})`).join(", ")}`);
+  else console.log(`\u2713 ${marked.length} annotation marks, none on a model or synthetic line`);
+}
 
 if (fail) { console.error(`\n${fail} problem(s). Do not ship.`); process.exit(1); }
 console.log("\nAll checks passed.");

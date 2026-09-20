@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "verify": "node build.mjs && node test/verify.mjs",
-    "test": "node build.mjs && node test/verify.mjs && node test/ui.mjs",
+    "verify": "node build.mjs && node test/verify.mjs && node test/w1b-engine.mjs && node test/w2b-grading.mjs",
+    "test": "npm run verify && node test/ui.mjs",
     "serve": "python3 -m http.server 8080 --directory docs"
   },
   "devDependencies": {

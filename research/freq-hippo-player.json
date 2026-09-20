@@ -1,0 +1,3994 @@
+{
+ "pool": "player",
+ "filters": {
+  "side": "b",
+  "pool": "player",
+  "inputs": [
+   "data-src/games/lichess_db_standard_rated_2014-01.pgn.zst"
+  ],
+  "maxPly": 20,
+  "minElo": 1500,
+  "maxElo": null,
+  "speeds": null,
+  "eloBasis": "average of WhiteElo and BlackElo"
+ },
+ "retrieved": "2026-09-20",
+ "games_read": 495101,
+ "games_in_tree": 495101,
+ "positions": [
+  {
+   "key": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 495101,
+   "replies": [
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 291474,
+     "share": 0.5887,
+     "white": 147882,
+     "draws": 10240,
+     "black": 133352
+    },
+    {
+     "san": "d4",
+     "uci": "d2d4",
+     "games": 125718,
+     "share": 0.2539,
+     "white": 65048,
+     "draws": 4595,
+     "black": 56075
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 15627,
+     "share": 0.0316,
+     "white": 8229,
+     "draws": 623,
+     "black": 6775
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 11962,
+     "share": 0.0242,
+     "white": 5989,
+     "draws": 451,
+     "black": 5522
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 11511,
+     "share": 0.0232,
+     "white": 5728,
+     "draws": 351,
+     "black": 5432
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 11454,
+     "share": 0.0231,
+     "white": 5081,
+     "draws": 293,
+     "black": 6080
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 6824,
+     "share": 0.0138,
+     "white": 3523,
+     "draws": 192,
+     "black": 3109
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 6632,
+     "share": 0.0134,
+     "white": 3389,
+     "draws": 255,
+     "black": 2988
+    },
+    {
+     "san": "d3",
+     "uci": "d2d3",
+     "games": 4934,
+     "share": 0.01,
+     "white": 2245,
+     "draws": 125,
+     "black": 2564
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 3106,
+     "share": 0.0063,
+     "white": 1543,
+     "draws": 114,
+     "black": 1449
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 1460,
+     "share": 0.0029,
+     "white": 685,
+     "draws": 43,
+     "black": 732
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 1410,
+     "share": 0.0028,
+     "white": 646,
+     "draws": 30,
+     "black": 734
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 789,
+     "share": 0.0016,
+     "white": 409,
+     "draws": 15,
+     "black": 365
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 598,
+     "share": 0.0012,
+     "white": 294,
+     "draws": 23,
+     "black": 281
+    },
+    {
+     "san": "g4",
+     "uci": "g2g4",
+     "games": 562,
+     "share": 0.0011,
+     "white": 229,
+     "draws": 11,
+     "black": 322
+    },
+    {
+     "san": "a4",
+     "uci": "a2a4",
+     "games": 346,
+     "share": 0.0007,
+     "white": 135,
+     "draws": 10,
+     "black": 201
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 338,
+     "share": 0.0007,
+     "white": 134,
+     "draws": 9,
+     "black": 195
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 256,
+     "share": 0.0005,
+     "white": 83,
+     "draws": 7,
+     "black": 166
+    },
+    {
+     "san": "Nh3",
+     "uci": "g1h3",
+     "games": 84,
+     "share": 0.0002,
+     "white": 43,
+     "draws": 1,
+     "black": 40
+    },
+    {
+     "san": "Na3",
+     "uci": "b1a3",
+     "games": 16,
+     "share": 0,
+     "white": 4,
+     "draws": 0,
+     "black": 12
+    }
+   ]
+  },
+  {
+   "key": "rnbqkbnr/pppp1ppp/4p3/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkbnr/pppp1ppp/4p3/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 18082,
+   "replies": [
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 8037,
+     "share": 0.4445,
+     "white": 4507,
+     "draws": 244,
+     "black": 3286
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 2827,
+     "share": 0.1563,
+     "white": 1538,
+     "draws": 114,
+     "black": 1175
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 2334,
+     "share": 0.1291,
+     "white": 1217,
+     "draws": 75,
+     "black": 1042
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 1676,
+     "share": 0.0927,
+     "white": 817,
+     "draws": 51,
+     "black": 808
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 903,
+     "share": 0.0499,
+     "white": 432,
+     "draws": 40,
+     "black": 431
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 522,
+     "share": 0.0289,
+     "white": 312,
+     "draws": 13,
+     "black": 197
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 375,
+     "share": 0.0207,
+     "white": 189,
+     "draws": 8,
+     "black": 178
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 329,
+     "share": 0.0182,
+     "white": 174,
+     "draws": 17,
+     "black": 138
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 289,
+     "share": 0.016,
+     "white": 173,
+     "draws": 12,
+     "black": 104
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 144,
+     "share": 0.008,
+     "white": 82,
+     "draws": 2,
+     "black": 60
+    },
+    {
+     "san": "Qd3",
+     "uci": "d1d3",
+     "games": 134,
+     "share": 0.0074,
+     "white": 74,
+     "draws": 3,
+     "black": 57
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 126,
+     "share": 0.007,
+     "white": 62,
+     "draws": 0,
+     "black": 64
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 110,
+     "share": 0.0061,
+     "white": 32,
+     "draws": 6,
+     "black": 72
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 108,
+     "share": 0.006,
+     "white": 63,
+     "draws": 5,
+     "black": 40
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 54,
+     "share": 0.003,
+     "white": 26,
+     "draws": 1,
+     "black": 27
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 38,
+     "share": 0.0021,
+     "white": 21,
+     "draws": 3,
+     "black": 14
+    },
+    {
+     "san": "Nd2",
+     "uci": "b1d2",
+     "games": 27,
+     "share": 0.0015,
+     "white": 16,
+     "draws": 1,
+     "black": 10
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 14,
+     "share": 0.0008,
+     "white": 4,
+     "draws": 1,
+     "black": 9
+    },
+    {
+     "san": "Qd2",
+     "uci": "d1d2",
+     "games": 9,
+     "share": 0.0005,
+     "white": 6,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 9,
+     "share": 0.0005,
+     "white": 0,
+     "draws": 0,
+     "black": 9
+    },
+    {
+     "san": "a4",
+     "uci": "a2a4",
+     "games": 5,
+     "share": 0.0003,
+     "white": 2,
+     "draws": 1,
+     "black": 2
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 5,
+     "share": 0.0003,
+     "white": 1,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "Nh3",
+     "uci": "g1h3",
+     "games": 4,
+     "share": 0.0002,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 3,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 3
+    }
+   ]
+  },
+  {
+   "key": "rnbqkbnr/ppp1pppp/3p4/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkbnr/ppp1pppp/3p4/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 12351,
+   "replies": [
+    {
+     "san": "d4",
+     "uci": "d2d4",
+     "games": 5281,
+     "share": 0.4276,
+     "white": 2743,
+     "draws": 190,
+     "black": 2348
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 3251,
+     "share": 0.2632,
+     "white": 1578,
+     "draws": 125,
+     "black": 1548
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 1030,
+     "share": 0.0834,
+     "white": 561,
+     "draws": 20,
+     "black": 449
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 928,
+     "share": 0.0751,
+     "white": 429,
+     "draws": 27,
+     "black": 472
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 653,
+     "share": 0.0529,
+     "white": 367,
+     "draws": 18,
+     "black": 268
+    },
+    {
+     "san": "d3",
+     "uci": "d2d3",
+     "games": 567,
+     "share": 0.0459,
+     "white": 292,
+     "draws": 9,
+     "black": 266
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 157,
+     "share": 0.0127,
+     "white": 83,
+     "draws": 9,
+     "black": 65
+    },
+    {
+     "san": "Qf3",
+     "uci": "d1f3",
+     "games": 113,
+     "share": 0.0091,
+     "white": 29,
+     "draws": 4,
+     "black": 80
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 66,
+     "share": 0.0053,
+     "white": 23,
+     "draws": 2,
+     "black": 41
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 48,
+     "share": 0.0039,
+     "white": 18,
+     "draws": 1,
+     "black": 29
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 40,
+     "share": 0.0032,
+     "white": 20,
+     "draws": 0,
+     "black": 20
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 40,
+     "share": 0.0032,
+     "white": 17,
+     "draws": 0,
+     "black": 23
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 29,
+     "share": 0.0023,
+     "white": 16,
+     "draws": 0,
+     "black": 13
+    },
+    {
+     "san": "Bb5+",
+     "uci": "f1b5",
+     "games": 29,
+     "share": 0.0023,
+     "white": 7,
+     "draws": 1,
+     "black": 21
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 25,
+     "share": 0.002,
+     "white": 9,
+     "draws": 0,
+     "black": 16
+    },
+    {
+     "san": "Qh5",
+     "uci": "d1h5",
+     "games": 24,
+     "share": 0.0019,
+     "white": 8,
+     "draws": 1,
+     "black": 15
+    },
+    {
+     "san": "Ne2",
+     "uci": "g1e2",
+     "games": 23,
+     "share": 0.0019,
+     "white": 10,
+     "draws": 1,
+     "black": 12
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 12,
+     "share": 0.001,
+     "white": 3,
+     "draws": 1,
+     "black": 8
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 11,
+     "share": 0.0009,
+     "white": 4,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "Nh3",
+     "uci": "g1h3",
+     "games": 4,
+     "share": 0.0003,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 3,
+     "share": 0.0002,
+     "white": 1,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 3,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 1,
+     "black": 2
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 3,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "a4",
+     "uci": "a2a4",
+     "games": 3,
+     "share": 0.0002,
+     "white": 1,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Ba6",
+     "uci": "f1a6",
+     "games": 3,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Qe2",
+     "uci": "d1e2",
+     "games": 2,
+     "share": 0.0002,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Na3",
+     "uci": "b1a3",
+     "games": 2,
+     "share": 0.0002,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "g4",
+     "uci": "g2g4",
+     "games": 1,
+     "share": 0.0001,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqkbnr/pppppp1p/6p1/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkbnr/pppppp1p/6p1/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 10147,
+   "replies": [
+    {
+     "san": "d4",
+     "uci": "d2d4",
+     "games": 4284,
+     "share": 0.4222,
+     "white": 2311,
+     "draws": 154,
+     "black": 1819
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 2433,
+     "share": 0.2398,
+     "white": 1217,
+     "draws": 75,
+     "black": 1141
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 906,
+     "share": 0.0893,
+     "white": 443,
+     "draws": 22,
+     "black": 441
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 819,
+     "share": 0.0807,
+     "white": 421,
+     "draws": 21,
+     "black": 377
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 495,
+     "share": 0.0488,
+     "white": 265,
+     "draws": 13,
+     "black": 217
+    },
+    {
+     "san": "d3",
+     "uci": "d2d3",
+     "games": 469,
+     "share": 0.0462,
+     "white": 221,
+     "draws": 16,
+     "black": 232
+    },
+    {
+     "san": "Qf3",
+     "uci": "d1f3",
+     "games": 157,
+     "share": 0.0155,
+     "white": 54,
+     "draws": 1,
+     "black": 102
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 142,
+     "share": 0.014,
+     "white": 50,
+     "draws": 8,
+     "black": 84
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 101,
+     "share": 0.01,
+     "white": 50,
+     "draws": 5,
+     "black": 46
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 69,
+     "share": 0.0068,
+     "white": 33,
+     "draws": 1,
+     "black": 35
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 59,
+     "share": 0.0058,
+     "white": 32,
+     "draws": 1,
+     "black": 26
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 52,
+     "share": 0.0051,
+     "white": 30,
+     "draws": 3,
+     "black": 19
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 47,
+     "share": 0.0046,
+     "white": 21,
+     "draws": 2,
+     "black": 24
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 42,
+     "share": 0.0041,
+     "white": 13,
+     "draws": 0,
+     "black": 29
+    },
+    {
+     "san": "Ne2",
+     "uci": "g1e2",
+     "games": 15,
+     "share": 0.0015,
+     "white": 10,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 9,
+     "share": 0.0009,
+     "white": 4,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 8,
+     "share": 0.0008,
+     "white": 1,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "Qg4",
+     "uci": "d1g4",
+     "games": 6,
+     "share": 0.0006,
+     "white": 0,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "Bb5",
+     "uci": "f1b5",
+     "games": 5,
+     "share": 0.0005,
+     "white": 1,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "Nh3",
+     "uci": "g1h3",
+     "games": 5,
+     "share": 0.0005,
+     "white": 2,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 5,
+     "share": 0.0005,
+     "white": 2,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 4,
+     "share": 0.0004,
+     "white": 2,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 4,
+     "share": 0.0004,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Qe2",
+     "uci": "d1e2",
+     "games": 3,
+     "share": 0.0003,
+     "white": 1,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "a4",
+     "uci": "a2a4",
+     "games": 3,
+     "share": 0.0003,
+     "white": 3,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Ba6",
+     "uci": "f1a6",
+     "games": 2,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Qh5",
+     "uci": "d1h5",
+     "games": 2,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "g4",
+     "uci": "g2g4",
+     "games": 1,
+     "share": 0.0001,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqkbnr/pppppp1p/6p1/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkbnr/pppppp1p/6p1/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 6232,
+   "replies": [
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 2675,
+     "share": 0.4292,
+     "white": 1463,
+     "draws": 93,
+     "black": 1119
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 927,
+     "share": 0.1487,
+     "white": 459,
+     "draws": 29,
+     "black": 439
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 876,
+     "share": 0.1406,
+     "white": 433,
+     "draws": 34,
+     "black": 409
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 517,
+     "share": 0.083,
+     "white": 230,
+     "draws": 19,
+     "black": 268
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 301,
+     "share": 0.0483,
+     "white": 147,
+     "draws": 10,
+     "black": 144
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 219,
+     "share": 0.0351,
+     "white": 105,
+     "draws": 8,
+     "black": 106
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 166,
+     "share": 0.0266,
+     "white": 85,
+     "draws": 6,
+     "black": 75
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 132,
+     "share": 0.0212,
+     "white": 56,
+     "draws": 5,
+     "black": 71
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 114,
+     "share": 0.0183,
+     "white": 66,
+     "draws": 2,
+     "black": 46
+    },
+    {
+     "san": "Qd3",
+     "uci": "d1d3",
+     "games": 51,
+     "share": 0.0082,
+     "white": 19,
+     "draws": 3,
+     "black": 29
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 50,
+     "share": 0.008,
+     "white": 32,
+     "draws": 0,
+     "black": 18
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 44,
+     "share": 0.0071,
+     "white": 17,
+     "draws": 3,
+     "black": 24
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 44,
+     "share": 0.0071,
+     "white": 29,
+     "draws": 1,
+     "black": 14
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 37,
+     "share": 0.0059,
+     "white": 13,
+     "draws": 2,
+     "black": 22
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 24,
+     "share": 0.0039,
+     "white": 9,
+     "draws": 1,
+     "black": 14
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 15,
+     "share": 0.0024,
+     "white": 10,
+     "draws": 1,
+     "black": 4
+    },
+    {
+     "san": "Bh6",
+     "uci": "c1h6",
+     "games": 15,
+     "share": 0.0024,
+     "white": 13,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 9,
+     "share": 0.0014,
+     "white": 3,
+     "draws": 1,
+     "black": 5
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 5,
+     "share": 0.0008,
+     "white": 2,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 4,
+     "share": 0.0006,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 4,
+     "share": 0.0006,
+     "white": 0,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "a4",
+     "uci": "a2a4",
+     "games": 2,
+     "share": 0.0003,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "g4",
+     "uci": "g2g4",
+     "games": 1,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppppppbp/6p1/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppppppbp/6p1/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 4526,
+   "replies": [
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 1177,
+     "share": 0.2601,
+     "white": 602,
+     "draws": 41,
+     "black": 534
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 689,
+     "share": 0.1522,
+     "white": 288,
+     "draws": 28,
+     "black": 373
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 623,
+     "share": 0.1376,
+     "white": 368,
+     "draws": 18,
+     "black": 237
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 513,
+     "share": 0.1133,
+     "white": 276,
+     "draws": 19,
+     "black": 218
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 457,
+     "share": 0.101,
+     "white": 247,
+     "draws": 17,
+     "black": 193
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 425,
+     "share": 0.0939,
+     "white": 243,
+     "draws": 11,
+     "black": 171
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 420,
+     "share": 0.0928,
+     "white": 230,
+     "draws": 15,
+     "black": 175
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 85,
+     "share": 0.0188,
+     "white": 51,
+     "draws": 1,
+     "black": 33
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 20,
+     "share": 0.0044,
+     "white": 7,
+     "draws": 2,
+     "black": 11
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 18,
+     "share": 0.004,
+     "white": 7,
+     "draws": 1,
+     "black": 10
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 18,
+     "share": 0.004,
+     "white": 12,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 16,
+     "share": 0.0035,
+     "white": 9,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 12,
+     "share": 0.0027,
+     "white": 6,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 12,
+     "share": 0.0027,
+     "white": 6,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 8,
+     "share": 0.0018,
+     "white": 3,
+     "draws": 1,
+     "black": 4
+    },
+    {
+     "san": "Bh6",
+     "uci": "c1h6",
+     "games": 7,
+     "share": 0.0015,
+     "white": 6,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 7,
+     "share": 0.0015,
+     "white": 2,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "Qf3",
+     "uci": "d1f3",
+     "games": 5,
+     "share": 0.0011,
+     "white": 0,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "Ne2",
+     "uci": "g1e2",
+     "games": 5,
+     "share": 0.0011,
+     "white": 3,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 3,
+     "share": 0.0007,
+     "white": 2,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 3,
+     "share": 0.0007,
+     "white": 0,
+     "draws": 2,
+     "black": 1
+    },
+    {
+     "san": "Nd2",
+     "uci": "b1d2",
+     "games": 1,
+     "share": 0.0002,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 1,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bb5",
+     "uci": "f1b5",
+     "games": 1,
+     "share": 0.0002,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppppppbp/6p1/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppppppbp/6p1/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 2539,
+   "replies": [
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 1688,
+     "share": 0.6648,
+     "white": 926,
+     "draws": 53,
+     "black": 709
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 277,
+     "share": 0.1091,
+     "white": 139,
+     "draws": 12,
+     "black": 126
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 268,
+     "share": 0.1056,
+     "white": 137,
+     "draws": 11,
+     "black": 120
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 243,
+     "share": 0.0957,
+     "white": 133,
+     "draws": 6,
+     "black": 104
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 18,
+     "share": 0.0071,
+     "white": 13,
+     "draws": 1,
+     "black": 4
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 11,
+     "share": 0.0043,
+     "white": 3,
+     "draws": 0,
+     "black": 8
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 11,
+     "share": 0.0043,
+     "white": 6,
+     "draws": 1,
+     "black": 4
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 10,
+     "share": 0.0039,
+     "white": 4,
+     "draws": 1,
+     "black": 5
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 5,
+     "share": 0.002,
+     "white": 2,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 3,
+     "share": 0.0012,
+     "white": 0,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 2,
+     "share": 0.0008,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 1,
+     "share": 0.0004,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 1,
+     "share": 0.0004,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 1,
+     "share": 0.0004,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqkb1r/ppp1pppp/3p1n2/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkb1r/ppp1pppp/3p1n2/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 1687,
+   "replies": [
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 1096,
+     "share": 0.6497,
+     "white": 537,
+     "draws": 40,
+     "black": 519
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 334,
+     "share": 0.198,
+     "white": 155,
+     "draws": 13,
+     "black": 166
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 76,
+     "share": 0.0451,
+     "white": 34,
+     "draws": 6,
+     "black": 36
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 64,
+     "share": 0.0379,
+     "white": 17,
+     "draws": 3,
+     "black": 44
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 30,
+     "share": 0.0178,
+     "white": 9,
+     "draws": 0,
+     "black": 21
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 26,
+     "share": 0.0154,
+     "white": 14,
+     "draws": 1,
+     "black": 11
+    },
+    {
+     "san": "Nd2",
+     "uci": "b1d2",
+     "games": 19,
+     "share": 0.0113,
+     "white": 8,
+     "draws": 0,
+     "black": 11
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 12,
+     "share": 0.0071,
+     "white": 8,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 10,
+     "share": 0.0059,
+     "white": 2,
+     "draws": 1,
+     "black": 7
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 5,
+     "share": 0.003,
+     "white": 2,
+     "draws": 1,
+     "black": 2
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 4,
+     "share": 0.0024,
+     "white": 3,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qf3",
+     "uci": "d1f3",
+     "games": 3,
+     "share": 0.0018,
+     "white": 1,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 3,
+     "share": 0.0018,
+     "white": 0,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Qe2",
+     "uci": "d1e2",
+     "games": 2,
+     "share": 0.0012,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 2,
+     "share": 0.0012,
+     "white": 2,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 1,
+     "share": 0.0006,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqkbnr/pppppp1p/6p1/8/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkbnr/pppppp1p/6p1/8/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 951,
+   "replies": [
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 516,
+     "share": 0.5426,
+     "white": 270,
+     "draws": 20,
+     "black": 226
+    },
+    {
+     "san": "d4",
+     "uci": "d2d4",
+     "games": 164,
+     "share": 0.1725,
+     "white": 86,
+     "draws": 3,
+     "black": 75
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 86,
+     "share": 0.0904,
+     "white": 49,
+     "draws": 1,
+     "black": 36
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 61,
+     "share": 0.0641,
+     "white": 36,
+     "draws": 6,
+     "black": 19
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 32,
+     "share": 0.0336,
+     "white": 15,
+     "draws": 1,
+     "black": 16
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 29,
+     "share": 0.0305,
+     "white": 19,
+     "draws": 1,
+     "black": 9
+    },
+    {
+     "san": "d3",
+     "uci": "d2d3",
+     "games": 28,
+     "share": 0.0294,
+     "white": 14,
+     "draws": 0,
+     "black": 14
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 23,
+     "share": 0.0242,
+     "white": 9,
+     "draws": 2,
+     "black": 12
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 5,
+     "share": 0.0053,
+     "white": 2,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Qb3",
+     "uci": "d1b3",
+     "games": 2,
+     "share": 0.0021,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 2,
+     "share": 0.0021,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qc2",
+     "uci": "d1c2",
+     "games": 1,
+     "share": 0.0011,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 1,
+     "share": 0.0011,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 1,
+     "share": 0.0011,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqkb1r/ppp1pp1p/3p1np1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1",
+   "fen": "rnbqkb1r/ppp1pp1p/3p1np1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1",
+   "parent_games": 690,
+   "replies": [
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 140,
+     "share": 0.2029,
+     "white": 57,
+     "draws": 3,
+     "black": 80
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 118,
+     "share": 0.171,
+     "white": 57,
+     "draws": 9,
+     "black": 52
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 115,
+     "share": 0.1667,
+     "white": 57,
+     "draws": 7,
+     "black": 51
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 75,
+     "share": 0.1087,
+     "white": 42,
+     "draws": 0,
+     "black": 33
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 67,
+     "share": 0.0971,
+     "white": 26,
+     "draws": 1,
+     "black": 40
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 43,
+     "share": 0.0623,
+     "white": 27,
+     "draws": 1,
+     "black": 15
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 32,
+     "share": 0.0464,
+     "white": 11,
+     "draws": 1,
+     "black": 20
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 20,
+     "share": 0.029,
+     "white": 9,
+     "draws": 1,
+     "black": 10
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 18,
+     "share": 0.0261,
+     "white": 10,
+     "draws": 1,
+     "black": 7
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 16,
+     "share": 0.0232,
+     "white": 4,
+     "draws": 0,
+     "black": 12
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 13,
+     "share": 0.0188,
+     "white": 1,
+     "draws": 2,
+     "black": 10
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 10,
+     "share": 0.0145,
+     "white": 6,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 8,
+     "share": 0.0116,
+     "white": 0,
+     "draws": 0,
+     "black": 8
+    },
+    {
+     "san": "Bb5+",
+     "uci": "f1b5",
+     "games": 4,
+     "share": 0.0058,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Nge2",
+     "uci": "g1e2",
+     "games": 2,
+     "share": 0.0029,
+     "white": 2,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 2,
+     "share": 0.0029,
+     "white": 1,
+     "draws": 1,
+     "black": 0
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 2,
+     "share": 0.0029,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qe2",
+     "uci": "d1e2",
+     "games": 1,
+     "share": 0.0014,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 1,
+     "share": 0.0014,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 1,
+     "share": 0.0014,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 1,
+     "share": 0.0014,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qf3",
+     "uci": "d1f3",
+     "games": 1,
+     "share": 0.0014,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqkbnr/pppppp1p/6p1/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
+   "fen": "rnbqkbnr/pppppp1p/6p1/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
+   "parent_games": 575,
+   "replies": [
+    {
+     "san": "d4",
+     "uci": "d2d4",
+     "games": 197,
+     "share": 0.3426,
+     "white": 97,
+     "draws": 9,
+     "black": 91
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 147,
+     "share": 0.2557,
+     "white": 78,
+     "draws": 8,
+     "black": 61
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 57,
+     "share": 0.0991,
+     "white": 23,
+     "draws": 3,
+     "black": 31
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 56,
+     "share": 0.0974,
+     "white": 26,
+     "draws": 2,
+     "black": 28
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 30,
+     "share": 0.0522,
+     "white": 9,
+     "draws": 0,
+     "black": 21
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 25,
+     "share": 0.0435,
+     "white": 14,
+     "draws": 0,
+     "black": 11
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 24,
+     "share": 0.0417,
+     "white": 11,
+     "draws": 0,
+     "black": 13
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 14,
+     "share": 0.0243,
+     "white": 6,
+     "draws": 0,
+     "black": 8
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 11,
+     "share": 0.0191,
+     "white": 7,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "d3",
+     "uci": "d2d3",
+     "games": 10,
+     "share": 0.0174,
+     "white": 3,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "Ng1",
+     "uci": "f3g1",
+     "games": 2,
+     "share": 0.0035,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Ng5",
+     "uci": "f3g5",
+     "games": 1,
+     "share": 0.0017,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 1,
+     "share": 0.0017,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1",
+   "parent_games": 512,
+   "replies": [
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 136,
+     "share": 0.2656,
+     "white": 64,
+     "draws": 5,
+     "black": 67
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 113,
+     "share": 0.2207,
+     "white": 65,
+     "draws": 5,
+     "black": 43
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 74,
+     "share": 0.1445,
+     "white": 41,
+     "draws": 4,
+     "black": 29
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 42,
+     "share": 0.082,
+     "white": 18,
+     "draws": 3,
+     "black": 21
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 41,
+     "share": 0.0801,
+     "white": 24,
+     "draws": 1,
+     "black": 16
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 36,
+     "share": 0.0703,
+     "white": 19,
+     "draws": 0,
+     "black": 17
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 20,
+     "share": 0.0391,
+     "white": 9,
+     "draws": 1,
+     "black": 10
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 15,
+     "share": 0.0293,
+     "white": 11,
+     "draws": 1,
+     "black": 3
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 8,
+     "share": 0.0156,
+     "white": 4,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "Bb5+",
+     "uci": "f1b5",
+     "games": 6,
+     "share": 0.0117,
+     "white": 3,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 4,
+     "share": 0.0078,
+     "white": 2,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 4,
+     "share": 0.0078,
+     "white": 2,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 4,
+     "share": 0.0078,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 3,
+     "share": 0.0059,
+     "white": 0,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 3,
+     "share": 0.0059,
+     "white": 1,
+     "draws": 1,
+     "black": 1
+    },
+    {
+     "san": "Nbd2",
+     "uci": "b1d2",
+     "games": 2,
+     "share": 0.0039,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.002,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 0 1",
+   "parent_games": 472,
+   "replies": [
+    {
+     "san": "d4",
+     "uci": "d2d4",
+     "games": 157,
+     "share": 0.3326,
+     "white": 82,
+     "draws": 4,
+     "black": 71
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 135,
+     "share": 0.286,
+     "white": 69,
+     "draws": 5,
+     "black": 61
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 73,
+     "share": 0.1547,
+     "white": 37,
+     "draws": 2,
+     "black": 34
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 41,
+     "share": 0.0869,
+     "white": 21,
+     "draws": 4,
+     "black": 16
+    },
+    {
+     "san": "d3",
+     "uci": "d2d3",
+     "games": 33,
+     "share": 0.0699,
+     "white": 24,
+     "draws": 2,
+     "black": 7
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 12,
+     "share": 0.0254,
+     "white": 6,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 9,
+     "share": 0.0191,
+     "white": 4,
+     "draws": 2,
+     "black": 3
+    },
+    {
+     "san": "Qc2",
+     "uci": "d1c2",
+     "games": 6,
+     "share": 0.0127,
+     "white": 1,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "Qb3",
+     "uci": "d1b3",
+     "games": 2,
+     "share": 0.0042,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 2,
+     "share": 0.0042,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0021,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 1,
+     "share": 0.0021,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 1",
+   "parent_games": 428,
+   "replies": [
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 263,
+     "share": 0.6145,
+     "white": 145,
+     "draws": 7,
+     "black": 111
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 76,
+     "share": 0.1776,
+     "white": 39,
+     "draws": 5,
+     "black": 32
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 35,
+     "share": 0.0818,
+     "white": 17,
+     "draws": 2,
+     "black": 16
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 16,
+     "share": 0.0374,
+     "white": 8,
+     "draws": 0,
+     "black": 8
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 13,
+     "share": 0.0304,
+     "white": 6,
+     "draws": 1,
+     "black": 6
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 10,
+     "share": 0.0234,
+     "white": 8,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 4,
+     "share": 0.0093,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 2,
+     "share": 0.0047,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 2,
+     "share": 0.0047,
+     "white": 0,
+     "draws": 1,
+     "black": 1
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 2,
+     "share": 0.0047,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 1,
+     "share": 0.0023,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Nd5",
+     "uci": "c3d5",
+     "games": 1,
+     "share": 0.0023,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0023,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 1,
+     "share": 0.0023,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qa4+",
+     "uci": "d1a4",
+     "games": 1,
+     "share": 0.0023,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PPP3/8/PP3PPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PPP3/8/PP3PPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 312,
+   "replies": [
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 196,
+     "share": 0.6282,
+     "white": 111,
+     "draws": 7,
+     "black": 78
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 47,
+     "share": 0.1506,
+     "white": 21,
+     "draws": 4,
+     "black": 22
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 35,
+     "share": 0.1122,
+     "white": 17,
+     "draws": 2,
+     "black": 16
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 10,
+     "share": 0.0321,
+     "white": 6,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 8,
+     "share": 0.0256,
+     "white": 4,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 5,
+     "share": 0.016,
+     "white": 2,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "b4",
+     "uci": "b2b4",
+     "games": 2,
+     "share": 0.0064,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 2,
+     "share": 0.0064,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 2,
+     "share": 0.0064,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qc2",
+     "uci": "d1c2",
+     "games": 1,
+     "share": 0.0032,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "a4",
+     "uci": "a2a4",
+     "games": 1,
+     "share": 0.0032,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 1,
+     "share": 0.0032,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Ne2",
+     "uci": "g1e2",
+     "games": 1,
+     "share": 0.0032,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 1,
+     "share": 0.0032,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppppppbp/6p1/8/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppppppbp/6p1/8/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1",
+   "parent_games": 261,
+   "replies": [
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 139,
+     "share": 0.5326,
+     "white": 68,
+     "draws": 4,
+     "black": 67
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 40,
+     "share": 0.1533,
+     "white": 21,
+     "draws": 2,
+     "black": 17
+    },
+    {
+     "san": "Be5",
+     "uci": "f4e5",
+     "games": 30,
+     "share": 0.1149,
+     "white": 18,
+     "draws": 1,
+     "black": 11
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 26,
+     "share": 0.0996,
+     "white": 12,
+     "draws": 0,
+     "black": 14
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 10,
+     "share": 0.0383,
+     "white": 4,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 9,
+     "share": 0.0345,
+     "white": 3,
+     "draws": 1,
+     "black": 5
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 3,
+     "share": 0.0115,
+     "white": 1,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 1,
+     "share": 0.0038,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bg5",
+     "uci": "f4g5",
+     "games": 1,
+     "share": 0.0038,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qd2",
+     "uci": "d1d2",
+     "games": 1,
+     "share": 0.0038,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 1,
+     "share": 0.0038,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1",
+   "parent_games": 254,
+   "replies": [
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 91,
+     "share": 0.3583,
+     "white": 56,
+     "draws": 2,
+     "black": 33
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 53,
+     "share": 0.2087,
+     "white": 30,
+     "draws": 1,
+     "black": 22
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 46,
+     "share": 0.1811,
+     "white": 24,
+     "draws": 1,
+     "black": 21
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 18,
+     "share": 0.0709,
+     "white": 11,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 11,
+     "share": 0.0433,
+     "white": 6,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 10,
+     "share": 0.0394,
+     "white": 7,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 10,
+     "share": 0.0394,
+     "white": 4,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 5,
+     "share": 0.0197,
+     "white": 4,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 3,
+     "share": 0.0118,
+     "white": 1,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 2,
+     "share": 0.0079,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Nge2",
+     "uci": "g1e2",
+     "games": 1,
+     "share": 0.0039,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 1,
+     "share": 0.0039,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 1,
+     "share": 0.0039,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 1,
+     "share": 0.0039,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0039,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+   "fen": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+   "parent_games": 210,
+   "replies": [
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 52,
+     "share": 0.2476,
+     "white": 23,
+     "draws": 0,
+     "black": 29
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 46,
+     "share": 0.219,
+     "white": 30,
+     "draws": 2,
+     "black": 14
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 36,
+     "share": 0.1714,
+     "white": 20,
+     "draws": 1,
+     "black": 15
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 22,
+     "share": 0.1048,
+     "white": 14,
+     "draws": 0,
+     "black": 8
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 20,
+     "share": 0.0952,
+     "white": 12,
+     "draws": 1,
+     "black": 7
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 10,
+     "share": 0.0476,
+     "white": 4,
+     "draws": 1,
+     "black": 5
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 5,
+     "share": 0.0238,
+     "white": 4,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 3,
+     "share": 0.0143,
+     "white": 2,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 3,
+     "share": 0.0143,
+     "white": 1,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 3,
+     "share": 0.0143,
+     "white": 3,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Qd2",
+     "uci": "d1d2",
+     "games": 2,
+     "share": 0.0095,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 1,
+     "share": 0.0048,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Qf3",
+     "uci": "d1f3",
+     "games": 1,
+     "share": 0.0048,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 1,
+     "share": 0.0048,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0048,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 1,
+     "share": 0.0048,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 1,
+     "share": 0.0048,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 1,
+     "share": 0.0048,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 1,
+     "share": 0.0048,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1",
+   "fen": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1",
+   "parent_games": 163,
+   "replies": [
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 54,
+     "share": 0.3313,
+     "white": 26,
+     "draws": 3,
+     "black": 25
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 33,
+     "share": 0.2025,
+     "white": 18,
+     "draws": 2,
+     "black": 13
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 24,
+     "share": 0.1472,
+     "white": 9,
+     "draws": 0,
+     "black": 15
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 17,
+     "share": 0.1043,
+     "white": 12,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 6,
+     "share": 0.0368,
+     "white": 3,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 6,
+     "share": 0.0368,
+     "white": 2,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 6,
+     "share": 0.0368,
+     "white": 2,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 4,
+     "share": 0.0245,
+     "white": 1,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 2,
+     "share": 0.0123,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 2,
+     "share": 0.0123,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 2,
+     "share": 0.0123,
+     "white": 2,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bb5",
+     "uci": "f1b5",
+     "games": 2,
+     "share": 0.0123,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0061,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Nbd2",
+     "uci": "b1d2",
+     "games": 1,
+     "share": 0.0061,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 1,
+     "share": 0.0061,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 1,
+     "share": 0.0061,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 1,
+     "share": 0.0061,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1",
+   "fen": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1",
+   "parent_games": 129,
+   "replies": [
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 34,
+     "share": 0.2636,
+     "white": 17,
+     "draws": 0,
+     "black": 17
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 28,
+     "share": 0.2171,
+     "white": 10,
+     "draws": 1,
+     "black": 17
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 27,
+     "share": 0.2093,
+     "white": 12,
+     "draws": 2,
+     "black": 13
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 11,
+     "share": 0.0853,
+     "white": 2,
+     "draws": 0,
+     "black": 9
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 9,
+     "share": 0.0698,
+     "white": 2,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 8,
+     "share": 0.062,
+     "white": 3,
+     "draws": 0,
+     "black": 5
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 7,
+     "share": 0.0543,
+     "white": 4,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 4,
+     "share": 0.031,
+     "white": 0,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "Ng5",
+     "uci": "f3g5",
+     "games": 1,
+     "share": 0.0078,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk2r/ppp1ppbp/3p1np1/8/3PPP2/2N5/PPP3PP/R1BQKBNR w KQkq - 0 1",
+   "fen": "rnbqk2r/ppp1ppbp/3p1np1/8/3PPP2/2N5/PPP3PP/R1BQKBNR w KQkq - 0 1",
+   "parent_games": 111,
+   "replies": [
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 79,
+     "share": 0.7117,
+     "white": 39,
+     "draws": 6,
+     "black": 34
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 23,
+     "share": 0.2072,
+     "white": 10,
+     "draws": 2,
+     "black": 11
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 2,
+     "share": 0.018,
+     "white": 2,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 2,
+     "share": 0.018,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 2,
+     "share": 0.018,
+     "white": 2,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 2,
+     "share": 0.018,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "a3",
+     "uci": "a2a3",
+     "games": 1,
+     "share": 0.009,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1",
+   "parent_games": 82,
+   "replies": [
+    {
+     "san": "d4",
+     "uci": "d2d4",
+     "games": 32,
+     "share": 0.3902,
+     "white": 15,
+     "draws": 2,
+     "black": 15
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 24,
+     "share": 0.2927,
+     "white": 8,
+     "draws": 2,
+     "black": 14
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 17,
+     "share": 0.2073,
+     "white": 10,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 6,
+     "share": 0.0732,
+     "white": 6,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "d3",
+     "uci": "d2d3",
+     "games": 2,
+     "share": 0.0244,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0122,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1",
+   "parent_games": 75,
+   "replies": [
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 24,
+     "share": 0.32,
+     "white": 14,
+     "draws": 1,
+     "black": 9
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 15,
+     "share": 0.2,
+     "white": 11,
+     "draws": 1,
+     "black": 3
+    },
+    {
+     "san": "e4",
+     "uci": "e2e4",
+     "games": 12,
+     "share": 0.16,
+     "white": 4,
+     "draws": 0,
+     "black": 8
+    },
+    {
+     "san": "e3",
+     "uci": "e2e3",
+     "games": 10,
+     "share": 0.1333,
+     "white": 3,
+     "draws": 0,
+     "black": 7
+    },
+    {
+     "san": "Bf4",
+     "uci": "c1f4",
+     "games": 5,
+     "share": 0.0667,
+     "white": 2,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 3,
+     "share": 0.04,
+     "white": 2,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "b3",
+     "uci": "b2b3",
+     "games": 2,
+     "share": 0.0267,
+     "white": 2,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Nbd2",
+     "uci": "b1d2",
+     "games": 1,
+     "share": 0.0133,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 1,
+     "share": 0.0133,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 1,
+     "share": 0.0133,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 1,
+     "share": 0.0133,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1",
+   "parent_games": 70,
+   "replies": [
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 28,
+     "share": 0.4,
+     "white": 16,
+     "draws": 1,
+     "black": 11
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 25,
+     "share": 0.3571,
+     "white": 18,
+     "draws": 1,
+     "black": 6
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 7,
+     "share": 0.1,
+     "white": 4,
+     "draws": 0,
+     "black": 3
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 3,
+     "share": 0.0429,
+     "white": 2,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bg5",
+     "uci": "c1g5",
+     "games": 2,
+     "share": 0.0286,
+     "white": 0,
+     "draws": 1,
+     "black": 1
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 1,
+     "share": 0.0143,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 1,
+     "share": 0.0143,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Bd2",
+     "uci": "c1d2",
+     "games": 1,
+     "share": 0.0143,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0143,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "g3",
+     "uci": "g2g3",
+     "games": 1,
+     "share": 0.0143,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1",
+   "parent_games": 55,
+   "replies": [
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 12,
+     "share": 0.2182,
+     "white": 6,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "c4",
+     "uci": "c2c4",
+     "games": 11,
+     "share": 0.2,
+     "white": 5,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 9,
+     "share": 0.1636,
+     "white": 3,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "c3",
+     "uci": "c2c3",
+     "games": 9,
+     "share": 0.1636,
+     "white": 3,
+     "draws": 0,
+     "black": 6
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 3,
+     "share": 0.0545,
+     "white": 2,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 3,
+     "share": 0.0545,
+     "white": 1,
+     "draws": 1,
+     "black": 1
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 3,
+     "share": 0.0545,
+     "white": 3,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Nc3",
+     "uci": "b1c3",
+     "games": 2,
+     "share": 0.0364,
+     "white": 1,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "h4",
+     "uci": "h2h4",
+     "games": 1,
+     "share": 0.0182,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Bb5+",
+     "uci": "f1b5",
+     "games": 1,
+     "share": 0.0182,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Nd2",
+     "uci": "b1d2",
+     "games": 1,
+     "share": 0.0182,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  },
+  {
+   "key": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1",
+   "fen": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1",
+   "parent_games": 48,
+   "replies": [
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 22,
+     "share": 0.4583,
+     "white": 13,
+     "draws": 0,
+     "black": 9
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 8,
+     "share": 0.1667,
+     "white": 3,
+     "draws": 2,
+     "black": 3
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 7,
+     "share": 0.1458,
+     "white": 3,
+     "draws": 1,
+     "black": 3
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 7,
+     "share": 0.1458,
+     "white": 4,
+     "draws": 1,
+     "black": 2
+    },
+    {
+     "san": "e5",
+     "uci": "e4e5",
+     "games": 4,
+     "share": 0.0833,
+     "white": 1,
+     "draws": 1,
+     "black": 2
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1",
+   "fen": "rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1",
+   "parent_games": 26,
+   "replies": [
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 8,
+     "share": 0.3077,
+     "white": 5,
+     "draws": 1,
+     "black": 2
+    },
+    {
+     "san": "Be3",
+     "uci": "c1e3",
+     "games": 7,
+     "share": 0.2692,
+     "white": 3,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "a4",
+     "uci": "a2a4",
+     "games": 3,
+     "share": 0.1154,
+     "white": 2,
+     "draws": 0,
+     "black": 1
+    },
+    {
+     "san": "Be2",
+     "uci": "f1e2",
+     "games": 3,
+     "share": 0.1154,
+     "white": 1,
+     "draws": 1,
+     "black": 1
+    },
+    {
+     "san": "h3",
+     "uci": "h2h3",
+     "games": 2,
+     "share": 0.0769,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "Bc4",
+     "uci": "f1c4",
+     "games": 2,
+     "share": 0.0769,
+     "white": 0,
+     "draws": 0,
+     "black": 2
+    },
+    {
+     "san": "d5",
+     "uci": "d4d5",
+     "games": 1,
+     "share": 0.0385,
+     "white": 0,
+     "draws": 0,
+     "black": 1
+    }
+   ]
+  },
+  {
+   "key": "rnbqk1nr/pppp1pbp/4p1p1/8/2P5/2N3P1/PP1PPP1P/R1BQKBNR w KQkq - 0 1",
+   "fen": "rnbqk1nr/pppp1pbp/4p1p1/8/2P5/2N3P1/PP1PPP1P/R1BQKBNR w KQkq - 0 1",
+   "parent_games": 25,
+   "replies": [
+    {
+     "san": "Bg2",
+     "uci": "f1g2",
+     "games": 25,
+     "share": 1,
+     "white": 11,
+     "draws": 0,
+     "black": 14
+    }
+   ]
+  },
+  {
+   "key": "rn1qk1nr/pbppppbp/1p4p1/8/3PP3/2N1B3/PPP2PPP/R2QKBNR w KQkq - 0 1",
+   "fen": "rn1qk1nr/pbppppbp/1p4p1/8/3PP3/2N1B3/PPP2PPP/R2QKBNR w KQkq - 0 1",
+   "parent_games": 20,
+   "replies": [
+    {
+     "san": "Qd2",
+     "uci": "d1d2",
+     "games": 10,
+     "share": 0.5,
+     "white": 6,
+     "draws": 0,
+     "black": 4
+    },
+    {
+     "san": "Bd3",
+     "uci": "f1d3",
+     "games": 4,
+     "share": 0.2,
+     "white": 4,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "f3",
+     "uci": "f2f3",
+     "games": 3,
+     "share": 0.15,
+     "white": 1,
+     "draws": 1,
+     "black": 1
+    },
+    {
+     "san": "Nf3",
+     "uci": "g1f3",
+     "games": 1,
+     "share": 0.05,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "Qf3",
+     "uci": "d1f3",
+     "games": 1,
+     "share": 0.05,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    },
+    {
+     "san": "f4",
+     "uci": "f2f4",
+     "games": 1,
+     "share": 0.05,
+     "white": 1,
+     "draws": 0,
+     "black": 0
+    }
+   ]
+  }
+ ]
+}

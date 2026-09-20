@@ -4,3 +4,11 @@ data-src/
 *.csv
 *.md
 !README.md
+
+# The planning and research record is part of the repo; the historical review
+# dumps (CONTENT-REVIEW.md, LOGIC-REVIEW.md, IMPROVEMENTS.md) stay ignored.
+!CLAUDE.md
+!REPERTOIRE-PLAN.md
+!IMPLEMENTATION-WAVES.md
+!TASK-LEDGER.md
+!research/*.md

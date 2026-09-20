@@ -2,8 +2,15 @@
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
   run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
-  arrow:null,passKeys:null,evNote:null};
+  arrow:null,passKeys:null,evNote:null,epoch:0};
 let stats={pos:{},pz:{},day:"",today:0,theme:0};
+// True when neither window.storage nor localStorage would take a write, so the
+// session lives in memory only. Declared here rather than beside STORE so crash()
+// can read it even if the script died before the storage block ran.
+let MEMONLY=false;
+// True when storage holds something load() could not read. Writing over it is the
+// one irreversible thing here, so save() stands down until Import or Reset says to.
+let SAVE_HELD=false;
 const THEMES=[
   ["Brown","#f0d9b5","#b58863","#f6f1e6","#12161b","#12161b","#ded5bd"],
   ["Blue","#dee3e6","#8ca2ad","#f8f6f0","#14181d","#14181d","#dfe4e8"],
@@ -12,7 +19,7 @@ const THEMES=[
 ];
 const SETS=[["Standard","0 0 45 45",()=>CB,false],["Engraved","0 0 100 100",()=>PIECE,true]];
 function pieceEl2(ch,cls){
-  const set=SETS[S.set||0],svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  const set=SETS[S.set]||SETS[0],svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
   svg.setAttribute("viewBox",set[1]);
   svg.setAttribute("class",cls+(set[3]?" custom":""));
   const map=set[2]();
@@ -20,6 +27,32 @@ function pieceEl2(ch,cls){
   return svg;
 }
 const el=id=>document.getElementById(id);
+// Remote text - the masters database is the only thing on this page that is not
+// local data - goes through here before it can reach innerHTML.
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+/* Every deferred callback is armed through later(): the id is tracked so stopAll()
+   can cancel it, and the session it was armed in is recorded so one that outlived a
+   navigation does nothing even if it fires anyway. Nothing but flash()'s own mark
+   removal uses a bare setTimeout - that one must run whatever else happened, or the
+   mark stays on the board for good. Before this, leaving a solved puzzle inside its
+   1500ms window dragged the user back to it, and a stale S.pending swallowed the
+   first tap of the next session and ran the shuffle advance in the wrong mode. */
+const TIMERS=new Set();
+function later(fn,ms){
+  const ep=S.epoch;
+  // fn.call, not fn(): test/verify.mjs fails the build on any bare lower-case call
+  // with no definition in the bundle, and a parameter is not a definition.
+  const id=setTimeout(()=>{TIMERS.delete(id);if(ep===S.epoch)fn.call(null);},ms);
+  TIMERS.add(id);
+  return id;
+}
+function stopAll(){
+  stop();closePromotion();
+  S.epoch++;
+  for(const id of TIMERS)clearTimeout(id);
+  TIMERS.clear();
+  S.pending=0;
+}
 let PZLINE=null;
 function makePz(i){
   const p=PZ[i],p0=fenPos(p.f),m0=findMove(p0,p.m[0]);
@@ -30,18 +63,18 @@ function makePz(i){
   return PZLINE;
 }
 function startPuzzle(i){
-  clearTimeout(S.pending);S.pending=0;
+  stopAll();
   S.mode="puzzle";S.pz=((i%PZ.length)+PZ.length)%PZ.length;makePz(S.pz);
   S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;clearFree();
   S.flip=PZLINE.you==="b";syncOpts();
   el("nMsg").textContent="";go("board");armClock();
 }
 function armPz(ms){
-  clearTimeout(S.pending);
+  stopAll();
   const bar=el("progBar");
   bar.style.transition="none";bar.style.width="100%";void bar.offsetWidth;
   bar.style.transition="width "+ms+"ms linear";bar.style.width="0%";
-  S.pending=setTimeout(()=>{S.pending=0;startPuzzle(S.pz+1);},ms);
+  S.pending=later(()=>{S.pending=0;startPuzzle(S.pz+1);},ms);
 }
 const L=()=>(S.mode==="puzzle"&&PZLINE)?PZLINE:LINES[S.li];
 const yourTurn=()=>(nowPos().w?"w":"b")===L().you;
@@ -98,7 +131,9 @@ const KEYCACHE={},ALT={};
     for(const p of drillPlies(l)){
       const f=keyFen(posAt(l,p));
       KEYCACHE[l.id+":"+p]=f+":"+l.moves[p][0];
-      if(!NO_SHUFFLE.has(l.id))(ALT[f]=ALT[f]||[]).push([li,p,l.moves[p][0].slice(0,4)]);
+      // Full uci, promotion suffix included: a four-character key would make a
+      // knight promotion look like the queen promotion another line trains.
+      if(!NO_SHUFFLE.has(l.id))(ALT[f]=ALT[f]||[]).push([li,p,l.moves[p][0]]);
     }
   });
 })();
@@ -141,7 +176,9 @@ function totals(){
 
 /* ================= navigation ================= */
 function go(scr){
-  S.screen=scr;stop();
+  // stopAll, not stop: leaving a screen must cancel the auto-advance and the
+  // auto-reply too, not only the study autoplay interval.
+  S.screen=scr;stopAll();
   for(const id of ["scMenu","scLines","scBoard","scProgress"])el(id).classList.remove("on");
   el({menu:"scMenu",lines:"scLines",board:"scBoard",progress:"scProgress"}[scr]).classList.add("on");
   el("navBack").style.visibility=scr==="menu"?"hidden":"visible";
@@ -183,6 +220,18 @@ function renderMenu(){
   let solvedPz=0;for(const q of PZ)if(((stats.pz||{})[q.id]||{}).ok)solvedPz++;
   el("bPz").textContent=solvedPz+"/"+PZ.length+" solved";
   el("kToday").textContent=stats.today||0;
+  // Say it plainly when nothing is being written: spaced repetition that forgets
+  // everything on refresh is worth knowing about before an hour is spent on it.
+  const st=el("mStore"),note=storeNote();
+  st.textContent=note;
+  st.style.display=note?"":"none";
+}
+// The one line the user needs about storage, or nothing at all. Both cases promise
+// exactly what the code does: no write is happening, and the export is the way out.
+function storeNote(){
+  if(SAVE_HELD)return "Something is stored here that could not be read, so nothing is being written over it and nothing new is being saved. Import a backup or reset all progress to start saving again.";
+  if(MEMONLY)return "This browser is not letting the trainer store anything, so progress lasts only until this tab closes. Export from Progress to keep it.";
+  return "";
 }
 function renderLines(){
   const c=el("lineList");c.innerHTML="";let ch=null;
@@ -202,15 +251,22 @@ function startLine(){
   S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();S.evNote=null;clearFree();
   S.flip=L().you==="b";syncOpts();
   el("nMsg").textContent="";go("board");armClock();
-  if(S.mode==="line"&&!yourTurn())setTimeout(autoReply,300);
+  if(S.mode==="line"&&!yourTurn())later(autoReply,300);
 }
 
 /* ---------- production guards ---------- */
 function crash(msg){
   const c=el("crash");if(!c)return;
   c.classList.add("on");
-  c.innerHTML="<span>Something went wrong: "+String(msg).slice(0,140)+
-    ". Your progress is saved; reloading is safe.</span>";
+  c.innerHTML="";
+  // textContent, not innerHTML: an error message can carry anything, including
+  // markup. And the reload advice must match what storage actually did - with no
+  // store available there is nothing saved to come back to.
+  const s=document.createElement("span");
+  s.textContent="Something went wrong: "+String(msg).slice(0,140)+". "+
+    ((MEMONLY||SAVE_HELD)?"Nothing is being written to this browser's storage, so this session will not come back."
+      :"Your progress is saved; reloading is safe.");
+  c.appendChild(s);
   const b=document.createElement("button");b.textContent="Reload";
   b.onclick=()=>location.reload();c.appendChild(b);
 }
@@ -305,8 +361,14 @@ function renderWeak(){
       for(const s in x.r.w)if(top===null||x.r.w[s]>x.r.w[top])top=s;
       if(top!==null&&x.r.w[top]>=2)habit=" \u00b7 usually "+top+" ("+x.r.w[top]+"\u00d7)";
     }
-    b.innerHTML="<span>"+x.name+" \u00b7 move "+(Math.floor(x.ply/2)+1)+"</span><em>"+
-      x.r.no+" miss"+(x.r.no>1?"es":"")+(x.r.ms?" \u00b7 "+fmtMs(x.r.ms):"")+habit+"</em>";
+    // Built with textContent: the habit text comes from a stats record, and a
+    // record can arrive from an imported backup, so its move names are not the
+    // app's own strings. sanW() filters them on the way in; this is the other half.
+    const nm=document.createElement("span");
+    nm.textContent=x.name+" \u00b7 move "+(Math.floor(x.ply/2)+1);
+    const meta=document.createElement("em");
+    meta.textContent=x.r.no+" miss"+(x.r.no>1?"es":"")+(x.r.ms?" \u00b7 "+fmtMs(x.r.ms):"")+habit;
+    b.appendChild(nm);b.appendChild(meta);
     b.onclick=()=>{S.mode="study";S.li=x.li;S.ply=x.ply;S.sel=null;S.hint=0;
       S.flip=LINES[x.li].you==="b";syncOpts();go("board");};
     c.appendChild(b);
@@ -329,28 +391,89 @@ el("pExport").onclick=()=>{
 // no code to remap v3 keys to v4 was ever written for that format bump, so this
 // shape check is what stands in for a real migration.
 function looksV4Key(k){return k.indexOf("pz:")===0||k.indexOf("/")>=0;}
+// A stored counter is a finite, non-negative number. `opt` allows the field to be
+// absent, which a v4 record's "w" and an older build's records need.
+function okNum(v,opt){
+  if(v===undefined)return !!opt;
+  return typeof v==="number"&&Number.isFinite(v)&&v>=0;
+}
 // Import is a trust boundary: validate the whole shape before anything touches
 // `stats`, and never partially assign it. Returns null when valid, else a short
 // reason string used to pick the message shown to the user.
 function validateImport(d){
-  if(!d||typeof d!=="object"||!d.pos||typeof d.pos!=="object")return "shape";
+  if(!d||typeof d!=="object"||Array.isArray(d)||!d.pos||typeof d.pos!=="object"||Array.isArray(d.pos))return "shape";
   const keys=Object.keys(d.pos);
   if(d.v!==undefined&&d.v!==4&&d.v!==5)return "version";
   if(d.v===undefined&&keys.length&&!keys.every(looksV4Key))return "version";
   for(const k of keys){
     const r=d.pos[k];
-    if(!r||typeof r!=="object"||typeof r.ok!=="number"||typeof r.no!=="number")return "shape";
+    // Every counter the app reads back must be a real number before it is trusted:
+    // state() does arithmetic on streak and last, and weakest() sorts on no and ms.
+    // A NaN, a negative or a string there does not corrupt storage, it corrupts the
+    // schedule, silently and for good.
+    if(!r||typeof r!=="object"||!okNum(r.ok)||!okNum(r.no)||
+      !okNum(r.streak,1)||!okNum(r.last,1)||!okNum(r.ms,1))return "shape";
   }
+  if(d.pz!==undefined&&(!d.pz||typeof d.pz!=="object"||Array.isArray(d.pz)))return "shape";
   return null;
+}
+// Clamp a stored index to something THEMES[]/SETS[] actually has: applyTheme() and
+// syncOpts() index straight into those, so a 7 from a hand-edited backup or a newer
+// build used to throw on the very first paint.
+function idx(v,n){return (typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<n)?Math.floor(v):0;}
+function num(v,max){return okNum(v)?Math.min(Math.floor(v),max):0;}
+const DAY=864e5;
+// One record, bounded: whole non-negative counters, a plausible timestamp, and a
+// filtered miss log. Same shape out as touch()/grade() write, so nothing here is a
+// storage-format change and the key stays at v5.
+function sanRec(r){
+  if(!r||typeof r!=="object")return null;
+  const out={ok:num(r.ok,1e6),no:num(r.no,1e6),streak:num(r.streak,1e4),
+    last:num(r.last,Date.now()+DAY),ms:num(r.ms,DAY)};
+  const w=sanW(r.w);
+  if(w)out.w=w;
+  return out;
+}
+function sanPz(o){
+  if(!o||typeof o!=="object")return {};
+  // Null prototype: these keys came out of a backup, and pz["__proto__"] would set
+  // the prototype of the map instead of storing a record.
+  const out=Object.create(null);
+  for(const k of Object.keys(o).slice(0,5000)){
+    const r=o[k];
+    if(!r||typeof r!=="object")continue;
+    out[k]={ok:num(r.ok,1e6),no:num(r.no,1e6),ms:num(r.ms,DAY)};
+  }
+  return out;
+}
+// One normaliser for both trust boundaries - an imported backup and whatever was
+// found in storage. Validate first, clean second: validateImport() decides whether
+// to accept the blob at all, this decides what the accepted blob becomes.
+function cleanStats(d){
+  const pos=Object.create(null); // same reason as sanPz(): the keys are not ours
+  for(const k of Object.keys(d.pos||{})){const r=sanRec(d.pos[k]);if(r)pos[k]=r;}
+  return {pos:pos,pz:sanPz(d.pz),
+    day:typeof d.day==="string"?d.day.slice(0,40):"",
+    today:num(d.today,1e6),
+    theme:idx(d.theme,THEMES.length),
+    set:idx(d.set,SETS.length),
+    bookOnly:!!d.bookOnly};
 }
 // Sanitise a record's miss log at the import trust boundary: keep only string->
 // positive-number entries, re-bound to the same limits grade() enforces on write
 // (5 distinct SANs, highest counts kept, capped at 99). Returns null when nothing
 // valid remains, in which case the caller drops just this field - a mangled miss
 // log must not cost the user the rest of the backup.
+// A plausible SAN and nothing else: a castle, or an optional piece letter and
+// disambiguator, an optional capture, a destination square, an optional promotion,
+// and the marks the app stores. A key that is not a move is a key nobody played, so
+// it is dropped rather than cleaned - and it is a key the Progress screen prints.
+const SAN_RE=/^(?:O-O(?:-O)?|(?:[KQRBN][a-h]?[1-8]?|[a-h])?x?[a-h][1-8](?:=[QRBN])?)[+#]?[!?]{0,2}$/;
 function sanW(w){
   if(!w||typeof w!=="object")return null;
-  const pairs=Object.keys(w).filter(s=>typeof w[s]==="number"&&Number.isFinite(w[s])&&w[s]>0);
+  // slice bounds the work a hostile blob can ask for; the output is capped at 5.
+  const pairs=Object.keys(w).slice(0,64).filter(s=>SAN_RE.test(s)&&
+    typeof w[s]==="number"&&Number.isFinite(w[s])&&w[s]>0);
   if(!pairs.length)return null;
   pairs.sort((a,b)=>w[b]-w[a]);
   const out={};
@@ -371,29 +494,28 @@ el("pImport").onclick=()=>{
     el("pData").value="That is not a valid backup. Export from another device and paste the whole line.";
     return;
   }
-  for(const k of Object.keys(d.pos)){
-    const r=d.pos[k];
-    if(r.w!==undefined){const w=sanW(r.w);if(w)r.w=w;else delete r.w;}
-  }
-  stats={pos:d.pos,
-    pz:(d.pz&&typeof d.pz==="object")?d.pz:{},
-    day:typeof d.day==="string"?d.day:"",
-    today:typeof d.today==="number"?d.today:0,
-    theme:typeof d.theme==="number"?d.theme:0,
-    set:typeof d.set==="number"?d.set:0,
-    bookOnly:!!d.bookOnly};
+  stats=cleanStats(d);
   S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;
+  SAVE_HELD=false; // the user has chosen what to keep; writing is theirs to allow again
   applyTheme();syncOpts(); // apply immediately; do not make the user reload to see it
   save();renderProgress();el("pData").value="Imported.";
 };
 let resetArmed=false;
 el("pReset").onclick=function(){
   if(!resetArmed){resetArmed=true;this.textContent="Tap again to erase everything";return;}
-  stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set};S.run=0;save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
+  // bookOnly is a setting, not progress: leaving it out of the rebuilt object wiped
+  // it from storage while S.bookOnly still showed it on in the options sheet.
+  stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set,bookOnly:S.bookOnly};S.run=0;
+  SAVE_HELD=false; // "erase everything" is explicit consent to write over whatever is there
+  save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
 };
 
 /* ================= board rendering ================= */
 function render(anim){
+  // Any repaint means the board is not the board the chooser was opened over, so
+  // the chooser goes. askPromotion() is the only caller that must not be followed
+  // by a render in the same turn, and it is not.
+  closePromotion();
   const l=L(),pos=nowPos(),b=pos.b;
   const last=S.free.length?S.free[S.free.length-1].uci:(S.ply>0?l.moves[S.ply-1][0]:null);
   const dests=S.sel?legal(pos).filter(m=>sq(m.f)===S.sel):[];
@@ -478,6 +600,14 @@ function moveCursor(df,dr){
 }
 addEventListener("keydown",e=>{
   if(S.screen!=="board")return;
+  // The promotion chooser takes focus, so the board-focus guard below would
+  // swallow Escape for the one element that most needs it: a role="dialog" the
+  // keyboard cannot dismiss. Handle it first, before that guard.
+  if(e.key==="Escape"&&el("promo").classList.contains("on")){
+    e.preventDefault();closePromotion();S.sel=null;render(false);
+    const b=el("board");if(b)b.focus();
+    return;
+  }
   if(document.activeElement!==el("board"))return;
   const k=e.key;
   if(k==="ArrowRight"){e.preventDefault();moveCursor(1,0);}
@@ -507,7 +637,7 @@ function killGhosts(){document.querySelectorAll(".pc.drag,.drag").forEach(n=>n.r
 function startDrag(e,name,pc){
   killGhosts();
   const r=el("board").getBoundingClientRect(),cell=r.width/8;
-  const g=pieceEl2(pc,"pc drag"+(SETS[S.set][3]?" "+(isW(pc)?"w":"b"):""));
+  const g=pieceEl2(pc,"pc drag"+((SETS[S.set]||SETS[0])[3]?" "+(isW(pc)?"w":"b"):""));
   g.style.width=g.style.height=cell*.86+"px";
   g.style.left=e.clientX+"px";g.style.top=e.clientY+"px";
   document.body.appendChild(g);
@@ -569,12 +699,12 @@ function flash(name,cls){
   const m=mark(cls);cell.appendChild(m);setTimeout(()=>m.remove(),620);
 }
 function armNext(ms){
-  clearTimeout(S.pending);
+  stopAll();
   const bar=el("progBar");
   bar.style.transition="none";bar.style.width="100%";
   void bar.offsetWidth;
   bar.style.transition="width "+ms+"ms linear";bar.style.width="0%";
-  S.pending=setTimeout(()=>{S.pending=0;S.arrow=null;shuffle(false);},ms);
+  S.pending=later(()=>{S.pending=0;S.arrow=null;shuffle(false);},ms);
   // good() calls render(true) BEFORE arming the wait, so renderCtl() built the
   // Hint/Skip buttons while S.pending was still falsy - refresh them now that it
   // is set, or they stay live (targeting the opponent's ply) for the whole wait
@@ -589,14 +719,14 @@ function armNext(ms){
 // past the last puzzle, so S.pz+1 is safe at the end of the set.
 function skipNext(){
   if(!S.pending)return false;
-  clearTimeout(S.pending);S.pending=0;S.arrow=null;
+  stopAll();S.arrow=null;
   if(S.mode==="puzzle")startPuzzle(S.pz+1);else shuffle(false);
   return true;
 }
 // No timer here on purpose — armWait just marks S.pending so a tap
 // (via skipNext) advances immediately; the position stays on screen until read.
 function armWait(){
-  clearTimeout(S.pending);
+  stopAll();
   // Honest bar: armWait has no countdown, so pinning the bar at 100% (as the
   // timed armNext does, to show time running out) would read as "complete"
   // for as long as the user takes to read the note. Show real ply progress
@@ -672,7 +802,7 @@ function renderCtl(){
     add("Back one",()=>{S.ply=Math.max(0,S.ply-2);S.sel=null;S.tries=0;S.hint=0;S.arrow=null;render(false);},"wide",S.ply===0);
     if(done&&S.mode==="line")add("Next line &#8594;",()=>{S.li=(S.li+1)%LINES.length;startLine();},"wide");
     else if(!done)add(hintLabel(),hint,"wide",false);
-    add("Restart",()=>{S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);if(!yourTurn())setTimeout(autoReply,250);},"wide");
+    add("Restart",()=>{stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);if(!yourTurn())later(autoReply,250);},"wide");
     if(done&&S.mode==="puzzle")add("Next puzzle &#8594;",()=>startPuzzle(S.pz+1),"wide");
   }else if(S.pending){
     // Waiting for a tap after a correct answer: S.ply already points past your
@@ -686,6 +816,10 @@ function renderCtl(){
 }
 function toggleplay(){
   if(S.timer){stop();render(false);return;}
+  // Every sibling control in renderCtl() clears the free branch before touching
+  // S.ply, and so does the keyboard stepper. Without it here, nowPos() went on
+  // returning S.fpos while the ply, the notes and the progress bar marched on.
+  clearFree();
   if(S.ply>=L().moves.length)S.ply=0;
   S.timer=setInterval(()=>{
     if(S.ply>=L().moves.length){stop();render(false);return;}
@@ -771,23 +905,33 @@ async function loadLib(){
     if(libInFlight&&libInFlight.moves===moves)libInFlight=null;
   }
 }
+/* Everything in `d` came off the network. The strings go through esc(); the numbers
+   go through int() for the same reason, because a string where a count belongs does
+   not add, it concatenates - "<img src=x>"+""+"" is a perfectly good tot, and
+   tot.toLocaleString() would hand it straight back to innerHTML. Coerce first, and
+   nothing below can be anything but a number. */
 function paintLib(d){
-  const box=el("lib"),tot=d.white+d.draws+d.black;
+  const box=el("lib");
+  const int=v=>{const x=Number(v);return Number.isFinite(x)?x:0;};
+  const wdl=o=>int(o&&o.white)+int(o&&o.draws)+int(o&&o.black);
+  const tot=wdl(d);
   if(!tot){box.innerHTML="No master games have reached this position. You are already off the map, which is not always bad.";return;}
   const next=S.ply<L().moves.length?L().moves[S.ply][0]:null;
   const pc=n=>Math.round(n/tot*100);
   let h='<div class="hd"><span>'+tot.toLocaleString()+" master games</span><span>"+
-    (d.opening?d.opening.eco+" "+d.opening.name:"")+'</span></div><div class="wdl">'+
-    '<i style="width:'+pc(d.white)+'%;background:#e8e2d2"></i>'+
-    '<i style="width:'+pc(d.draws)+'%;background:#6b7c8c"></i>'+
-    '<i style="width:'+pc(d.black)+'%;background:#1b232d"></i></div>';
-  const max=Math.max(...d.moves.map(m=>m.white+m.draws+m.black),1);
-  for(const m of d.moves){
-    const n=m.white+m.draws+m.black,ours=next&&m.uci===next.slice(0,4);
-    h+='<div class="lrow'+(ours?" ours":"")+'"><b>'+m.san+'</b><span class="bar"><i style="width:'+
+    (d.opening?esc(d.opening.eco+" "+d.opening.name):"")+'</span></div><div class="wdl">'+
+    '<i style="width:'+pc(int(d.white))+'%;background:#e8e2d2"></i>'+
+    '<i style="width:'+pc(int(d.draws))+'%;background:#6b7c8c"></i>'+
+    '<i style="width:'+pc(int(d.black))+'%;background:#1b232d"></i></div>';
+  const rows=Array.isArray(d.moves)?d.moves:[];
+  const max=Math.max(...rows.map(wdl),1);
+  for(const m of rows){
+    // Full uci both sides: lichess writes a promotion as "e7e8q", and so do we.
+    const n=wdl(m),ours=next&&m.uci===next;
+    h+='<div class="lrow'+(ours?" ours":"")+'"><b>'+esc(m.san)+'</b><span class="bar"><i style="width:'+
       Math.round(n/max*100)+'%"></i></span><em>'+(n>=1000?Math.round(n/1000)+"k":n)+"</em></div>";
   }
-  if(next&&!d.moves.some(m=>m.uci===next.slice(0,4)))
+  if(next&&!rows.some(m=>m.uci===next))
     h+='<div class="lrow ours"><b>'+L().moves[S.ply][1]+"</b><span>rare or unplayed at master level</span></div>";
   box.innerHTML=h;
 }
@@ -854,7 +998,48 @@ function renderSheet(){
 }
 
 /* ================= drilling ================= */
+/* A pawn reaching the last rank is four different moves, and which one was meant is
+   the user's to say. Auto-queening answered for them and then compared only the
+   first four characters of the uci, so a knight promotion counted as the queen one.
+   The chooser stacks the four pieces over the square the pawn is landing on, in the
+   board's own idiom, and everything below compares the FULL uci, suffix included. */
+function askPromotion(pos,name,ms){
+  const box=el("promo");
+  box.innerHTML="";
+  const f=F.indexOf(name[0]),r=8-parseInt(name[1],10);
+  const col=S.flip?7-f:f,row=S.flip?7-r:r;
+  box.style.left=(col*12.5)+"%";
+  box.style.top=row<4?"0":"";
+  box.style.bottom=row<4?"":"0";
+  for(const q of "qrbn"){
+    const m=ms.find(x=>x.p===q);
+    if(!m)continue;
+    const b=document.createElement("button");
+    b.setAttribute("aria-label","Promote to "+NAME[q]);
+    b.appendChild(pieceEl2(pos.w?q.toUpperCase():q,"pc "+(pos.w?"w":"b")));
+    const u=uciOf(m);
+    // render() closes the chooser when the position changes, but do not trust that
+    // alone: re-find the move on the board as it is now, and drop it if it is gone.
+    b.onclick=e=>{e.stopPropagation();closePromotion();
+      const now=nowPos(),live=legal(now).find(x=>uciOf(x)===u);
+      if(live)playMove(now,name,live);else render(false);};
+    box.appendChild(b);
+  }
+  box.classList.add("on");
+  // Move focus into the dialog. Without this a keyboard user has the board's
+  // focus while a modal chooser is on screen, and a screen reader never hears
+  // that it opened.
+  // Read a layout property first: .on has only just flipped display from none,
+  // and focus() on a still-hidden element is silently dropped.
+  void box.offsetWidth;
+  const first=box.querySelector("button");
+  if(first)first.focus();
+}
+function closePromotion(){const b=el("promo");if(b){b.classList.remove("on");b.innerHTML="";}}
 function tap(name){
+  // A tap anywhere else while the chooser is open cancels it: the pawn has not
+  // moved yet, so there is nothing to undo.
+  if(el("promo").classList.contains("on")){closePromotion();S.sel=null;render(false);return;}
   if(skipNext())return;
   const pos=nowPos(),study=S.mode==="study";
   if(!study&&(!yourTurn()||S.ply>=L().moves.length))return;
@@ -862,26 +1047,32 @@ function tap(name){
   if(!S.sel){if(mine){S.sel=name;render(false);}return;}
   if(S.sel===name){S.sel=null;render(false);return;}
   if(mine){S.sel=name;render(false);return;}
-  const m=legal(pos).find(x=>sq(x.f)===S.sel&&sq(x.t)===name&&(!x.p||x.p==="q"));
-  const wanted=S.ply<L().moves.length?L().moves[S.ply][0].slice(0,4):null;
+  const ms=legal(pos).filter(x=>sq(x.f)===S.sel&&sq(x.t)===name);
+  if(ms.length>1&&ms[0].p){askPromotion(pos,name,ms);return;}
+  playMove(pos,name,ms[0]||null);
+}
+function playMove(pos,name,m){
+  const study=S.mode==="study";
+  const wanted=S.ply<L().moves.length?L().moves[S.ply][0]:null;
   if(!m){
     S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">Not a legal move; nothing counted.</span>';
     return;
   }
+  const played=uciOf(m);
   if(study){
-    if(!S.free.length&&wanted===S.sel+name){S.sel=null;S.ply++;render(true);return;}
+    if(!S.free.length&&wanted===played){S.sel=null;S.ply++;render(true);return;}
     const t=san(pos,m);
-    S.free.push({uci:uciOf(m),san:t});S.fpos=make(pos,m);S.sel=null;render(true);
+    S.free.push({uci:played,san:t});S.fpos=make(pos,m);S.sel=null;render(true);
     el("nMsg").innerHTML='<span class="neutral">'+t+". Off the line.</span>";
     return;
   }
-  if(S.sel+name===wanted){good();return;}
+  if(played===wanted){good();return;}
   // A move some other line trains from this very board is book, not a mistake. Shuffle
   // switches to that line and credits it; drill stays on this line and says so without
   // grading, so the user retries instead of being told a repertoire move was wrong.
   // ALT excludes NO_SHUFFLE ids, so the deliberate-mistake lines never count as book.
-  const alt=S.mode==="puzzle"?null:altAt(pos,S.sel+name);
+  const alt=S.mode==="puzzle"?null:altAt(pos,played);
   // bookExcluded mirrors shuffle()'s own candidate filter (app.js, S.bookOnly check):
   // an alt from a line drill-book-only mode was told to exclude must not be credited,
   // or S.li ends up pointing at exactly the kind of line the mode hides.
@@ -900,20 +1091,62 @@ function tap(name){
       " plays it here. This line wants "+L().moves[S.ply][1]+".</span>";
     return;
   }
-  // One search verdict serves both consumers below: the setup test needs "not
-  // punished", the refutation inside offBook needs "punished, and by what".
-  const v=matVerdict(pos,m);
-  if(S.mode!=="puzzle"&&setupMove(pos,m,v)){
-    const t=san(pos,m);
-    if(S.mode==="shuffle"){setupGood(pos,m,t);return;}
+  // The stored analysis answers first. EVL holds a row for every position the user
+  // is asked to move in, so the table already knows what the four-ply search was
+  // being asked - and knows it for free, where the search costs about half a second
+  // per wrong move. setupGate decides whether "builds the setup too" may be said
+  // here and hands back the grade it computed, so nothing is graded twice;
+  // matVerdict now runs only where the table is silent about the move played.
+  const t=san(pos,m);
+  const pz=S.mode==="puzzle";
+  const row=pz?null:evalFor(pos);
+  const gate=pz?{credit:false,reason:"no-targets",grade:null}:setupGate(row,pos,m,L().targets);
+  const g=pz?null:(gate.grade||gradeMove(row,pos,m));
+  if(g)g.reply=replyAfter(pos,m,row,g);
+  if(gate.credit){
+    if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,g,row));return;}
     // Drill: mirror the book-alternative branch above exactly - acknowledge, grade
     // nothing either way, leave the streak alone, and do not advance, because the
     // stored continuation would diverge from the board. The user retries.
     S.sel=null;render(false);
+    el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. "+
+      gradeLine(g)+pvTxt(g,row)+" This line's order plays "+L().moves[S.ply][1]+" here.</span>";
+    return;
+  }
+  // Several moves can be right. A move the table puts first, or inside the noise
+  // band of its first choice, is chess and not a mistake, whatever this line plays.
+  // Read the verdict and never the rank: rank 5 is 5 cp behind in one row and 78 in
+  // another, and a scored move carries rank 0, which is not a place at all.
+  // Two exclusions. A formation move the gate refused (demanding, out-of-band) is
+  // never credited here however it grades - at the storm tabiya the engine wants
+  // ...h5 and "the order does not matter" is simply false. And the three lines that
+  // exist to show the user losing (NO_SHUFFLE) keep their lesson: a sound move there
+  // is still not the move the line is about to punish, and crediting it would hand
+  // the drill a way round the point.
+  if(g&&g.analysis==="checked"&&GRADE.accept.indexOf(g.verdict)>=0&&
+     (gate.reason==="not-target"||gate.reason==="no-targets")&&!NO_SHUFFLE.has(L().id)){
+    if(S.mode==="shuffle"){setupGood(pos,m,t,goodLead(t,g,row));return;}
+    S.sel=null;render(false);
+    el("nMsg").innerHTML='<span class="neutral">'+goodLead(t,g,row)+" This line plays "+L().moves[S.ply][1]+" here.</span>";
+    return;
+  }
+  // Refused, or not covered. Either way the row is better evidence than a search,
+  // so skip it whenever the row has an answer - including "demanding", where the
+  // gate has ruled and a material brake must not reopen what it shut.
+  if(g&&(g.analysis==="checked"||gate.reason==="demanding")){
+    offBook(name,t,null,g,gate.reason==="demanding"?demandLead():null);
+    return;
+  }
+  // Only here is the search still the best evidence available: the table does not
+  // cover this move (or, defensively, there is no row at all).
+  const v=matVerdict(pos,m);
+  if(!pz&&setupMove(pos,m,v,gate)){
+    if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,null,null));return;}
+    S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. This line's order plays "+L().moves[S.ply][1]+" here.</span>";
     return;
   }
-  offBook(name,san(pos,m),v);
+  offBook(name,t,v,g,null);
 }
 function touch(k,ms){
   if(k.indexOf("pz:")===0)return;
@@ -994,7 +1227,7 @@ function good(){
         armPz(1500);
         el("nMsg").innerHTML='<span class="ok">Solved'+(clean?", clean":"")+". "+fmtMs(ms)+"</span>";}
       else{
-        el("nMsg").innerHTML='<span class="ok">Line complete.</span>';
+        el("nMsg").innerHTML='<span class="ok">Line complete.</span> <span class="neutral">'+endNote()+"</span>";
         // No auto-reply is coming to carry it, so the engine block for a missed
         // final move lands on the note directly.
         if(evTxt)el("nText").textContent=(el("nText").textContent+" "+evTxt).trim();
@@ -1004,7 +1237,7 @@ function good(){
     // block to autoReply the same way it already carries the answered move's own
     // annotation across that repaint.
     S.evNote=evTxt;
-    setTimeout(autoReply,260);
+    later(autoReply,260);
   }else{
     // Shuffle serves a bare position, so the answer is the one moment to say
     // where it came from and what the opponent does next (the reply's note is
@@ -1086,6 +1319,96 @@ function evalNote(ev,repSan){
   if(ev.pv&&ev.pv.length)s+=" Its line: "+ev.pv.join(" ")+".";
   return s;
 }
+/* ---------- what the graded move did ----------
+   Everything below turns a gradeMove record (src/engine.js, research/GRADING.md)
+   into prose. One rule holds over all of it: no clause without a stored number
+   behind it. A mate goes through fmtScore and is never a pawn count, "winning"
+   and "lost" come from scoreState and nowhere else, and a best defence in a lost
+   position is named as a defence - the record carries situation and after side by
+   side for exactly that sentence. */
+/* The end of an analysed branch. The plan is the line's own authored aim, its
+   first sentence, and not an evaluation; the offer is the two things this page can
+   actually do next - another position from the repertoire, or Study, where the
+   pieces move freely and nothing is graded. Nothing is promised beyond that: there
+   is no engine here, and the table stops where the line stops. */
+function endNote(){
+  const p=(L().plan||"").split(". ")[0].replace(/\.$/,"");
+  return (p?p+". ":"")+"Another line, or open it in Study, where the pieces move freely and nothing is graded.";
+}
+/* The opposing reply the page may actually show, with no search anywhere: the
+   table's row for the position the move LEAVES, whose first entry is the
+   opponent's best answer there, and failing that the stored pv of the row we are
+   standing in, whose second move is that same answer when the move played is the
+   pv's own first move. Null when neither covers it - an invented reply is worse
+   than none. */
+function replyAfter(pos,m,row,g){
+  const aft=evalFor(make(pos,m));
+  if(aft&&aft.m&&aft.m.length)return aft.m[0][1];
+  if(row&&row.pv&&row.pv.length>1&&g&&g.san&&
+     row.pv[0].replace(/[+#!?]/g,"")===g.san.replace(/[+#!?]/g,""))return row.pv[1];
+  return null;
+}
+// The opponent's move, written the way the move list writes it.
+function theirs(sanTxt){return (L().you==="w"?"…":"")+sanTxt;}
+// Distance from the row's first choice, in the unit the policy is calibrated in.
+function lossTxt(g){
+  if(g.lossCp===null)return "";
+  if(g.lossCp===0)return ", and nothing in the table scores higher";
+  return ", "+g.lossCp+" centipawn"+(g.lossCp===1?"":"s")+" behind its first choice";
+}
+/* What the move leaves, said only where scoreState said it. "lost" after a
+   position that was already lost is "still lost", never a fresh verdict, and a
+   best defence is never allowed to read as a rescue. */
+function afterTxt(g){
+  if(!g.after)return "";
+  if(g.after==="mating")return "It forces mate.";
+  if(g.after==="mated")return g.situation==="mated"?"The position was already mated and still is.":"It walks into a forced mate.";
+  if(g.after==="won")return "The position stays winning.";
+  if(g.after==="lost")return g.situation==="lost"?"The position stays lost; this is defence, not a rescue.":"It leaves the position lost.";
+  return "";
+}
+/* The full stored sentence about one graded move: its own score, its distance from
+   the first choice, what it leaves and the reply the table answers with. */
+function gradeLine(g){
+  if(!g||g.analysis!=="checked")return "The table does not cover this move, so nothing is claimed about it either way.";
+  let s="Stockfish 16, depth "+g.why.depth+": "+g.san+" "+fmtScore(g)+lossTxt(g)+".";
+  const a=afterTxt(g);
+  if(a)s+=" "+a;
+  if(g.reply)s+=" The table answers "+theirs(g.reply)+".";
+  return s;
+}
+// The stored continuation, shown only where the move played is the one the pv
+// starts with - the pv after any other move is a line that was never played.
+function pvTxt(g,row){
+  if(!row||!row.pv||row.pv.length<3||!g||!g.san)return "";
+  if(row.pv[0].replace(/[+#!?]/g,"")!==g.san.replace(/[+#!?]/g,""))return "";
+  return " Its line from here: "+row.pv.join(" ")+".";
+}
+// A move the table puts first or inside its noise band, played where the line
+// wants another. Named as sound, with the number, and nothing stronger.
+function goodLead(t,g,row){
+  const head=g.verdict==="best"?t+" is the table's first choice here":
+    t+" is sound here, inside the noise band of the table's first choice";
+  return head+". "+gradeLine(g)+pvTxt(g,row);
+}
+// A formation move the gate credited. The sentence the Hippo's move order earned,
+// plus the number where the table backed it rather than a four-ply material check.
+function setupLead(t,g,row){
+  const l=L();
+  return "The "+(l.you==="b"?"wall":"setup")+" is a formation, not a move order: "+t+
+    " fills one of its squares, and "+(g&&g.analysis==="checked"
+      ?"the table has it within the noise band of its own first choice. "+gradeLine(g)+pvTxt(g,row)
+      :"a four-ply material check finds no punishment for it here.");
+}
+/* The storm tabiya, and every position like it: the row's first choice is not a
+   formation move, so building is not free here whatever the wall move scores. Run
+   through the same leak filter a refutation is, because "not a formation move" is
+   a fact about the position that could point at the answer. */
+function demandLead(){
+  const txt="This position asks for something concrete: the table's first choice here is not a formation move, so the order does matter.";
+  const w=S.ply<L().moves.length?L().moves[S.ply]:null;
+  return (w&&refuteLeaks(txt,w[0],w[1]))?null:txt;
+}
 /* What a wrong move concretely costs, said only when the material search
    (matVerdict, src/engine.js) proves it. The sentence claims exactly what was
    searched: the opponent's best first reply, and either a material swing that does
@@ -1106,22 +1429,34 @@ function refutation(v){
   const w=S.ply<L().moves.length?L().moves[S.ply]:null;
   return (w&&refuteLeaks(txt,w[0],w[1]))?null:txt;
 }
-function offBook(name,t,v){
-  // Stored engine eval for the position the wrong move was played from. On a hit
-  // the refutation's material search is skipped entirely - the stored eval is
-  // strictly better information; on a miss everything below behaves exactly as
-  // before, with no "engine unavailable" text. The eval sentence itself is shown
-  // on the graded attempt only, and may talk about the PLAYED move alone: the
-  // position is still live for a retry, and the engine's first choice is usually
-  // the repertoire move, so naming it here would hand over the answer outside
-  // the hint ladder. A played move outside the stored top five gets no number -
-  // asserting one would be an evaluation nobody checked.
-  const hit=S.mode!=="puzzle"?evalFor(nowPos()):null;
-  const ev=(hit&&S.tries===0)?hit:null;
-  if(S.tries===0&&S.hint<3)gradeOncePerPass(key(L(),S.ply),false,0,t);
-  if(S.mode==="puzzle"&&S.tries===0){const r=pzRec();if(r){r.no++;save();}}
-  if(S.tries===0){S.run=0;bumpToday();}
-  S.tries++;S.sel=null;
+/* The move is not this line's, and was not credited. g is the gradeMove record
+   (null in tactics, which keeps its own rules), v the material search's verdict,
+   which now arrives only where the table does not cover the move.
+
+   Blame needs evidence. The table saying a move is a concession or worse is
+   evidence; a four-ply search proving material does not come back is evidence; the
+   table simply not having searched the move is neither, so an unanalysed move is
+   said to be unanalysed and costs the record nothing - no miss, no broken run, no
+   spent hint, exactly as the "book too" branch in playMove already behaves.
+   Tactics is unchanged: every wrong move there counts.
+
+   Nothing here names the table's first choice or its pv. The position is live for
+   a retry and the first choice is usually the repertoire move, so the numbers may
+   be stated and the move behind them may not. */
+function offBook(name,t,v,g,extra){
+  const pz=S.mode==="puzzle";
+  const checked=!!(g&&g.analysis==="checked");
+  // concession is refused with its price named rather than passed off as equal:
+  // GRADE.accept holds best and equal alone, and the number is the whole point.
+  const priced=checked&&(GRADE.reject.indexOf(g.verdict)>=0||g.verdict==="concession");
+  const punish=checked?null:refutation(v);
+  const blame=pz||priced||!!punish;
+  if(blame&&S.tries===0&&S.hint<3)gradeOncePerPass(key(L(),S.ply),false,0,t);
+  if(pz&&S.tries===0){const r=pzRec();if(r){r.no++;save();}}
+  if(blame&&S.tries===0){S.run=0;bumpToday();}
+  const first=S.tries===0;
+  if(blame)S.tries++;
+  S.sel=null;
   // Say something about the move that is wanted instead of repeating the same
   // refusal on every retry - the same leak-filtered clue Hint tier 1 would give,
   // and never the move itself, because the position stays live for another try.
@@ -1129,21 +1464,28 @@ function offBook(name,t,v){
   // rather than repeating what is already on screen. That costs nothing at
   // grading: the miss was graded above while S.hint was still 0, and good()'s
   // "clean" test is already false here because S.tries is non-zero.
-  const why=S.hint===0?moveClue():null;
+  const why=(blame&&S.hint===0)?moveClue():null;
   if(why)S.hint=1;
-  const punish=hit?null:refutation(v);
+  // The number is shown on the graded attempt only, and talks about the PLAYED
+  // move alone.
   let evTxt=null;
-  if(ev){
-    const bare=t.replace(/[+#]/g,""),row=ev.m.find(x=>x[1].replace(/[+#]/g,"")===bare);
-    evTxt=row?"Engine (Stockfish 16, depth "+ev.d+"): "+t+" "+fmtScore({cp:row[2],mate:row[3]})+"."
-      :"Engine (Stockfish 16, depth "+ev.d+"): "+t+" is outside its best five here.";
+  if(checked&&first){
+    evTxt="Stockfish 16, depth "+g.why.depth+": "+t+" "+fmtScore(g)+lossTxt(g)+".";
+    const a=afterTxt(g);
+    if(a)evTxt+=" "+a;
+    if(g.verdict==="concession")evTxt+=" Playable; that is what it costs.";
   }
-  render(false);flash(name,"bad");
-  el("nMsg").innerHTML='<span class="no">'+t+(S.mode==="puzzle"
+  // analysis "unknown" is the only state with no number to print, so it is the one
+  // state that gets said out loud instead.
+  const none=(!checked&&!punish&&!pz)?"The table has not searched this move, so nothing is claimed about it either way.":null;
+  render(false);flash(name,blame?"bad":"warn");
+  el("nMsg").innerHTML='<span class="'+(blame?"no":"neutral")+'">'+t+(pz
       ?" is legal, but the tactic needs something else.</span>"
       :" is legal, but it is not the repertoire move.</span>")+
     (punish?' <span class="no">'+punish+"</span>":"")+
+    (extra?' <span class="neutral">'+extra+"</span>":"")+
     (evTxt?' <span class="neutral">'+evTxt+"</span>":"")+
+    (none?' <span class="neutral">'+none+"</span>":"")+
     (why?' <span class="neutral">'+why+"</span>":"");
 }
 /* A setup line's targets say where the formation wants each piece; grading against
@@ -1154,14 +1496,19 @@ function offBook(name,t,v){
    shuffling from one target square to another, and the material search does not
    show it being punished - a quiet building move played while something concrete
    is happening is a mistake, and falls through to the refutation instead. A null
-   verdict (node budget ran out) also disqualifies: unproven-safe is not safe. */
-function setupMove(pos,m,v){
+   verdict (node budget ran out) also disqualifies: unproven-safe is not safe.
+
+   The structural half is isSetupMove (src/engine.js), shared with the fixture so
+   the two cannot drift; the licence half is setupGate, which reads the stored row.
+   The material check survives in exactly one place - where the gate says the row
+   has not searched this move, or has no row at all. Everywhere else the table has
+   already answered, including "demanding", where it answered no. */
+function setupMove(pos,m,v,gate){
   const l=L();
-  if(!l.targets||!l.targets.length)return false;
-  const pc=pos.b[m.f];
-  if(!l.targets.some(x=>x[0]===sq(m.t)&&x[1]===pc))return false;
-  if(l.targets.some(x=>x[0]===sq(m.f)&&x[1]===pc))return false;
-  return !!v&&v.swing<1;
+  const g=gate||setupGate(evalFor(pos),pos,m,l.targets);
+  if(g.credit)return true;
+  if(g.reason!=="unanalysed"&&g.reason!=="no-row")return false;
+  return isSetupMove(l.targets,pos,m)&&!!v&&v.swing<1;
 }
 /* Shuffle's credit for a qualifying setup move. good() cannot run here: it would
    advance S.ply along the line's own move, and the board would then show a move
@@ -1171,7 +1518,7 @@ function setupMove(pos,m,v){
    S.lastKey needs no update, unlike the book-alternative branch in tap(): the key
    graded is the very one shuffle() served, so the same board is already barred
    from coming straight back. skipNext -> shuffle(false) -> clearFree() cleans up. */
-function setupGood(pos,m,t){
+function setupGood(pos,m,t,lead){
   const clean=S.hint===0&&S.tries===0;
   const ms=elapsed();S.lastMs=ms;
   S.arrow=null;
@@ -1185,9 +1532,7 @@ function setupGood(pos,m,t){
   const l=L(),want=l.moves[S.ply][1];
   el("nText").innerHTML='<span class="neutral">'+[l.name,l.src].filter(Boolean).join(" · ")+
     (KIND[l.id]?' <span class="kind '+KIND[l.id]+'">'+KIND[l.id]+"</span>":"")+"</span>"+
-    "<br>The "+(l.you==="b"?"wall":"setup")+" is a formation, not a move order: "+t+
-    " fills one of its squares, and a four-ply material check finds no punishment for it here. "+
-    "This line plays "+want+" first.";
+    "<br>"+(lead||setupLead(t,null,null))+" This line plays "+want+" first.";
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+t+
     (clean?"":" (with help)")+(ms?",</span> <span class='neutral'>"+fmtMs(ms)+".</span>":"</span>")+
     ' <span class="neutral wait">Tap to continue.</span>';
@@ -1225,10 +1570,10 @@ const PLAN={
     "b6":"The bishops belong on the long diagonals.",
     "Bg7":"Fianchetto, and aim through the centre.",
     "Bb7":"Fianchetto, and aim through the centre.",
-    "d6":"Third rank, not fourth. Nothing there can be attacked profitably.",
-    "e6":"Third rank, not fourth. Nothing there can be attacked profitably.",
-    "a6":"Take b5 away from their pieces for good.",
-    "h6":"Take g5 away from their pieces for good.",
+    "d6":"Third rank, not fourth: nothing can hit it yet.",
+    "e6":"Third rank, not fourth: nothing can hit it yet.",
+    "a6":"Take b5 away from their pieces.",
+    "h6":"Take g5 away from their pieces.",
     "Nd7":"Stay low, behind the wall.",
     "Ne7":"Stay low, behind the wall.",
     "Nf6":"Hit their centre at once instead of crouching.",
@@ -1346,7 +1691,7 @@ function isRulePly(l,p){
   return false;
 }
 function shuffle(first){
-  clearTimeout(S.pending);S.pending=0;
+  stopAll();
   // Deliberately-losing lines: fine in Study/Drill where the framing is visible, but
   const cand=[];
   for(let i=0;i<LINES.length;i++){
@@ -1425,7 +1770,9 @@ function shuffle(first){
 
 /* ================= options sheet ================= */
 function applyTheme(){
-  const t=THEMES[S.theme],r=document.documentElement.style;
+  // Fall back rather than throw: this runs at startup, before go("menu"), so an
+  // index that is no longer valid used to leave a blank page and no way out.
+  const t=THEMES[S.theme]||THEMES[0],r=document.documentElement.style;
   r.setProperty("--sqL",t[1]);r.setProperty("--sqD",t[2]);
   r.setProperty("--pcW",t[3]);r.setProperty("--pcB",t[4]);
   r.setProperty("--edgeW",t[5]);r.setProperty("--edgeB",t[6]);
@@ -1436,8 +1783,8 @@ el("scrim").onclick=()=>openOpts(false);
 function syncOpts(){
   el("oFlip").setAttribute("aria-pressed",S.flip);el("oFlipS").textContent=S.flip?"on":"off";
   el("oGhost").setAttribute("aria-pressed",S.ghost);el("oGhostS").textContent=S.ghost?"on":"off";
-  el("oThemeS").textContent=THEMES[S.theme][0];
-  el("oSetS").textContent=SETS[S.set][0];
+  el("oThemeS").textContent=(THEMES[S.theme]||THEMES[0])[0];
+  el("oSetS").textContent=(SETS[S.set]||SETS[0])[0];
   el("oBookS").textContent=S.bookOnly?"on":"off";
   el("oBook").setAttribute("aria-pressed",S.bookOnly);
   el("oRestart").style.display=S.mode==="shuffle"?"none":"";
@@ -1449,8 +1796,8 @@ el("oSet").onclick=()=>{S.set=(S.set+1)%SETS.length;stats.set=S.set;save();syncO
   document.querySelectorAll(".ico[data-pc]").forEach(n=>{n.innerHTML="";n.appendChild(pieceEl2(n.dataset.pc,""));});
   if(S.screen==="board")render(false);};
 el("oBook").onclick=()=>{S.bookOnly=!S.bookOnly;stats.bookOnly=S.bookOnly;save();syncOpts();};
-el("oRestart").onclick=()=>{openOpts(false);S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);
-  if(S.mode==="line"&&!yourTurn())setTimeout(autoReply,250);};
+el("oRestart").onclick=()=>{openOpts(false);stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);
+  if(S.mode==="line"&&!yourTurn())later(autoReply,250);};
 el("oMenu").onclick=()=>{openOpts(false);go("menu");};
 addEventListener("visibilitychange",()=>{if(!document.hidden&&S.screen==="board"&&S.mode!=="study")armClock();});
 addEventListener("keydown",e=>{
@@ -1485,11 +1832,21 @@ const STORE=(()=>{
   }catch(e){
     // A plain object, wiped on reload. Nothing better is available if the
     // page is denied both APIs; the Progress screen's export is the escape hatch.
+    // MEMONLY is the flag the UI reads so the app says this out loud rather than
+    // letting the user believe a session is being kept.
+    MEMONLY=true;
     return {set:(k,v)=>Promise.resolve(MEM[k]=v),
             get:k=>Promise.resolve({value:MEM[k]||null})};
   }
 })();
-async function save(){try{await STORE.set("colle-hippo:v5",JSON.stringify(stats));}catch(e){}}
+// A write that fails is a write that did not happen, whichever tier took it: an
+// artifact host's storage can reject, and localStorage can throw QuotaExceeded long
+// after the probe in STORE passed. Latch MEMONLY so the menu and the crash bar stop
+// claiming progress is being kept, rather than swallowing it silently.
+async function save(){
+  if(SAVE_HELD)return;
+  try{await STORE.set("colle-hippo:v5",JSON.stringify(stats));}catch(e){MEMONLY=true;}
+}
 
 /* ================= lichess token (menu settings) ================= */
 /* The token deliberately lives under its own key, outside the colle-hippo:v5
@@ -1540,23 +1897,41 @@ el("tokClear").onclick=async()=>{
   tokSay("neutral","Token cleared. The trainer is fully offline again.");
 };
 async function load(){
+  // v5 first; else adopt a v4 blob verbatim - a v4 record is a valid v5 record
+  // without the optional "w" miss log (keys did not change shape), so the v4->v5
+  // migration is adoption plus an immediate rewrite under the v5 key. No data
+  // is dropped and nothing is remapped.
+  let raw=null,fromV4=false;
   try{
-    // v5 first; else adopt a v4 blob verbatim - a v4 record is a valid v5 record
-    // without the optional "w" miss log (keys did not change shape), so the v4->v5
-    // migration is adoption plus an immediate rewrite under the v5 key. No data
-    // is dropped and nothing is remapped.
-    let r=await STORE.get("colle-hippo:v5"),fromV4=false;
+    let r=await STORE.get("colle-hippo:v5");
     if(!(r&&r.value)){r=await STORE.get("colle-hippo:v4");fromV4=!!(r&&r.value);}
-    if(r&&r.value){const d=JSON.parse(r.value);
-      // Fields are read one by one, so a save written by an older build (which also
-      // carried unread "best" and "bestRun" keys) still loads with no progress lost.
-      stats={pos:d.pos||{},pz:d.pz||{},day:d.day||"",today:d.today||0,
-        theme:d.theme||0,set:d.set||0,bookOnly:!!d.bookOnly};
-      S.theme=stats.theme||0;S.set=stats.set||0;S.bookOnly=!!stats.bookOnly;
+    if(r&&r.value)raw=r.value;
+  }catch(e){}
+  if(raw!==null){
+    /* Loading is lenient where importing is strict, and deliberately so. An import
+       is a blob the user chose to paste, so refusing the whole thing costs them
+       nothing. Storage is usually the only copy of their progress, so refusing the
+       whole thing DESTROYS it: the next save() writes the empty set straight over
+       it, silently and for good. Clean per record instead - sanRec() clamps a
+       record that is merely wrong, and a negative ms is not hypothetical, since
+       elapsed() is Date.now()-S.t0 and a backwards clock step between armClock()
+       and the answer produces one - and drop only the entries that are not records
+       at all. A blob with no usable pos object is the one thing refused outright,
+       and then nothing is written over it either. */
+    let d=null;
+    try{d=JSON.parse(raw);}catch(e){d=null;}
+    if(d&&typeof d==="object"&&d.pos&&typeof d.pos==="object"&&!Array.isArray(d.pos)){
+      stats=cleanStats(d);
+      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;
       if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
       if(fromV4)save();
+    }else{
+      // Something is stored and it cannot be read. Overwriting it is the one
+      // irreversible thing this app can do, so it holds off until the user says
+      // otherwise: Import and Reset both release the hold, and the menu says so.
+      SAVE_HELD=true;
     }
-  }catch(e){stats={pos:{},pz:{},day:"",today:0,theme:0};}
+  }
   // Read the stored lichess token back. A local read only - the token is never
   // tested or sent anywhere at load, so a token-less start makes no network calls
   // and a stored token still costs nothing until the panel is actually opened.
@@ -1565,10 +1940,15 @@ async function load(){
     if(t&&t.value){libToken=t.value;el("tokIn").value=libToken;
       tokSay("neutral","A token is stored. The masters database panel is available on the Study screen.");}
   }catch(e){}
-  applyTheme();syncOpts();
-  document.querySelectorAll(".ico[data-pc]").forEach(n=>n.appendChild(pieceEl2(n.dataset.pc,"")));
-  bindPointer();
-  go("menu");
+  // Startup must reach go("menu") whatever happened above. Anything that throws on
+  // the way there leaves a blank page, so it is reported through the crash bar and
+  // the menu is drawn anyway.
+  try{
+    applyTheme();syncOpts();
+    document.querySelectorAll(".ico[data-pc]").forEach(n=>n.appendChild(pieceEl2(n.dataset.pc,"")));
+    bindPointer();
+  }catch(e){crash((e&&e.message)||"startup failed");}
+  try{go("menu");}catch(e){crash((e&&e.message)||"startup failed");}
 }
 
 load();

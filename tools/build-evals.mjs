@@ -81,12 +81,18 @@ async function startEngine() {
   send("setoption name Threads value 1"); // determinism: never search multi-threaded
   send("setoption name Hash value 64");
   send("setoption name MultiPV value " + MULTIPV);
-  async function analyse(fen) {
+  async function analyse(fen, searchmoves) {
+    // searchmoves restricts the search to named moves, which is the only way to
+    // get a number for a move outside the top five. 76 of the 442 stored
+    // repertoire drill moves are in exactly that position, and re-running the
+    // ordinary search at any depth will never produce them.
+    const n = searchmoves && searchmoves.length ? searchmoves.length : MULTIPV;
     send("ucinewgame");
+    send("setoption name MultiPV value " + n);
     send("isready"); await until((l) => l === "readyok" ? true : undefined);
     send("position fen " + fen);
     const pvs = {};
-    send("go depth " + DEPTH);
+    send("go depth " + DEPTH + (searchmoves && searchmoves.length ? " searchmoves " + searchmoves.join(" ") : ""));
     await until((l) => {
       if (l.startsWith("info ") && l.includes(" multipv ") && l.includes(" pv ") &&
           !l.includes("lowerbound") && !l.includes("upperbound")) {
@@ -99,7 +105,7 @@ async function startEngine() {
       if (l.startsWith("bestmove")) return true;
     });
     const out = [];
-    for (let i = 1; i <= MULTIPV && pvs[i]; i++) out.push(pvs[i]);
+    for (let i = 1; i <= n && pvs[i]; i++) out.push(pvs[i]);
     if (!out.length) throw new Error("engine returned no pv for " + fen);
     return out; // stm-relative, best first
   }
@@ -114,8 +120,10 @@ if (process.argv[2] === "--worker") {
   const pump = async () => {
     if (running) return; running = true;
     while (queue.length) {
-      const fen = queue.shift();
-      process.stdout.write(JSON.stringify({ fen, pvs: await eng.analyse(fen) }) + "\n");
+      const job = queue.shift();
+      const [fen, sm] = job.split("\t");
+      const searchmoves = sm ? sm.split(" ") : null;
+      process.stdout.write(JSON.stringify({ job, pvs: await eng.analyse(fen, searchmoves) }) + "\n");
     }
     running = false;
     if (closed) process.exit(0);
@@ -156,9 +164,12 @@ const keyFen = (pos) => {
 
 // --- collect the unique positions -------------------------------------------
 const wanted = new Map(); // keyFen -> one example {lineId, ply}
+const drilled = new Map(); // keyFen -> Set(uci the repertoire actually plays there)
 let transposition = null; // proof that keyFen folds transpositions
 for (const l of LINES) for (const p of drillPlies(l)) {
   const f = keyFen(posAt(l, p));
+  if (!drilled.has(f)) drilled.set(f, new Set());
+  drilled.get(f).add(l.moves[p][0]);
   const seen = wanted.get(f);
   if (!seen) wanted.set(f, { line: l.id, ply: p });
   else if (!transposition && seen.line !== l.id &&
@@ -167,6 +178,24 @@ for (const l of LINES) for (const p of drillPlies(l)) {
     transposition = { a: seen, b: { line: l.id, ply: p }, fen: f };
 }
 console.log(`${wanted.size} unique trained positions across ${LINES.length} lines`);
+
+// --extra <file>: one keyFen per line, blank lines and # comments ignored. The
+// pilot needs positions no line reaches yet, and they must be scored with the
+// same engine, depth and cache as everything else or they are not comparable.
+{
+  const i = process.argv.indexOf("--extra");
+  if (i > 0 && process.argv[i + 1]) {
+    let added = 0;
+    for (const raw of readFileSync(process.argv[i + 1], "utf8").split("\n")) {
+      const f = raw.trim();
+      if (!f || f.startsWith("#")) continue;
+      const re = keyFen(fenPos(f));        // normalise, and fail loudly on a bad fen
+      if (re !== f) throw new Error(`--extra line is not keyFen output:\n  got  ${f}\n  want ${re}`);
+      if (!wanted.has(f)) { wanted.set(f, { line: "(extra)", ply: -1 }); added++; }
+    }
+    console.log(`--extra: ${added} further positions from ${process.argv[i + 1]}`);
+  }
+}
 // The table is keyed by keyFen precisely so that lines transposing into the same
 // position by different move orders share one row. Prove that at least one such
 // pair exists and folds to the same key, or the normalisation is broken.
@@ -205,31 +234,36 @@ const PROBES = {
 const cacheDir = join(root, "data-src/local-eval", `${ENGINE_TAG}-d${DEPTH}`);
 mkdirSync(cacheDir, { recursive: true });
 const cacheFile = (fen) => join(cacheDir, encodeURIComponent(fen) + ".json");
-const results = new Map(); // fen -> pvs
-const todo = [];
-for (const fen of [...Object.values(PROBES), ...wanted.keys()]) {
-  if (results.has(fen)) continue;
-  if (existsSync(cacheFile(fen))) results.set(fen, JSON.parse(readFileSync(cacheFile(fen), "utf8")));
-  else { results.set(fen, null); todo.push(fen); }
-}
-console.log(`${results.size} positions to evaluate, ${todo.length} not yet cached`);
+const results = new Map(); // job ("fen" or "fen\tuci…") -> pvs
 
-if (todo.length) {
+// Analyse every job not already cached, sharded across worker processes. The
+// sharding is parallelism only: each position is searched single-threaded to a
+// fixed depth with the hash cleared, so the table does not depend on it.
+async function runJobs(jobs, label) {
+  const todo = [];
+  for (const j of jobs) {
+    if (results.has(j)) continue;
+    if (existsSync(cacheFile(j))) results.set(j, JSON.parse(readFileSync(cacheFile(j), "utf8")));
+    else { results.set(j, null); todo.push(j); }
+  }
+  console.log(`${label}: ${jobs.length} to evaluate, ${todo.length} not yet cached`);
+  if (!todo.length) return;
   const nWorkers = Math.min(availableParallelism(), 8, todo.length);
   const self = fileURLToPath(import.meta.url);
   let done = 0;
   const t0 = Date.now();
   await Promise.all(Array.from({ length: nWorkers }, (_, w) => new Promise((resolve, reject) => {
     const shard = todo.filter((_, i) => i % nWorkers === w);
+    if (!shard.length) return resolve();
     const child = spawn(process.execPath, [self, "--worker"], { stdio: ["pipe", "pipe", "inherit"] });
     child.on("error", reject);
     child.on("exit", (code) => code === 0 ? resolve() : reject(new Error(`worker ${w} exited ${code}`)));
     const rl = createInterface({ input: child.stdout });
     rl.on("line", (l) => {
       if (!l.startsWith("{")) return; // engine banner prints before the listener attaches
-      const { fen, pvs } = JSON.parse(l);
-      results.set(fen, pvs);
-      writeFileSync(cacheFile(fen), JSON.stringify(pvs));
+      const { job, pvs } = JSON.parse(l);
+      results.set(job, pvs);
+      writeFileSync(cacheFile(job), JSON.stringify(pvs));
       if (++done % 25 === 0 || done === todo.length)
         console.log(`  ${done}/${todo.length} analysed (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     });
@@ -237,6 +271,63 @@ if (todo.length) {
     child.stdin.end();
   })));
 }
+
+await runJobs([...Object.values(PROBES), ...wanted.keys()], "positions");
+
+// --- second pass: the repertoire moves the first pass could not score --------
+// A move outside the stored five gets no number however often the position is
+// re-searched, because only five are kept. Those moves are not bad — 76 of the
+// 442 drill moves are in that position, including the Hippopotamus's own 1...g6
+// — so each one is searched again on its own with `searchmoves`. Without this
+// the grader can only call them unanalysed.
+const forcedJobs = new Map(); // job -> [uci…] in the order asked
+
+// --force <file>: "<keyFen><TAB><uci> <uci>…" per line. Some moves matter to a
+// lesson without the repertoire ever playing them - a line's note may name a
+// counter as the answer to a threat. Those need a number too, or the note is
+// asserting something the shipped table cannot support.
+const named = new Map();
+{
+  const i = process.argv.indexOf("--force");
+  if (i > 0 && process.argv[i + 1]) {
+    for (const raw of readFileSync(process.argv[i + 1], "utf8").split("\n")) {
+      const line = raw.trim();
+      if (!line || line.startsWith("#")) continue;
+      const [f, list] = line.split("\t");
+      if (!list) throw new Error(`--force line has no move list: ${line}`);
+      const re = keyFen(fenPos(f));
+      if (re !== f) throw new Error(`--force key is not keyFen output:\n  got  ${f}\n  want ${re}`);
+      if (!wanted.has(f)) throw new Error(`--force key is not an analysed position: ${f}`);
+      const pos = fenPos(f);
+      for (const u of list.split(" ")) if (!findMove(pos, u))
+        throw new Error(`--force move ${u} is not legal in ${f}`);
+      named.set(f, (named.get(f) || []).concat(list.split(" ")));
+    }
+    console.log(`--force: named moves at ${named.size} positions from ${process.argv[i + 1]}`);
+  }
+}
+
+for (const [fen, ucis] of drilled) {
+  const pvs = results.get(fen);
+  if (!pvs) continue;
+  const inTop = new Set(pvs.map((pv) => pv.moves[0]));
+  const missing = [...ucis].filter((u) => !inTop.has(u));
+  if (missing.length) forcedJobs.set(fen + "\t" + missing.join(" "), missing);
+}
+for (const [fen, ucis] of named) {
+  const pvs = results.get(fen);
+  if (!pvs) continue;
+  const inTop = new Set(pvs.map((pv) => pv.moves[0]));
+  const already = new Set([...(drilled.get(fen) || [])]);
+  const missing = [...new Set(ucis)].filter((u) => !inTop.has(u) && !already.has(u));
+  if (!missing.length) continue;
+  // merge with any drilled job already queued for this position
+  const prior = [...forcedJobs.keys()].find((j) => j.startsWith(fen + "\t"));
+  const all = prior ? forcedJobs.get(prior).concat(missing) : missing;
+  if (prior) forcedJobs.delete(prior);
+  forcedJobs.set(fen + "\t" + all.join(" "), all);
+}
+await runJobs([...forcedJobs.keys()], "repertoire moves outside the top five");
 
 // --- check the probes --------------------------------------------------------
 const best = (fen) => results.get(fen)[0];
@@ -290,7 +381,14 @@ function checkEvals(EVL, EVL_PROBE) {
     try { pos = c2.fenPos(fen); } catch { bad.push(`unreadable fen ${fen}`); continue; }
     if (!Number.isInteger(row.d) || row.d < 1) bad.push(`bad depth for ${fen}`);
     if (!Array.isArray(row.m) || row.m.length < 1 || row.m.length > 5) bad.push(`bad move list for ${fen}`);
-    for (const [uci, s, cp, mate] of row.m) {
+    if (row.x !== undefined) {
+      if (!Array.isArray(row.x) || !row.x.length) bad.push(`bad x list for ${fen}`);
+      // x must not duplicate the ranked list: a move belongs in one or the other.
+      const ranked = new Set(row.m.map((e) => e[0]));
+      for (const e of row.x || []) if (ranked.has(e[0]))
+        bad.push(`${fen}: ${e[0]} appears in both m and x`);
+    }
+    for (const [uci, s, cp, mate] of [...row.m, ...(row.x || [])]) {
       const m = c2.findMove(pos, uci);
       if (!m) { bad.push(`${fen}: ${uci} is not legal`); continue; }
       if (c2.san(pos, m) !== s) { bad.push(`${fen}: ${uci} labelled ${s}, engine says ${c2.san(pos, m)}`); continue; }
@@ -342,7 +440,11 @@ const header =
   "// EVL[keyFen(pos)] only.\n" +
   "// SHAPE: EVL[key]={d:depth,m:[[uci,san,cp,mate],...up to 5, best first],pv:[san,...]}\n" +
   "// with exactly one of cp/mate non-null per entry; pv is a short SAN line for\n" +
-  "// the best move only. SIGN: every score is from the SIDE TO MOVE's point of\n" +
+  "// the best move only. An optional x:[[uci,san,cp,mate],...] carries scores for\n" +
+  "// repertoire moves that fall OUTSIDE the top list - searched one at a time with\n" +
+  "// searchmoves. x is not a ranking and not a sixth-best claim; it exists because\n" +
+  "// 76 of the 442 stored drill moves are outside the five, the Hippopotamus's own\n" +
+  "// 1...g6 among them, and an unranked move must not be read as a bad one. SIGN: every score is from the SIDE TO MOVE's point of\n" +
   "// view - positive cp favours the player to move, mate>0 means the player to\n" +
   "// move mates in n, mate<0 they get mated in n. Never White-relative.\n" +
   "// EVL_PROBE pins the convention: a position where the side to move is\n" +
@@ -350,7 +452,17 @@ const header =
 let fileStr, plan, first = null;
 for (const [pvPlies, maxMoves] of [[PV_PLIES, 5], [4, 5], [2, 5], [6, 3], [4, 3], [2, 3], [0, 3]]) {
   const EVL = {};
-  for (const fen of wanted.keys()) EVL[fen] = buildRow(fen, results.get(fen), pvPlies, maxMoves);
+  for (const fen of wanted.keys()) {
+    EVL[fen] = buildRow(fen, results.get(fen), pvPlies, maxMoves);
+    // x: repertoire moves this position's top list does not contain, each with a
+    // score of its own. Not ranked, not a sixth-best claim - just a number for a
+    // move the ordinary search never reports.
+    const job = [...forcedJobs.keys()].find((j) => j.startsWith(fen + "\t"));
+    if (job && results.get(job)) {
+      const x = buildRow(fen, results.get(job), 0, forcedJobs.get(job).length).m;
+      if (x.length) EVL[fen].x = x;
+    }
+  }
   fileStr = header + "const EVL=" + JSON.stringify(EVL) +
     ";\nconst EVL_PROBE=" + JSON.stringify(EVL_PROBE) + ";\n";
   plan = { pvPlies, maxMoves, EVL, fileStr };

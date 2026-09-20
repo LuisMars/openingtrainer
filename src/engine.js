@@ -160,9 +160,13 @@ function findMove(p,uci){
 }
 function san(p,m){
   const pc=p.b[m.f],t=pc.toLowerCase(),cap=!!p.b[m.t]||m.ep;
-  if(m.c)return m.c==="k"?"O-O":"O-O-O";
   let s="";
-  if(t==="p"){
+  // Castling falls THROUGH to the check/mate suffix below rather than returning
+  // here: a rook landing on f1/d1 with check is "O-O+", and an early return made
+  // it "O-O". Nothing stored in LINES or PZ castles into check today, so this
+  // fixes a latent bug rather than changing any shipped notation.
+  if(m.c)s=m.c==="k"?"O-O":"O-O-O";
+  else if(t==="p"){
     s=cap?sq(m.f)[0]+"x"+sq(m.t):sq(m.t);
     if(m.p)s+="="+m.p.toUpperCase();
   }else{
@@ -203,7 +207,16 @@ function matBal(b){
   for(const pc of b)if(pc)s+=isW(pc)?VAL[pc.toLowerCase()]:-VAL[pc.toLowerCase()];
   return s;
 }
-// Winning-looking captures first (victim over attacker), quiet moves next, losing-
+// Material a move wins outright: the victim, plus what a promotion adds (the pawn
+// is gone and the promoted piece is there, so the uplift is VAL[promo]-1). Victim
+// alone was the old rule and it mispriced both halves of a promotion - a capture-
+// promotion counted as the captured piece, and a quiet promotion counted as zero,
+// which is what made quiescence skip queening altogether. Used by both the ordering
+// below and the delta-pruning test in matQuiesce, so the two cannot drift apart.
+function matGain(p,m){
+  return (m.ep?1:(p.b[m.t]?VAL[p.b[m.t].toLowerCase()]:0))+(m.p?VAL[m.p]-1:0);
+}
+// Winning-looking captures first (gain over attacker), quiet moves next, losing-
 // looking captures last. The middle slot matters as much as the first: at a node
 // whose bound is already level material, a QUIET move is what proves the cutoff,
 // and trying QxP-style losing captures ahead of it made half the verdicts blow the
@@ -211,36 +224,58 @@ function matBal(b){
 // of a full opening position inside it.
 function matOrder(p,ms){
   const v=m=>{
-    const cap=m.ep?1:(p.b[m.t]?VAL[p.b[m.t].toLowerCase()]:0);
-    return cap?cap*10-VAL[p.b[m.f].toLowerCase()]:5;
+    const g=matGain(p,m);
+    return g?g*10-VAL[p.b[m.f].toLowerCase()]:5;
   };
   return ms.sort((a,b)=>v(b)-v(a));
 }
-/* Quiescence: captures only, so the search never stands on a position where half
-   an exchange is still hanging. Two shaping rules keep it from exploding - both
-   were measured to matter, not guessed. After two quiescence plies only recaptures
-   on the square just captured on are tried: an exchange still runs to the end
-   (that is the whole point of quiescing), but unrelated capture flurries across
-   the board stop multiplying. And a capture that cannot lift the score to alpha
-   even if the victim came free is skipped. Both trim the tree towards "exchanges
-   resolve, nothing else", which is exactly the claim the caller makes with the
-   result. Mate at the horizon: only checked when stand-pat did not already cut,
-   because the check costs a full legal(); a mate missed by an early stand-pat cut
-   can only make the verdict more cautious, never overclaim. */
+/* Quiescence: captures only (and queening), so the search never stands on a
+   position where half an exchange is still hanging. Two shaping rules keep it from
+   exploding - both were measured to matter, not guessed. After two quiescence plies
+   only recaptures on the square just captured on are tried: an exchange still runs
+   to the end (that is the whole point of quiescing), but unrelated capture flurries
+   across the board stop multiplying. And a capture that cannot lift the score to
+   alpha even if the victim came free is skipped. Both trim the tree towards
+   "exchanges resolve, nothing else", which is exactly the claim the caller makes
+   with the result.
+   In check there is no stand-pat at all. A side in check cannot decline to move,
+   so the static score is not a lower bound on what it can hold, and a cutoff taken
+   on it is a bound the node cannot claim - measured, on R6k/1R6/8/8/8/8/q7/6K1 b
+   the old code returned -1 against beta -500 while Black was in check and lost, and
+   at an OPPONENT node that inflates the swing the caller reports. So inCheck() is
+   paid at every quiescence node (one attacked() scan, cheap beside the legal()
+   below it), and when it is true every evasion is searched - blocks and king steps
+   included, not just captures, which were the only evasions the old code could see.
+   Termination of a long checking sequence rests on MAT_CAP: a check chain that will
+   not resolve spends the budget and the caller gets null, which is the honest
+   answer, not a wrong one. */
 function matQuiesce(p,alpha,beta,ply,qd,lastTo){
   if(++matNodes>MAT_CAP)throw MAT_STOP;
-  const stand=(p.w?1:-1)*matBal(p.b);
-  if(stand>=beta)return stand;
+  const stand=(p.w?1:-1)*matBal(p.b),chk=inCheck(p);
+  if(!chk){
+    if(stand>=beta)return stand;
+    if(stand>alpha)alpha=stand;
+  }
   const ms=legal(p);
-  if(!ms.length)return inCheck(p)?-(MATE-ply):0;
-  if(stand>alpha)alpha=stand;
+  if(!ms.length)return chk?-(MATE-ply):0;
   matOrder(p,ms);
   for(const m of ms){
-    const v=m.ep?1:(p.b[m.t]?VAL[p.b[m.t].toLowerCase()]:0);
-    if(!v)continue;
-    if(qd>=1&&m.t!==lastTo)continue;
-    if(stand+v<alpha)continue;
-    const s=-matQuiesce(make(p,m),-beta,-alpha,ply+1,qd+1,m.t);
+    if(!chk){
+      const v=matGain(p,m);
+      if(!v)continue;
+      // Under-promotions can never win more material than the queen does, so the
+      // material search skips them here; matOrder still ranks them if a full-width
+      // ply above hands one over.
+      if(m.p&&m.p!=="q")continue;
+      if(qd>=1&&m.t!==lastTo&&!m.p)continue;
+      if(stand+v<alpha)continue;
+    }
+    // A check evasion is not a capture, so it must not consume a quiescence ply:
+    // qd (and with it the recaptures-on-lastTo-only rule) is carried through
+    // unchanged. Incrementing it here would let the evasion be searched and then
+    // score the position after it at stand-pat anyway, because nothing recaptures
+    // on the square the king stepped to - which is the bug this was meant to fix.
+    const s=-matQuiesce(make(p,m),-beta,-alpha,ply+1,chk?qd:qd+1,chk?lastTo:m.t);
     if(s>=beta)return s;
     if(s>alpha)alpha=s;
   }
@@ -265,8 +300,12 @@ function matSearch(p,depth,alpha,beta,ply){
    the node budget ran out (no claim can be made), otherwise {swing, san, uci, mate}:
    swing is pawns of material the move loses against best play (under 1 means the
    search proved nothing worth saying), mate is 0 or the ply count of a forced mate
-   the opponent has after the move. Both sides are searched to the same four plies,
-   so "does not come back inside four plies" is exactly what a swing proves. */
+   the opponent has after the move. Both sides are searched to the same four plies
+   from pos - the "after" half spends one on the move itself and one on the reply,
+   so the tail search is 2, not 3 - so "does not come back inside four plies", which
+   is what the UI says, is exactly what a swing proves. It used to be 4 against 5,
+   and a swing measured across two different horizons is partly a horizon artefact
+   rather than material lost. */
 function matVerdict(pos,m){
   matNodes=0;
   try{
@@ -283,7 +322,7 @@ function matVerdict(pos,m){
     seed.sort((a,b)=>b[0]-a[0]);
     let best=null,bestS=-MATE-1;
     for(const [,r] of seed){
-      const s=-matSearch(make(after,r),3,-MATE,-bestS,1);
+      const s=-matSearch(make(after,r),2,-MATE,-bestS,1);
       if(s>bestS){bestS=s;best=r;}
     }
     // A mover who had a forced mate and let it slip shows up as a huge swing with
@@ -318,4 +357,201 @@ function fenOf(p){
     if(e)s+=e;rows.push(s);
   }
   return rows.join("/")+" "+(p.w?"w":"b")+" "+(p.cr||"-")+" "+(p.ep>=0?sq(p.ep):"-")+" 0 1";
+}
+
+/* ===== shared helpers: position identity and candidate lookup =====
+   Both pure - no DOM, no module state, nothing beyond what the bundle already
+   shares - so fixtures can be written against them directly. */
+
+/* posKey(pos): the position's identity string, and the key EVL is built on.
+   fenOf writes an ep square whenever the last move was a double pawn push, whether
+   or not a capture onto it is legal, so two move orders reaching the same board get
+   two different fenOf strings. Blank that field unless an en-passant capture is
+   actually available. Castling rights are part of identity and are never touched.
+   Halfmove and fullmove are fenOf's fixed "0 1", so repetition and the 50-move rule
+   are deliberately NOT part of identity. This is the same fold keyFen() applies in
+   src/app.js and tools/build-evals.mjs; those two keep their own copies for now
+   (app.js is owned by another lane this wave, and the tool runs outside the
+   bundle), so this must stay identical in behaviour to them or EVL lookups miss.
+   ponytail: fold both onto this one the next time app.js and the tool are open. */
+function posKey(pos){
+  if(pos.ep<0)return fenOf(pos);
+  return legal(pos).some(m=>m.ep)?fenOf(pos):fenOf({b:pos.b,w:pos.w,cr:pos.cr,ep:-1});
+}
+
+/* candidateEval(row, pos, mv): what one stored EVL row says about ONE move, with
+   "the table does not cover this move" as a first-class answer rather than a
+   penalty. 76 of the 442 repertoire drill moves sit outside their row's five, so
+   anything that read absence as bad would mark a book move down for not being among
+   the engine's favourites. row is EVL[posKey(pos)] or null; mv is a move object or a
+   uci string. Returns {known, rank, entry, best, depth, reason} where reason is one
+   of "listed" (in the ranked five), "scored" (outside the five but searched on its
+   own and carried in row.x), "unanalysed" (the row exists, the move is in neither)
+   or "no-row" (no stored analysis at all). When known is false, entry is null and
+   there is no score to infer - callers must say nothing rather than guess.
+   rank is the place in the ranked five, and is 0 for a "scored" move: having a
+   number is not the same as having a rank, and nothing may present it as one. */
+function candidateEval(row,pos,mv){
+  const out={known:false,rank:0,entry:null,best:null,depth:(row&&row.d)||0,reason:"no-row"};
+  if(!row||!row.m||!row.m.length)return out;
+  out.best=row.m[0];
+  out.reason="unanalysed";
+  const uci=typeof mv==="string"?mv:uciOf(mv);
+  const bare=typeof mv==="string"?"":san(pos,mv).replace(/[+#!?]/g,"");
+  const hit=r=>r[0]===uci||(bare&&r[1].replace(/[+#!?]/g,"")===bare);
+  const i=row.m.findIndex(hit);
+  if(i>=0){out.known=true;out.rank=i+1;out.entry=row.m[i];out.reason="listed";return out;}
+  const j=row.x?row.x.findIndex(hit):-1;
+  if(j>=0){out.known=true;out.entry=row.x[j];out.reason="scored";}
+  return out;
+}
+
+/* ===== grading policy v1 (research/GRADING.md) =====
+   Pure: a stored EVL row, the position it describes and one move in, a record out.
+   No DOM, no state, nothing from the frequency record - the signature has no
+   place for a game count, so the grade of a position seen seven times and one
+   seen three hundred thousand times is the same by construction.
+
+   The bands are in centipawns of loss against the row's best entry, side-to-move
+   relative like everything in EVL. They were calibrated against the shipped
+   table, not taken from the plan: the plan's provisional 50/100 put "dropped a
+   clean pawn" (84-88 cp in the one narrow pilot row) in concession and hid the
+   repertoire's own 37 cp concession after 1.d4 c5 inside equal. See GRADING.md
+   for the histogram that puts the boundaries at 30 and 70. DECISIVE is the
+   absolute score past which a position is called won or lost; mates are never
+   folded into it or into any centipawn figure. */
+const GRADE={version:"v1",equal:30,concession:70,decisive:200,
+  accept:["best","equal"],reject:["inferior","losing"]};
+/* Order two EVL entries [uci,san,cp,mate] from the mover's view: positive means a
+   is better. Mates sort outside the centipawn scale entirely - a mate for the
+   mover beats any score, a shorter one beats a longer one, and being mated is
+   worse than any score with the longer the better. Never subtracts a mate from
+   a centipawn: the two are not on one scale, and lossCp is null across them. */
+function cmpScore(a,b){
+  const am=a[3],bm=b[3];
+  if(am==null&&bm==null)return a[2]-b[2];
+  if(am!=null&&bm!=null){
+    if((am>0)!==(bm>0))return am>0?1:-1;
+    return am>0?bm-am:bm-am;   // mating: fewer is better; mated: more is better
+  }
+  return am!=null?(am>0?1:-1):(bm>0?-1:1);
+}
+/* What the board is from the mover's view given one entry: "mating", "won",
+   "level", "lost" or "mated". Used twice per record - for the row's best (the
+   position as it stood) and for the move played (what it leaves) - so the UI can
+   say "best defence, still lost" rather than "saved". */
+function scoreState(e){
+  if(e[3]!=null)return e[3]>0?"mating":"mated";
+  if(e[2]>=GRADE.decisive)return "won";
+  if(e[2]<=-GRADE.decisive)return "lost";
+  return "level";
+}
+/* gradeMove(row, pos, mv): the move-grading record of research/CONTRACTS.md.
+   Returns {key, uci, san, cp, mate, rank, reason, analysis, lossCp, verdict,
+   situation, after, why, reply}. verdict is best | equal | concession | inferior
+   | losing | unknown; analysis is "checked" when the engine searched the move
+   (listed in the five or scored on its own in row.x) and "unknown" otherwise, in
+   which case the verdict is unknown, lossCp is null and why.kind says only that
+   nothing was analysed - no penalty and no praise. rank is the place in the
+   ranked five and 0 for a scored move: it identifies a candidate and decides
+   nothing, the gap to the best entry does. why is the structured input to the
+   explanation (kind, the best entry, the move's own entry, the depth) and never
+   prose; reply is left null for the caller that knows what was shown.
+   Precedence, top first, because the centipawn bands cannot see these:
+     allows-mate   move gets the mover mated, best does not      -> losing
+     mates / slower-mate  move mates; shortest -> best, else equal
+     missed-mate   best mates, move does not                     -> inferior
+     already-lost  best is mated too: best defence by distance, never "saved"
+     now-lost      move crosses into lost, best did not, beyond the noise band -> losing
+     threw-win     best decisive, move not, beyond the noise band -> inferior
+   then the bands: 0 or rank 1 best, <=equal equal, <=concession concession,
+   else inferior. A move already inside the lost region before it was played is
+   graded on the bands with situation "lost" so nothing calls its best defence
+   a save, and nothing calls a losing move "losing" twice. */
+function gradeMove(row,pos,mv){
+  const c=candidateEval(row,pos,mv);
+  const m=typeof mv==="string"?findMove(pos,mv):mv;
+  const uci=typeof mv==="string"?mv:uciOf(mv);
+  const out={key:posKey(pos),uci:uci,san:m?san(pos,m):"",cp:null,mate:null,rank:c.rank,
+    reason:c.reason,analysis:"unknown",lossCp:null,verdict:"unknown",situation:null,
+    after:null,why:{kind:c.reason,best:c.best,move:null,depth:c.depth},reply:null};
+  if(c.best)out.situation=scoreState(c.best);
+  if(!c.known)return out;
+  const e=c.entry,b=c.best;
+  out.analysis="checked";out.cp=e[2];out.mate=e[3];out.after=scoreState(e);
+  out.why.move=e;
+  const cpBoth=e[3]==null&&b[3]==null;
+  if(cpBoth)out.lossCp=Math.max(0,b[2]-e[2]);
+  const say=(v,k)=>{out.verdict=v;out.why.kind=k;return out;};
+  if(e[3]!=null&&e[3]<0){
+    if(b[3]!=null&&b[3]<0){
+      if(e[3]===b[3])return say("best","already-lost");
+      return say("inferior","already-lost");
+    }
+    return say("losing","allows-mate");
+  }
+  if(e[3]!=null&&e[3]>0){
+    if(b[3]!=null&&b[3]>0&&e[3]>b[3])return say("equal","slower-mate");
+    return say("best","mates");
+  }
+  if(b[3]!=null&&b[3]>0)return say("inferior","missed-mate");
+  // A centipawn move while the row's best is mated: only possible through row.x,
+  // and by cmpScore it is the better of the two - the defence that escapes.
+  if(b[3]!=null&&b[3]<0)return say("best","already-lost");
+  // both centipawns from here
+  const loss=out.lossCp;
+  if(c.rank===1||loss===0)return say("best","best");
+  if(loss<=GRADE.equal)return say("equal","within-noise");
+  if(e[2]<=-GRADE.decisive&&b[2]>-GRADE.decisive)return say("losing","now-lost");
+  if(b[2]>=GRADE.decisive&&e[2]<GRADE.decisive)return say("inferior","threw-win");
+  if(loss<=GRADE.concession)return say("concession","concession");
+  return say("inferior","inferior");
+}
+/* isSetupMove(targets, pos, m): the structural half of setup credit, lifted from
+   setupMove in app.js so the fixture and the app test one rule. The move puts the
+   right piece on one of the formation's squares and is not a shuffle from one
+   target square to another. Nothing here says the move is good. */
+function isSetupMove(targets,pos,m){
+  if(!targets||!targets.length)return false;
+  const pc=pos.b[m.f];
+  return targets.some(x=>x[0]===sq(m.t)&&x[1]===pc)&&!targets.some(x=>x[0]===sq(m.f)&&x[1]===pc);
+}
+/* setupGate(row, pos, mv, targets): whether "builds the setup too - the formation
+   matters more than the order it goes up in" may be said of this move here.
+   Returns {credit, reason, grade}. credit is true only when the stored analysis
+   backs the claim on both sides: the row's own first choice is itself a formation
+   move (so the position tolerates building - when the engine wants ...h5 or a
+   central break, the order matters and the claim is false however safe the wall
+   move looks to a four-ply material search), and the move played grades best or
+   equal against it. reason is one of:
+     no-targets  the line builds nothing; nothing to credit
+     not-target  the move is not a formation move
+     no-row      no stored analysis; the caller's material brake is all there is
+     demanding   the position wants something concrete: neither the best entry
+                 nor anything tied with it is a formation move. No credit at
+                 any evaluation - grade it instead
+     unanalysed  quiet position, but this move was not searched; the caller may
+                 fall back to its material brake, and only here
+     out-of-band searched and worse than the noise band: no credit, grade it
+     in-band     credited
+   grade carries the gradeMove record whenever a row exists, so the caller never
+   grades twice. */
+function setupGate(row,pos,mv,targets){
+  const m=typeof mv==="string"?findMove(pos,mv):mv;
+  const out={credit:false,reason:"no-targets",grade:null};
+  if(!targets||!targets.length)return out;
+  if(!m||!isSetupMove(targets,pos,m)){out.reason="not-target";return out;}
+  if(!row||!row.m||!row.m.length){out.reason="no-row";return out;}
+  out.grade=gradeMove(row,pos,m);
+  // The first choice, and anything tied with it to the centipawn (hip-150 ply 11:
+  // c5 -78, Nd7 -78 - the table itself says the wall move is a joint first
+  // choice there). A tie is exact; the noise band is not applied here, or the
+  // storm tabiya's Nd7 at 11 cp behind h5 would reopen the gate the fixture
+  // exists to keep shut.
+  const top=row.m.filter(e=>cmpScore(e,row.m[0])===0).map(e=>findMove(pos,e[0]));
+  if(!top.some(bm=>bm&&isSetupMove(targets,pos,bm))){out.reason="demanding";return out;}
+  if(out.grade.verdict==="unknown"){out.reason="unanalysed";return out;}
+  if(out.grade.verdict==="best"||out.grade.verdict==="equal"){out.credit=true;out.reason="in-band";return out;}
+  out.reason="out-of-band";
+  return out;
 }

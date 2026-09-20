@@ -1,12 +1,13 @@
 # The Triangle & the Swamp
 
 A single-file opening trainer for two systems: the **Colle** as White and the **Hippopotamus** as Black.
-Open `docs/index.html` in any browser. No install, no build step, no server. It works offline and
-makes no network requests at all — fonts and engine evaluations are baked into the page. The one
-exception is opt-in: paste a lichess API token in Settings and the Study screen gains a masters
-statistics panel. Without a token, nothing leaves the page.
+Open `docs/index.html` in any browser. No install, no build step, no server. Fonts, piece graphics and
+engine evaluations are baked into the page, so training itself never touches the network. There is one
+exception and it is opt-in: paste a lichess API token in Settings and the Study screen gains a masters
+statistics panel, which fetches from `explorer.lichess.org` each time you open it. Without a stored
+token, nothing leaves the page.
 
-**52 lines · 442 trainable positions · 80 tactics puzzles.**
+**52 lines · 425 trainable positions · 80 tactics puzzles.**
 
 ---
 
@@ -47,13 +48,22 @@ about for ninety years, and Black's 13...f6 against Koltanowski is a losing move
 
 | Line | Recommendation |
 |---|---|
-| Zukertort: Rudel's early Ne5 | 8.Ne5 cxd4 9.exd4 Qc7 10.f4 Nb4 11.Rf3!?, from David Rudel's *Zuke 'Em* quick-start material |
+| Zukertort: the early Ne5 and Rf3 | 8.Ne5 cxd4 9.exd4 Qc7 10.f4 Nb4 11.Rf3!?, from a chess.com quick-start article bylined "Zukertort" |
 | 3...Bf5: recapture with the c-pawn | Soltis: 5.cxd3, not 5.Qxd3, which invites ...Ne4 and ...f5 |
 | 3...Bf5: the tempting trade | Soltis: 5.Bxf5 exf5 6.Qd3 Qc8! and Black is fine |
 
-Rudel's line cites his own published quick-start material. The two Soltis recommendations
-are reported second-hand: the source on file is a chess.com forum discussion that names
-Soltis, not the book or column itself.
+The Zukertort line's source is a chess.com quick-start article, written in the first person under
+the member byline "Zukertort". The article was fetched and read during a provenance audit: it names
+neither David Rudel nor *Zuke 'Em*, and whether that member is Rudel is unknown, so the line claims
+only what the article shows. The two Soltis recommendations are second-hand by their own labels —
+"attributed to Soltis in a chess.com thread" and "after a thread citing Soltis". The source on file
+is the forum discussion, not the book or column it names.
+
+Six moves in the whole repertoire carry an annotation mark (`e4!`, `Rf3!?` and four others). No engine
+checked them and the build strips them before comparing notation against the generator, so they are
+repertoire signposts rather than verdicts. A mark is kept only where the line's own source carries one,
+which is why five were removed during the audit: a `model` line has no source that could have written
+one, and the others' sources do not.
 
 ### `eco` — named variations, quoted verbatim (18)
 
@@ -64,18 +74,20 @@ Bishop Attack · Pseudo-Austrian Attack · Averbakh System · Pirc Austrian Atta
 Modern Standard Defense · Three Pawns Attack · Averbakh Pseudo-Sämisch · Rat Defense Small Center ·
 Torre Attack · London System. Each was matched against the data set move for move at build time.
 
-### `theory` — documented theory, assembled here (8)
+### `theory` — documented theory, assembled here (9)
 
 Koltanowski main plan · Zukertort Pillsbury lift · Zukertort modern tabiya (after
 [Matthew Sadler](https://matthewsadler.me.uk/attack/a-typical-colle-zukertort-position-part-1/)) ·
 Anti-Colle 3...Bf5 met by 4.c4 · the autopilot punished · Anti-Colle 3...Bg4 met by 4.h3 and 5.g4 ·
-Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4).
+Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
+1...e6, the move order that waits (added after the coverage count showed it was
+the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 16)
+### `model` and `synthetic` — written for this trainer (3 + 15)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
 Zukertort against a Queen's Indian · locking the centre then ...f5 · ...h5 against the pawn storm ·
-the e5 clamp and the h7 target · the Colle against a Slav shape · Zukertort with Qf3 and Qh3 ·
+the Colle against a Slav shape · Zukertort with Qf3 and Qh3 ·
 answering ...Ne4 · the Hippo against 1.c4 · the Hippo against a London setup · punishing an early e5 ·
 how the Hippo loses · meeting the h4 lunge against the Modern · the ...c4 clamp on the Colle bishop ·
 when Black's ...e5 equaliser lands · against the Dutch (a Leningrad shape) · against 1...c5.
@@ -116,7 +128,8 @@ of the full data set.
 The evaluations in `src/data/evals.js` are Stockfish 16 scores computed once at build time
 (`tools/build-evals.mjs`) by a local engine — lichess's `lila-stockfish-web` sf16-7 build (a 433 KB WASM
 plus one 6.5 MB NNUE network, package version and network checksum both pinned) — so the page itself never
-runs an engine and never touches the network. Every trained position is covered, each searched
+runs an engine and never touches the network. The table holds 267 positions: all 246 distinct boards
+you are asked to move in, plus 21 more searched while the grading bands were being calibrated. Each was searched
 single-threaded to depth 20 with a cleared hash, which makes this step reproducible, unlike the puzzle
 set: the same engine version and network at the same depth regenerates the same table. Stockfish and its
 network are GPL-3.0 and the lila build AGPL-3.0; they are used here as build tools, the way a compiler
@@ -124,7 +137,10 @@ is — the page ships only the numbers they produced, none of their code. The ta
 from the lichess cloud-eval API; those responses were kept and the local engine's output was validated
 against them before the switch (best-move agreement on the cached positions, with the handful of
 divergences all near-equal alternatives). All scores are stored from the side to move's point of view,
-with forced mates kept distinct from centipawn scores.
+with forced mates kept distinct from centipawn scores. The tool takes `--extra` (further positions to
+search) and `--force` (named moves searched one at a time through UCI `searchmoves`), which is why every
+drilled repertoire move has a score of its own even when it falls outside the ranked five — 349 of the 421
+are in the five, 72 were searched separately, and none is unanalysed.
 
 ---
 
@@ -140,22 +156,43 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
   The position you just saw is excluded. While anything is due, everything that is not due is cut to a
   tenth, so a backlog is worked off rather than merely competing for draws — it still interleaves.
 - **Hint cost**: the first two tiers are neutral (no streak gain, no accuracy hit); "Show me" counts as a miss.
-- **Illegal moves cost nothing.** A legal but non-repertoire move counts as a miss, is named back
-  to you, and comes with the same clue Hint's first tap would give — never the move itself — so a
-  second wrong try is not told exactly what the first one was. Taking it spends that first hint tier.
+- **Illegal moves cost nothing.** A legal but non-repertoire move is named back to you and comes with
+  the same clue Hint's first tap would give — never the move itself — so a second wrong try is not told
+  exactly what the first one was. Taking it spends that first hint tier. Whether it counts as a miss
+  depends on the grading below.
 - **Book elsewhere is not a miss.** If the move you played is the book move for a different line
   trained from this exact board, it is not graded wrong: Drill names that line and lets you retry
   with nothing recorded, Shuffle switches to that line and credits the answer. Puzzles and the
   deliberate-mistake lines are excluded, so they can never be waved through this way.
+
+### How a played move is graded
+
+Every position you are asked to move in has a row in the precomputed table: the five best moves with their
+scores, plus a score searched on its own for any repertoire move that falls outside those five. A move is
+judged on how far it sits behind the row's best move, never on its place in the list — rank 5 is five
+centipawns behind in one position and far more in another, and a separately scored move has no rank at all.
+
+- **The bands**: within **30 centipawns** is equal and accepted, out to **70** is a concession, and **200**
+  marks a decisive swing. The three numbers were calibrated against this repertoire's own positions rather
+  than assumed — in these two openings several moves inside a pawn is the normal case, not the exception.
+  The policy, its version and the histogram behind the bands are in `research/GRADING.md`.
+- **Several good moves are accepted at one position**, each on its own gap. Nothing in the app names a rank.
+- **A move outside the stored five is unanalysed, not bad.** It costs nothing: no miss, no broken streak,
+  no spent hint, and the app says so rather than implying a verdict. The material search still runs there,
+  so a move that demonstrably drops material is still blamed.
+- **A concession is refused with its price named** — the drill continues and the message states the cost.
+- **Mates and lost positions are settled before the centipawn bands.** A move that allows mate is losing
+  whatever its rank; a position that was already lost stays lost, so naming the best defence never implies
+  a rescue; a move that throws away a winning position is called that instead of being priced in pawns.
 
 ### Hints, in three tiers
 
 The first tap gives a real clue, or the button says **Which piece** instead — there is no filler tier. Clues
 come from the line's own annotation (rejected if it contains the move, its squares or the piece name), from
 facts the generator reads off the position (*recapture on d4*, *there is a capture, and it arrives with
-check*, *the move gives check*), or from the plan behind that move in this system (*point something at h7*,
-*take b5 away from their pieces for good*). Of the 442 trainable positions, 436 produce a real clue and none
-leak the answer.
+check*, *the move gives check*), or from the plan behind that move in this system (*fianchetto, and aim
+through the centre*, *take b5 away from their pieces*). Of the 425 trainable positions, 420 produce a real
+clue and none leak the answer; the rest fall back to **Which piece**.
 
 ---
 
@@ -172,7 +209,7 @@ file in a browser:
 | Position 3 | 4 | 43,238 | exact |
 | Position 4 | 3 | 9,467 | exact |
 
-All **870 moves** across the 52 lines were then replayed through that generator: every one legal, and the
+All **829 moves** across the 51 lines were then replayed through that generator: every one legal, and the
 algebraic notation shown in the app matches the notation the generator produced independently. The 80 puzzle
 solutions were validated the same way.
 
@@ -182,8 +219,8 @@ solutions were validated the same way.
 
 - **There is no engine in the page.** The generator knows what is legal, never what is good; what the page
   knows about quality is the precomputed table in `src/data/evals.js`, which covers the trained positions
-  and nothing else. Only the recorded moves are accepted as repertoire answers; a rival plan off the table
-  cannot be graded live, only recognised as legal.
+  and nothing else. A rival plan off the table cannot be graded live — it is reported as unanalysed, which
+  is not the same as sound.
 - **Engine numbers appear only after you get one wrong.** Miss a move and the feedback names the
   engine's first choice, its score against yours and the line it plays; answer correctly and it says
   nothing, because relitigating a book move you already found teaches nothing. Never in Tactics.
@@ -191,9 +228,11 @@ solutions were validated the same way.
   you actually played, so the Progress screen can say "usually Bd3 (4×)" rather than a bare miss rate.
   Five distinct wrong moves are kept per position; rarer ones are evicted.
 - Progress lives in this browser's storage. Export from the Progress screen after any serious session.
-- Everything works on a plane. The masters panel is the only online feature, it needs a lichess
-  token you supply yourself, and it does not exist until you do — lichess made the opening explorer
-  login-only in April 2026.
+- **The offline promise is conditional, not absolute.** Everything except one panel works on a plane. The
+  masters panel on the Study screen is the only online feature: it fetches from `explorer.lichess.org`, it
+  needs a lichess token you supply yourself, and it does not appear until you store one — lichess made the
+  opening explorer login-only in April 2026. Whether that endpoint still answers was not confirmed while
+  this was written: it was unreachable from the environment the checks were run in.
 - If *objectively best* is your only criterion, neither opening survives contact: the Colle is equal at best
   and the Hippo concedes something real. They are chosen for practical reasons — one plan against almost
   everything, very little theory, opponents out of book early. That is a different argument from correctness.
@@ -204,6 +243,7 @@ solutions were validated the same way.
 
 ```
 build.mjs                  concatenates src/* into docs/index.html (no bundler, no framework)
+research/                  coverage matrix, counted frequency data, contracts, grading policy, audit lists
 src/
   styles.css               all CSS, inlined whole into the shipped <style> block
   html/
@@ -221,11 +261,16 @@ src/
   data/eco.js              opening names, generated
   data/puzzles.js          tactics, generated
   data/pieces-cburnett.js  standard piece set
+  data/evals.js            precomputed Stockfish scores, generated
 test/verify.mjs            engine + data gate, no browser needed
+test/w1b-engine.mjs        move generator and material-search checks
+test/w2b-grading.mjs       the grading policy and its fixtures
 test/ui.mjs                browser smoke test (playwright)
 tools/fetch-assets.sh      downloads the CC0 sources into data-src/
 tools/build-eco.mjs        regenerates src/data/eco.js
 tools/build-puzzles.mjs    regenerates src/data/puzzles.js
+tools/build-evals.mjs      regenerates src/data/evals.js with a local Stockfish
+tools/count-replies.mjs    counts reply frequencies from a named game dump
 docs/index.html            the product
 ```
 
@@ -233,6 +278,7 @@ docs/index.html            the product
 npm run build     # src/ -> docs/index.html
 npm run verify    # build, then perft + every line + every puzzle  (~1 s)
 npm test          # the above plus a browser smoke test
+node test/w1b-engine.mjs && node test/w2b-grading.mjs    # engine and grading checks
 npm run serve     # http://localhost:8080
 ```
 
@@ -250,9 +296,24 @@ thing wrong at least once already.
 
 ---
 
+## Where the research lives
+
+`research/` holds the working notes behind the repertoire: the coverage matrix for both openings, the
+counted reply frequencies with their pools, filters and sample sizes, the data contracts, the grading
+policy, and the audit change-lists that produced the current line set.
+
+The lichess **opening explorer API was unavailable** while this work was done — HTTP 401 through this
+environment's proxy, confirmed several ways — so no frequency here comes from it. Every figure was counted
+locally by `tools/count-replies.mjs` from named dumps: a player pool from the lichess monthly database and
+master pools from curated archives, kept in separate files and never added together. The opening-selected
+master pool is biased by construction, because a game that left the classification is not in the
+collection, and `research/METHOD.md` states that rather than editing it out.
+
+---
+
 ## Not in this build
 
-No live engine analysis, no PGN import, no user-added lines. Either is real work rather than a switch:
+No live engine analysis, no PGN import, no user-added lines, no service worker. Either is real work rather than a switch:
 evaluations for the trained positions are precomputed at build time, but analysing an arbitrary position
 needs Stockfish-WASM fetched from a CDN, which ends the offline property, and import needs
 a PGN parser plus storage for user lines alongside the built-in ones.

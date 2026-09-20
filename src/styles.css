@@ -60,6 +60,9 @@
   .strip b{display:block;font-family:"Zilla Slab",serif;font-size:21px;line-height:1.1}
   .strip small{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;
     text-transform:uppercase;color:var(--dim)}
+  /* memory-only notice: the same amber "read this" idiom as the off-book banner */
+  .store{margin:0 0 10px;padding:8px 11px;background:rgba(224,161,60,.1);
+    border:1px solid rgba(224,161,60,.35);color:#d9c9a8;font-size:12.5px}
   .card{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;background:var(--panel);
     border:1px solid var(--line);border-left:3px solid transparent;padding:13px 14px;margin-bottom:7px}
   .card:hover{background:var(--panel2)}
@@ -125,11 +128,25 @@
   .mk.bad{background:rgba(205,86,75,.6);animation:fade .55s forwards}
   .mk.good{background:rgba(127,176,106,.7);box-shadow:inset 0 0 0 4px rgba(127,176,106,.9);
     animation:goodflash .6s ease-out forwards}
+  /* Amber, between the two: a move the table has not searched is neither credited
+     nor blamed, so it must not flash like a mistake. Keep it after .mk.bad and
+     .mk.good, the same ordering rule .pc.drag lives under. */
+  .mk.warn{background:rgba(224,161,60,.45);animation:fade .55s forwards}
   @keyframes fade{to{opacity:0}}
   @keyframes goodflash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
   .ghost{position:absolute;width:58%;height:58%;opacity:.32;z-index:1}
   .ghost.custom{fill:#0c1015;stroke:none}
   .ghost.custom.wg{fill:#fff}
+  /* promotion chooser: four pieces stacked over the landing square, inside .stage
+     (position:relative) so a percentage left/top lands on the right file. Must stay
+     after .pc and .pc.drag - see the cascade note at the top of build.mjs. */
+  .promo{display:none;position:absolute;width:12.5%;z-index:50;background:var(--panel);
+    border:1px solid var(--line);box-shadow:0 12px 28px rgba(0,0,0,.6)}
+  .promo.on{display:block}
+  .promo button{display:flex;align-items:center;justify-content:center;width:100%;
+    aspect-ratio:1;background:none;border:0;padding:0}
+  .promo button:hover{background:var(--panel2)}
+  .promo .pc{filter:none}
   .coord{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:9px;z-index:3;pointer-events:none}
   .coord.f{right:3px;bottom:1px} .coord.r{left:3px;top:1px}
   .sq.l .coord{color:#7c8571} .sq.d .coord{color:#cfd7c6}
