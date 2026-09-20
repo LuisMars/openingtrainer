@@ -1067,6 +1067,32 @@ function playMove(pos,name,m){
     el("nMsg").innerHTML='<span class="neutral">'+t+". Off the line.</span>";
     return;
   }
+  /* A deliberate-mistake line asks the user to repair it, not to reproduce it.
+     At the repair ply the line's own move is the mistake, so playing it is refused
+     with its price; any move the grader accepts is credited, and the line then
+     plays its habit move so the lesson still arrives. Invariant 7 is untouched:
+     these lines keep targets:[] and stay out of Shuffle. */
+  const rep=S.mode==="line"?L().repair:null;
+  if(rep&&S.ply===rep.ply){
+    const row=evalFor(pos),g=gradeMove(row,pos,m);
+    g.reply=replyAfter(pos,m,row,g);
+    if(played===wanted){
+      S.sel=null;S.tries++;render(false);flash(name,"bad");
+      el("nMsg").innerHTML='<span class="no">That is the move the line is about.</span> <span class="neutral">'+esc(gradeLine(g))+"</span>";
+      el("nText").textContent=rep.why;
+      return;
+    }
+    if(GRADE.accept.includes(g.verdict)){
+      S.sel=null;render(false);flash(name,"good");
+      const t=san(pos,m);
+      el("nMsg").innerHTML='<span class="ok hit">\u2713 Repaired</span> <span class="ok">\u2014 '+esc(t)+".</span> "+
+        '<span class="neutral">'+esc(gradeLine(g))+"</span>";
+      el("nText").textContent="The line plays "+L().moves[S.ply][1]+" instead, which is the habit it exists to show. Tap to see it.";
+      armWait();
+      return;
+    }
+    // anything else falls through to the ordinary refusal, which already prices it
+  }
   if(played===wanted){good();return;}
   // A move some other line trains from this very board is book, not a mistake. Shuffle
   // switches to that line and credits it; drill stays on this line and says so without

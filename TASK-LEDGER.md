@@ -1014,3 +1014,34 @@ pointer notes (3...Bb4+ and 1...e5), repair records for the deliberate-mistake
 lines, paired positions, frequency-weighted scheduling, and per-situation
 progress. 235 counted replies remain uncovered, which is expected — the plan
 stops at a teachable decision rather than expanding an unlimited tree.
+
+## Repair records: the mistake lines now ask to be repaired
+
+Plan item 22, and one of the product objective's four words ("defensive
+recovery"). The three deliberate-mistake lines made the user *play* the losing
+moves and credited them for it, which is the opposite of the lesson.
+
+The grading made it possible to find the repair point rather than guess it — the
+worst-grading drilled move in each line:
+
+| Line | Repair ply | Its move | The table's |
+|---|---|---|---|
+| `trap` | 6 | `c3`, concession, 36 behind | `c4` |
+| `syn-hipdown` | 17 | `d5`, **inferior**, 94 behind | `Bxf3` |
+| `soltis-trap` | — | worst is 16 cp, `equal` | **none given** |
+
+`soltis-trap` deliberately gets no repair record: its lesson is positional (the
+trade buys the wrong middlegame) and the table does not condemn any of its
+moves, so inventing a repair point would be asserting something the analysis
+does not support.
+
+At a repair ply the line's own move is **refused with its price**, any move the
+grader accepts is credited as a repair, and the line then plays its habit move
+anyway so the lesson still arrives. Verified in the browser:
+
+```
+played c3  -> "That is the move the line is about. Stockfish 16, depth 20: c3 -0.1, 36 ..."
+played c4  -> "Repaired - c4. Stockfish 16, depth 20: c4 +0.3, and nothing in the table ..."
+```
+
+Invariant 7 is untouched: all three keep `targets:[]` and stay out of Shuffle.

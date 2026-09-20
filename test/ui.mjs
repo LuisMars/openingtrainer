@@ -15,6 +15,13 @@ const check = (label, ok, extra = "") => {
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 400, height: 880 } });
+// Playwright's 30s default is the wall-clock budget for loading a 390 KB
+// single-file app and for every click. On a machine under real load that is not
+// enough, and the suite failed three times on page.goto and on a menu click
+// while every assertion in it was sound. Waiting longer changes nothing about
+// what is checked - it only stops a busy machine being reported as a defect.
+page.setDefaultTimeout(120000);
+page.setDefaultNavigationTimeout(120000);
 page.on("pageerror", (e) => errors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
 // The app promises to work offline. That promise is conditional, and the
@@ -874,6 +881,38 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     return { open, stillOpen: !!el("promo").childElementCount };
   });
   check("Escape closes the promotion chooser", esc.open && !esc.stillOpen, JSON.stringify(esc));
+}
+
+// A deliberate-mistake line now asks to be repaired rather than reproduced.
+// Playing its own move at the repair ply is refused with its price; a move the
+// grader accepts is credited and the line then plays its habit move anyway, so
+// the lesson still arrives.
+{
+  const rep = await page.evaluate(() => {
+    const out = {};
+    for (const id of ["trap", "syn-hipdown"]) {
+      const li = LINES.findIndex((l) => l.id === id), l = LINES[li], ply = l.repair.ply;
+      const run = (pick) => {
+        S.screen = "board"; S.mode = "line"; S.li = li; S.ply = ply; S.sel = null;
+        S.tries = 0; S.hint = 0; S.passKeys = new Set(); clearFree(); stats.pos = {}; render(false);
+        const pos = posAt(l, ply);
+        const m = pick === "own" ? findMove(pos, l.moves[ply][0])
+          : legal(pos).find((x) => uciOf(x) === evalFor(pos).m[0][0]);
+        playMove(pos, sq(m.t), m);
+        const r = { msg: el("nMsg").textContent, text: el("nText").textContent, ply: S.ply };
+        if (S.pending && S.pending !== 1) { clearTimeout(S.pending); S.pending = 0; }
+        return r;
+      };
+      out[id] = { own: run("own"), better: run("best"), ply };
+    }
+    return out;
+  });
+  const ok = (r) => /that is the move the line is about/i.test(r.own.msg) &&
+    /centipawns behind/i.test(r.own.msg) &&
+    /repaired/i.test(r.better.msg) && /habit/i.test(r.better.text);
+  check("a deliberate-mistake line asks to be repaired, not reproduced",
+    ok(rep.trap) && ok(rep["syn-hipdown"]),
+    JSON.stringify({ trapOwn: rep.trap.own.msg.slice(0, 70), trapBetter: rep.trap.better.msg.slice(0, 70) }));
 }
 
 check("app never calls fetch", fetches.length === 0, fetches.join(" | "));
