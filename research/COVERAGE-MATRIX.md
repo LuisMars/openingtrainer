@@ -32,8 +32,8 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| d5 | 41.5% (52237) | 73.3% (12047) | 29.5% (50342) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic) | yes |
-| Nf6 | 17.1% (21460) | 26.7% (4388) | 56.9% (97037) | covered | `anti` (theory), `cz-tab` (theory), `colle-kid` (model), `eco-kid` (eco), `eco-trad` (eco), `syn-qid` (synthetic) | yes |
+| d5 | 41.5% (52237) | 73.3% (12047) | 29.5% (50342) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `c-2nc6` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic) | yes |
+| Nf6 | 17.1% (21460) | 26.7% (4388) | 56.9% (97037) | covered | `anti` (theory), `cz-tab` (theory), `colle-kid` (model), `eco-kid` (eco), `eco-trad` (eco), `syn-qid` (synthetic), `c-kid-oo` (synthetic) | yes |
 | e6 | 14.4% (18128) | 0 / 16435 | 3.7% (6327) | covered | `c-1e6` (theory) | yes |
 | g6 | 5.0% (6240) | 0 / 16435 | 2.5% (4304) | covered | `eco-ptero` (eco) | yes |
 | d6 | 4.7% (5913) | 0 / 16435 | 2.5% (4325) | missing | — | no |
@@ -65,9 +65,9 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Nf6 | 26.9% (2499) | 100.0% (11638) | 74.2% (8016) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic) | yes |
+| Nf6 | 26.9% (2499) | 100.0% (11638) | 74.2% (8016) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic) | yes |
 | e6 | 21.9% (2039) | 0 / 11638 | 12.9% (1397) | transposes | — | yes |
-| Nc6 | 15.8% (1472) | 0 / 11638 | 2.3% (251) | missing | — | yes |
+| Nc6 | 15.8% (1472) | 0 / 11638 | 2.3% (251) | covered | `c-2nc6` (synthetic) | yes |
 | c6 | 11.5% (1065) | 0 / 11638 | 4.0% (431) | missing | — | no |
 | Bf5 | 7.5% (699) | 0 / 11638 | 2.2% (239) | missing | — | no |
 | c5 | 5.1% (471) | 0 / 11638 | 3.7% (397) | missing | — | no |
@@ -79,7 +79,7 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| g6 | 37.2% (1370) | 0 / 4228 | 32.8% (6907) | covered | `colle-kid` (model), `eco-kid` (eco) | yes |
+| g6 | 37.2% (1370) | 0 / 4228 | 32.8% (6907) | covered | `colle-kid` (model), `eco-kid` (eco), `c-kid-oo` (synthetic) | yes |
 | e6 | 25.9% (955) | 0 / 4228 | 31.2% (6568) | covered | `cz-tab` (theory), `eco-trad` (eco), `syn-qid` (synthetic) | yes |
 | d5 | 21.6% (794) | 100.0% (4228) | 21.4% (4504) | covered | `anti` (theory) | yes |
 | c5 | 5.7% (211) | 0 / 4228 | 7.0% (1474) | missing | — | no |
@@ -101,7 +101,7 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| e6 | 27.8% (202) | 32.8% (5208) | 32.6% (589) | covered | `ck` (theory), `cz` (theory), `rudel` (book), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `syn-clamp` (synthetic) | yes |
+| e6 | 27.8% (202) | 32.8% (5208) | 32.6% (589) | covered | `ck` (theory), `cz` (theory), `rudel` (book), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `syn-clamp` (synthetic) | yes |
 | Bg4 | 19.0% (138) | 9.8% (1553) | 5.6% (101) | covered | `anti-bg4` (theory) | yes |
 | Bf5 | 14.6% (106) | 14.9% (2371) | 13.1% (237) | covered | `anti` (theory), `trap` (theory), `soltis` (book), `soltis-trap` (book) | yes |
 | Nc6 | 11.3% (82) | 0.7% (114) | 0.2% (3) | missing | — | no |
@@ -186,7 +186,7 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Bg7 | 87.3% (185) | — | 96.3% (394) | covered | `colle-kid` (model), `eco-kid` (eco) | yes |
+| Bg7 | 87.3% (185) | — | 96.3% (394) | covered | `colle-kid` (model), `eco-kid` (eco), `c-kid-oo` (synthetic) | yes |
 | d5 | 7.5% (16) | — | 1.5% (6) | transposes | — | yes |
 | c5 | 3.3% (7) | — | 1.5% (6) | missing | — | no |
 
@@ -234,7 +234,7 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 |---|---|---|---|---|---|---|
 | c5 | 36.9% (38) | 51.2% (2054) | 48.7% (326) | covered | `ck` (theory), `cz` (theory), `rudel` (book), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `syn-clamp` (synthetic) | yes |
 | Bd6 | 23.3% (24) | 15.7% (628) | 18.5% (124) | missing | — | no |
-| Be7 | 17.5% (18) | 16.6% (666) | 16.4% (110) | missing | — | yes |
+| Be7 | 17.5% (18) | 16.6% (666) | 16.4% (110) | covered | `c-be7` (synthetic) | yes |
 | c6 | 4.9% (5) | 0.9% (37) | 0.4% (3) | missing | — | no |
 | b6 | 3.9% (4) | 7.0% (283) | 11.7% (78) | missing | — | no |
 | Nbd7 | 3.9% (4) | 6.6% (265) | 2.2% (15) | missing | — | no |
@@ -761,4 +761,4 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 ## Totals
 
-82 counted replies are played somewhere in `LINES` from the same position, 13 lead to a position a line reaches by another order, and 242 are neither. A "missing" row is a candidate for coverage, not an obligation: the plan stops at a teachable decision rather than expanding an unlimited game tree.
+84 counted replies are played somewhere in `LINES` from the same position, 13 lead to a position a line reaches by another order, and 240 are neither. A "missing" row is a candidate for coverage, not an obligation: the plan stops at a teachable decision rather than expanding an unlimited game tree.

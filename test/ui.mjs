@@ -89,29 +89,33 @@ await page.click("#cShuffle");
 await page.waitForTimeout(500);
 // The plan panel names concrete moves, so in Shuffle it may exist only inside the
 // post-answer window - shown before the answer it is an answer sheet.
-const planBefore = await page.evaluate(() => el("planBox").style.display);
-let u = await page.evaluate(() => L().moves[S.ply][0]);
-await drag(u.slice(0, 2), u.slice(2, 4));
-// good() picks armWait() over armNext() whenever the move just played carries a note
-// or followed a miss (src/app.js); both phrase the prompt as "Tap to continue." Either
-// is a pass; only the wait mode is data-dependent on which line the shuffle happened to
-// pick, so the check below stays agnostic to which one fired.
-check("correct answer is graded", (await page.innerText("#nMsg")).toLowerCase().includes("tap to continue"));
-// Read the panel and the post-answer window together, in one evaluate, because
-// they are only meaningful together: a clean answer with no note takes
-// armNext(850), whose timer advances to a fresh position and hides the plan
-// again. Reading the panel after a separate round trip therefore raced that
-// timer and failed whenever the machine was loaded enough to spend 850ms
-// getting back - a flaky check, not a flaky app. The claim worth making is
-// "while the post-answer window is open, the plan is shown", so assert both.
+
+// good() picks armWait() over armNext() whenever the move just played carries a
+// note or followed a miss; both phrase the prompt as "Tap to continue." Either is
+// a pass, so the checks below stay agnostic to which one fired.
+// Play the move and read the result in ONE evaluate, so no timer can run in
+// between. A clean answer with no note takes armNext(850), whose timer advances
+// to a fresh position and hides the plan again; anything that costs a round trip
+// between playing and reading races it. Reading both fields together was not
+// enough - it made the check honest but still time-dependent, and it failed the
+// moment the machine was loaded. Doing the move in-page removes the race
+// entirely rather than widening the tolerance.
 {
-  const after = await page.evaluate(() => ({
-    display: el("planBox").style.display, pending: !!S.pending,
-  }));
+  const shuf = await page.evaluate(() => {
+    const before = el("planBox").style.display;
+    const pos = posAt(L(), S.ply), m = findMove(pos, L().moves[S.ply][0]);
+    playMove(pos, sq(m.t), m);
+    const out = { before, display: el("planBox").style.display, pending: !!S.pending,
+      msg: el("nMsg").textContent.toLowerCase() };
+    if (S.pending && S.pending !== 1) { clearTimeout(S.pending); S.pending = 0; }
+    return out;
+  });
   check("plan panel is hidden before a shuffle answer and shown during the post-answer window",
-    planBefore === "none" && after.pending && after.display === "",
-    JSON.stringify({ before: planBefore, ...after }));
+    shuf.before === "none" && shuf.pending && shuf.display === "",
+    JSON.stringify({ before: shuf.before, display: shuf.display, pending: shuf.pending }));
+  check("correct answer is graded", shuf.msg.includes("tap to continue"), shuf.msg.slice(0, 60));
 }
+
 // The answer above was clean (no tries, no hint), so the stored-eval block must
 // not appear: correct play is not relitigated with numbers (commit b40bcaa).
 check("no engine block on a clean correct answer",
@@ -127,7 +131,7 @@ await page.evaluate(() => {
   S.pending = 0;
   shuffle(false);
 });
-u = await page.evaluate(() => L().moves[S.ply][0]);
+const u = await page.evaluate(() => L().moves[S.ply][0]);
 // Pick a move that is guaranteed to be refused: not the wanted move, not a book
 // alternative (the ALT branch in tap() credits those), not landing the right piece
 // on a setup target square (the setup branch may credit those too), and not one the

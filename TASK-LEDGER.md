@@ -903,3 +903,34 @@ One new position was analysed; `src/data/evals.js` is now 259 rows.
 Repertoire after the addition: `best 149, equal 245, concession 29, inferior 2,
 losing 0, unknown 0` over 425 drilled moves. Coverage matrix: covered 81 → 82,
 missing 244 → 242.
+
+## Coverage batch 2: the three remaining Colle gaps
+
+Built the same way as `c-1e6`: propose the moves from the research, grade every
+one of them before writing a word of prose, and change the line rather than the
+claim when the analysis disagrees.
+
+| Line | Answers | Measured |
+|---|---|---|
+| `c-be7` | 4...Be7, which declines the ...Bd6 argument every mainline here assumes | 666 of 4,013 in the master collection, second commonest at the node |
+| `c-2nc6` | 2...Nc6, which blocks Black's own c-pawn so ...c5 never comes | 1,472 of 9,305 player games (15.8%) against 2.3% in the master sample |
+| `c-kid-oo` | the completed King's Indian shell | 67 of 117 at the node, the commonest reply, where `eco-kid` simply stopped |
+
+**One proposal did not survive its own grading, which is the point of grading
+first.** W4-C proposed `c-kid-oo` continuing 4.Bd3; against a completed
+fianchetto that is a **35 cp concession** — the table wants `c4` (25) and rates
+Bd3 at -10. The line now plays c4 and says why. The same check shows the
+existing `colle-kid` model plays `b3` in that identical position for the same
+35 cp, which is recorded in its disposition and is a concession rather than an
+error, so that line stands with its cost stated.
+
+All three lines: **every drilled move grades `best` or `equal`.** Seven new
+positions analysed; `src/data/evals.js` is 266 rows.
+
+Repertoire after batch 2, over 444 drilled moves:
+`best 155, equal 258, concession 29, inferior 2, losing 0, unknown 0`.
+Coverage matrix: covered 82 -> 84, missing 242 -> 240.
+
+Remaining from the eleven proposals: six Hippopotamus lines (3.e5, 2.Nf3 setups,
+Bg5, the h4/g4 storm from the Be3 tabiya, and the flank first moves), plus two
+cheap pointer notes on the Colle side (3...Bb4+ and 1...e5, both already scored).
