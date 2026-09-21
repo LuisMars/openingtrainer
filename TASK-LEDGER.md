@@ -1266,3 +1266,19 @@ Fifteen `synthetic` lines: `c-englund`, `c-bb4`, `c-2c6`, `c-1c6`, `c-1d6`,
   start-up and fall back to the main thread (the safe path). One UI check
   depends on the worker and can fail then.
 `npm test`: exit 0, 146 checks.
+
+## In-system acceptance and arrow layering — 2026-09-22
+
+- User: "We're playing the colle system and the hippo, not all should be
+  accepted." A sound move is credited only if it is in the system (the
+  line's move, a same-chapter same-side book move, or a formation move the
+  gate credits); otherwise it gets a neutral "not a Colle/Hippopotamus move
+  here" and the question stays live. Colle move 1: 5 sound moves, 2 in the
+  system (d4, Nf3).
+- Found in integration: 31 of 36 Hippo lines have no targets, so their wall
+  moves were being called off-system. `tgtOf()` falls back to the chapter
+  formation (never for NO_SHUFFLE or repair lines): 148 wall-move cases now
+  credited; where the first choice is not a wall move the position is
+  "demanding", as designed.
+- Layers: stacking was correct; arrow opacity 0.75-0.85 -> 0.93-0.95.
+`npm test`: exit 0, 153 checks.

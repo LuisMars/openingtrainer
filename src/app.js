@@ -164,12 +164,14 @@ function freqFactor(k){
   const h=fhash(k.slice(0,i)),b=FRQB[h],w=b===undefined?1:FRQW[b];
   return FRQS.has(h)?Math.max(w,1):w;
 }
-const KEYCACHE={},ALT={};
+// KEYLINES: stats key -> indices of the lines that train it, for waysAt's system test.
+const KEYCACHE={},ALT={},KEYLINES={};
 (function(){
   LINES.forEach((l,li)=>{
     for(const p of drillPlies(l)){
       const f=keyFen(posAt(l,p));
       KEYCACHE[l.id+":"+p]=f+":"+l.moves[p][0];
+      (KEYLINES[f+":"+l.moves[p][0]]=KEYLINES[f+":"+l.moves[p][0]]||[]).push(li);
       // Full uci, promotion suffix included: a four-character key would make a
       // knight promotion look like the queen promotion another line trains.
       if(!NO_SHUFFLE.has(l.id))(ALT[f]=ALT[f]||[]).push([li,p,l.moves[p][0]]);
@@ -182,6 +184,38 @@ const KEYCACHE={},ALT={};
 function altAt(pos,uci,cur){
   const a=ALT[keyFen(pos)];
   return a?a.find(x=>x[2]===uci&&(!cur||(LINES[x[0]].ch===cur.ch&&LINES[x[0]].you===cur.you))):null;
+}
+/* ---------- the learner's system ----------
+   The grader says whether a move is sound; it does not say whether it is the
+   learner's opening. 1.e4 is as good as 1.d4 and it is not the Colle, so crediting it
+   would drill the learner out of the system they came to learn. A move is in the
+   system at a board when it is the line's own move there, a move another line of the
+   same chapter and side plays from this board (altAt), or a formation move setupGate
+   credits against the line's targets. Credit needs both: the grader accepts the move
+   and it is in the system. The repair plies are outside this rule: repairing a
+   mistake is about finding a sound move, whatever it is. */
+// The formation a line credits. A line with its own targets uses them; one without
+// falls back to its chapter's formation, so an out-of-order wall move is still a
+// Hippopotamus move in the 31 Hippo lines written without targets. The lines that
+// exist to show a mistake (NO_SHUFFLE) and repair lines never fall back: invariant 7
+// keeps their targets empty on purpose.
+function tgtOf(l){
+  if(l.targets&&l.targets.length)return l.targets;
+  if(NO_SHUFFLE.has(l.id)||l.repair)return [];
+  if(l.ch===CHAPTERS[1]&&l.you==="b")return HIPPO_T;
+  if(l.ch===CHAPTERS[0]&&l.you==="w")return COLLE_T;
+  return [];
+}
+function inSystem(l,pos,u,want,row){
+  if(u===want||altAt(pos,u,l))return true;
+  const t=tgtOf(l);
+  return !!(t.length&&setupGate(row||evalFor(pos),pos,u,t).credit);
+}
+// "a Colle move", "a Hippopotamus move": what offSystem says the move is not.
+function sysName(l){
+  if(l.ch===CHAPTERS[1])return "a Hippopotamus move";
+  if(l.ch===CHAPTERS[0])return l.you==="w"?"a Colle move":"a move of the defence this chapter trains";
+  return "a move of this repertoire";
 }
 function key(l,p){return l.id.indexOf("pz:")===0?l.id+":"+p:(KEYCACHE[l.id+":"+p]||l.id+":"+p);}
 /* ---------- levels by depth ---------- */
@@ -253,32 +287,29 @@ const SLOW=7000;
 function quick(r){return r&&r.ms&&r.ms<SLOW;}
 /* ---------- one answer is not the whole position ---------- */
 /* The grader accepts several moves, so answering a board once says the user found
-   one of them, not that they read the board. waysAt counts what the table accepts
-   here - inside GRADE.equal of the best, or a mate as fast as the best - and where
-   that is two or more, a record carries two distinct accepted answers before it
-   reads as solid. Where one move is accepted, one answer is the whole story. A
-   record with no "a" predates the field and is left alone. */
+   one of them, not that they read the board. waysAt counts the moves here that are
+   both accepted by the grader (gradeMove: inside GRADE.equal of the best, or a mate
+   as fast as the best, at either stored depth) and in the learner's system (inSystem,
+   for any line that trains this key). Where that is two or more, a record carries
+   two distinct accepted answers before it reads as solid. Where the system has one
+   move here, one answer is the whole story, however many others the engine likes.
+   A record with no "a" predates the field and is left alone. */
 const WAYS={};
-function waysAt(fen){
-  if(WAYS[fen]!==undefined)return WAYS[fen];
-  // At a deep-checked position (DEEP, src/data/deep.js) a move either depth
-  // accepts counts, once: the same union gradeMove grades by.
-  const ok=new Set();
-  for(const row of [EVL[fen],typeof DEEP!=="undefined"?DEEP[fen]:null]){
-    if(!row||!row.m||!row.m.length)continue;
-    const b=row.m[0];
-    for(const e of row.m){
-      if(b[3]!==null&&b[3]!==undefined){if(e[3]===b[3])ok.add(e[0]);}
-      else if((e[3]===null||e[3]===undefined)&&e[2]!==null&&b[2]-e[2]<=GRADE.equal)ok.add(e[0]);
-    }
+function waysAt(k){
+  if(WAYS[k]!==undefined)return WAYS[k];
+  const i=k.lastIndexOf(":"),fen=k.slice(0,i),want=k.slice(i+1),row=EVL[fen],ls=KEYLINES[k];
+  if(!ls||!row||!row.m||!row.m.length)return WAYS[k]=0;
+  const pos=fenPos(fen),deep=typeof DEEP!=="undefined"?DEEP[fen]:null,ok=new Set();
+  for(const u of new Set([row,deep].filter(Boolean).flatMap(r=>r.m.map(e=>e[0])))){
+    if(GRADE.accept.indexOf(gradeMove(row,pos,u).verdict)<0)continue;
+    if(ls.some(li=>inSystem(LINES[li],pos,u,want,row)))ok.add(u);
   }
-  return WAYS[fen]=ok.size;
+  return WAYS[k]=ok.size;
 }
 // Two at most: the point is deciding twice, not reciting a list.
 function needWays(k){
   if(!S.recog)return 1;
-  const i=k.lastIndexOf(":");
-  return (i>0&&waysAt(k.slice(0,i))>=2)?2:1;
+  return waysAt(k)>=2?2:1;
 }
 function waysOk(k,r){return r.a===undefined||r.a.length>=needWays(k);}
 function state(k){
@@ -949,9 +980,9 @@ function slide(u){
    lifecycle hook having to remember to clear it. Study draws none: nothing there
    is a question, and the line's own next move is one tap away. */
 const AR_ALT=2;
-const AR_ORDER=["alt","best","reply","ref","bad","hint"];
-const AR_W={best:.22,alt:.12,bad:.17,reply:.13,ref:.14,hint:.15};
-const AR_KEY={best:"table's first choice",alt:"also accepted",bad:"your move, not accepted",
+const AR_ORDER=["alt","best","top","reply","ref","bad","hint"];
+const AR_W={best:.22,top:.22,alt:.12,bad:.17,reply:.13,ref:.14,hint:.15};
+const AR_KEY={best:"table's first choice",top:"first choice within the system",alt:"also accepted",bad:"your move, not accepted",
   reply:"expected reply",ref:"the reply that punishes it"};
 function liveQ(){
   if(S.mode==="study"||S.pending||S.free.length)return false;
@@ -966,21 +997,31 @@ function setArrows(list,live){
   drawArrows();
 }
 // The arrows for an answered position: pos is the position answered, played the
-// move credited there, reply the opponent's answer the note names (uci or null).
-function answerArrows(pos,played,reply){
-  const row=evalFor(pos),k=keyFen(pos),out=[];
+// move credited there, reply the opponent's answer the note names (uci or null),
+// want the line's own move there - or null at a repair ply, where any sound move is
+// the point and the system rule does not apply. Only moves that are both accepted
+// and in the learner's system (inSystem) are drawn: the first of them in the table's
+// order thick, as "best" when it is the table's own first choice and as "top" when
+// the table's first choice is another opening's move, which is not drawn at all. The
+// note may still name it with its number; the board shows the system.
+function answerArrows(pos,played,reply,want){
+  const row=evalFor(pos),k=keyFen(pos),out=[],l=L();
   if(S.missAt&&S.missAt.k===k&&S.missAt.u!==played)out.push({u:S.missAt.u,c:"bad"});
   if(row&&row.m&&row.m.length){
-    const first=row.m[0][0],deep=typeof DEEP!=="undefined"?DEEP[k]:null,seen=new Set([first]),alt=[];
-    // The move played leads, so a sound alternative the learner found is drawn
-    // before the table's other choices; the rest in stored order.
-    const cands=[played].concat([row,deep].filter(Boolean).flatMap(r=>[...r.m,...(r.x||[])].map(e=>e[0])));
+    const first=row.m[0][0],deep=typeof DEEP!=="undefined"?DEEP[k]:null,seen=new Set(),ok=[];
+    const mine=u=>want===null||u===played||inSystem(l,pos,u,want,row);
+    // Stored order decides which accepted move is drawn thick; the move played then
+    // leads the rest, so a sound alternative the learner found is drawn first.
+    const cands=[row,deep].filter(Boolean).flatMap(r=>[...r.m,...(r.x||[])].map(e=>e[0])).concat([played]);
     for(const u of cands){
       if(seen.has(u))continue;seen.add(u);
-      if(GRADE.accept.indexOf(gradeMove(row,pos,u).verdict)>=0)alt.push(u);
+      if(GRADE.accept.indexOf(gradeMove(row,pos,u).verdict)>=0&&mine(u))ok.push(u);
     }
-    out.push({u:first,c:"best"});
-    for(const u of alt.slice(0,AR_ALT))out.push({u:u,c:"alt"});
+    if(ok.length){
+      out.push({u:ok[0],c:ok[0]===first?"best":"top"});
+      const rest=ok.slice(1).sort((p,q)=>(q===played)-(p===played));
+      for(const u of rest.slice(0,AR_ALT))out.push({u:u,c:"alt"});
+    }
   }
   if(reply)out.push({u:reply,c:"reply"});
   return out;
@@ -1448,7 +1489,7 @@ function playMove(pos,name,m){
         :"The line plays "+own+" instead, which is the habit it exists to show. Tap to see it.";
       // Drawn on the board as it stands, before the move: no reply arrow, since the
       // move it would answer is not on the board.
-      setArrows(answerArrows(pos,played,null),false);
+      setArrows(answerArrows(pos,played,null,null),false);
       armWait();
       return;
     }
@@ -1488,7 +1529,7 @@ function playMove(pos,name,m){
   const t=san(pos,m);
   const pz=S.mode==="puzzle";
   const row=pz?null:evalFor(pos);
-  const gate=pz?{credit:false,reason:"no-targets",grade:null}:setupGate(row,pos,m,L().targets);
+  const gate=pz?{credit:false,reason:"no-targets",grade:null}:setupGate(row,pos,m,tgtOf(L()));
   const g=pz?null:(gate.grade||gradeMove(row,pos,m));
   if(g)g.reply=replyAfter(pos,m,row,g);
   if(gate.credit){
@@ -1512,8 +1553,14 @@ function playMove(pos,name,m){
   // exist to show the user losing (NO_SHUFFLE) keep their lesson: a sound move there
   // is still not the move the line is about to punish, and crediting it would hand
   // the drill a way round the point.
+  // Sound is not enough on its own: the move must be in the learner's system too
+  // (inSystem). The line's own move, other lines' book moves and credited formation
+  // moves were all handled above, so what reaches here is either an alternative from
+  // a line "book lines only" hides (still the learner's system) or a move from some
+  // other opening, which is answered neutrally and leaves the question live.
   if(g&&g.analysis==="checked"&&GRADE.accept.indexOf(g.verdict)>=0&&
      (gate.reason==="not-target"||gate.reason==="no-targets")&&!NO_SHUFFLE.has(L().id)){
+    if(!altAt(pos,played,L())){offSystem(name,t,g);return;}
     if(S.mode==="shuffle"){setupGood(pos,m,t,goodLead(t,g,row),g);return;}
     noteWay(key(L(),S.ply),t);
     S.sel=null;render(false);
@@ -1644,10 +1691,10 @@ function good(){
   // Arrows where the answer stays on screen: Shuffle's post-answer window and a
   // finished drill line. Mid-line the reply lands in 260ms and the next question is live.
   if(S.mode==="shuffle"||(S.mode==="line"&&S.ply>=L().moves.length))
-    setArrows(answerArrows(asked,played,S.mode==="shuffle"&&S.ply<L().moves.length?L().moves[S.ply][0]:null),false);
+    setArrows(answerArrows(asked,played,S.mode==="shuffle"&&S.ply<L().moves.length?L().moves[S.ply][0]:null,played),false);
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+san+(clean?"":" (with help)")+(ms?",":".")+"</span>"+
     (ms?' <span class="neutral">'+fmtMs(ms)+(clean&&ms>SLOW?", slow: it will come back sooner":"")+".</span>":"")+
-    (short?' <span class="neutral">The table accepts another move here too; find it and this board counts as solid.</span>':"");
+    (short?' <span class="neutral">Your system has another sound move here too; find it and this board counts as solid.</span>':"");
   if(S.mode==="line"||S.mode==="puzzle"){
     if(S.ply>=L().moves.length){
       if(S.mode==="puzzle"){
@@ -1931,8 +1978,12 @@ function infoRows(l,ply,answered){
     const deep=typeof DEEP!=="undefined"?DEEP[k]:null;
     if(deep)c+=" A second search at depth "+deep.d+" is stored too, and a move either search accepts is accepted.";
     const all=new Set([row,deep].filter(Boolean).flatMap(r=>[...r.m,...(r.x||[])].map(e=>e[0])));
-    const ok=[...all].filter(u=>GRADE.accept.indexOf(gradeMove(row,pos,u).verdict)>=0).length;
-    c+=" "+ok+" stored move"+(ok===1?" is":"s are")+" accepted here.";
+    // Accepted means sound AND in the system (inSystem); a sound move from another
+    // opening is counted apart, because it is not credited here.
+    const snd=[...all].filter(u=>GRADE.accept.indexOf(gradeMove(row,pos,u).verdict)>=0);
+    const ok=snd.filter(u=>inSystem(l,pos,u,want[0],row)).length,off=snd.length-ok;
+    c+=" "+ok+" stored move"+(ok===1?" is":"s are")+" accepted here"+
+      (off?"; "+off+" more "+(off===1?"is":"are")+" sound but leave"+(off===1?"s":"")+" the system.":".");
     rows.push(["Confidence",c]);
   }
   if(S.mode!=="shuffle"||answered){
@@ -2142,6 +2193,20 @@ function offBook(name,t,v,g,extra,u){
   const ref=punish&&v&&v.uci&&ws.indexOf(v.uci.slice(0,2))<0&&ws.indexOf(v.uci.slice(2,4))<0?v.uci:null;
   if(u)setArrows([{u:u,c:"bad"},{u:ref,c:"ref"}],true);
 }
+/* A sound move from another opening: the grader accepts it and the learner's system
+   does not play it. Neutral on purpose - no miss, no streak change, no credit, no
+   hint spent - and the question stays live. The number describes the played move
+   alone, and the whole sentence goes through the leak filter a refutation does,
+   falling back to words that do not name the move at all. */
+function offSystem(name,t,g){
+  const l=L(),w=l.moves[S.ply],sys=sysName(l);
+  let txt=t+" is sound, but it is not "+sys+" here. Try again.";
+  const ev="Stockfish 16, depth "+g.why.depth+": "+t+" "+fmtScore(g)+lossTxt(g)+"."+(g.split?" "+splitTxt(g.split):"");
+  if(!refuteLeaks(txt+" "+ev,w[0],w[1]))txt+=" "+ev;
+  else if(refuteLeaks(txt,w[0],w[1]))txt="That move is sound, but it is not "+sys+" here. Try again.";
+  S.sel=null;render(false);flash(name,"warn");
+  el("nMsg").innerHTML='<span class="neutral">'+esc(txt)+"</span>";
+}
 /* A setup line's targets say where the formation wants each piece; grading against
    one fixed move order marks correct chess wrong - the Hippo's wall goes up in
    almost any order, and the user rightly complained when the trainer punished that.
@@ -2159,10 +2224,10 @@ function offBook(name,t,v,g,extra,u){
    already answered, including "demanding", where it answered no. */
 function setupMove(pos,m,v,gate){
   const l=L();
-  const g=gate||setupGate(evalFor(pos),pos,m,l.targets);
+  const g=gate||setupGate(evalFor(pos),pos,m,tgtOf(l));
   if(g.credit)return true;
   if(g.reason!=="unanalysed"&&g.reason!=="no-row")return false;
-  return isSetupMove(l.targets,pos,m)&&!!v&&v.swing<1;
+  return isSetupMove(tgtOf(l),pos,m)&&!!v&&v.swing<1;
 }
 /* Shuffle's credit for a qualifying setup move. good() cannot run here: it would
    advance S.ply along the line's own move, and the board would then show a move
@@ -2186,7 +2251,7 @@ function setupGood(pos,m,t,lead,g){
   render(true);flash(sq(m.t),"good");
   // The reply arrow is the one the lead names (gradeLine's "The table answers"),
   // so a setup credited by the material check alone, which names none, draws none.
-  setArrows(answerArrows(pos,uciOf(m),g&&g.reply?uciIn(S.fpos,g.reply):null),false);
+  setArrows(answerArrows(pos,uciOf(m),g&&g.reply?uciIn(S.fpos,g.reply):null,L().moves[S.ply][0]),false);
   const l=L(),want=l.moves[S.ply][1];
   el("nText").innerHTML='<span class="neutral">'+[l.name,l.src].filter(Boolean).join(" · ")+
     (KIND[l.id]?' <span class="kind '+KIND[l.id]+'">'+KIND[l.id]+"</span>":"")+"</span>"+

@@ -161,17 +161,22 @@
   .coord{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:9px;z-index:3;pointer-events:none}
   .coord.f{right:3px;bottom:1px} .coord.r{left:3px;top:1px}
   .sq.l .coord{color:#7c8571} .sq.d .coord{color:#cfd7c6}
+  /* Arrows sit above every piece (z-index 4 over .pc's 2) and below the drag ghost,
+     the promotion chooser and the sheets. They are near-opaque on purpose: at .75-.85
+     a piece's high-contrast outline showed through the shaft, so an arrow whose tail
+     starts on a piece (castling from the king's square) read as drawn under it while
+     one ending on a pawn read as over it. The stacking was right; the paint was not. */
   svg.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
-  .ar{--c:var(--arGood);opacity:.8}
+  .ar{--c:var(--arGood);opacity:.95}
   .ar line{stroke-linecap:butt}
-  .ar .halo{stroke:var(--arHalo);opacity:.55}
+  .ar .halo{stroke:var(--arHalo);opacity:.7}
   .ar .body{stroke:var(--c)}
   .ar polygon{fill:var(--c);stroke:var(--arHalo);stroke-width:.035;stroke-opacity:.55;stroke-linejoin:round}
-  .ar.alt{--c:var(--arAlt);opacity:.75}
+  .ar.alt{--c:var(--arAlt);opacity:.93}
   .ar.bad{--c:var(--arBad)}
-  .ar.reply,.ar.ref{--c:var(--arReply);opacity:.78}
+  .ar.reply,.ar.ref{--c:var(--arReply);opacity:.93}
   .ar.reply line,.ar.ref line{stroke-dasharray:.26 .15}
-  .ar.hint{--c:var(--arHint);opacity:.85}
+  .ar.hint{--c:var(--arHint);opacity:.95}
   .akey{display:flex;flex-wrap:wrap;gap:3px 12px;padding:5px 2px 0;font-size:10.5px;color:var(--dim)}
   .akey:empty{display:none}
   .ak{display:inline-flex;align-items:center;gap:5px}

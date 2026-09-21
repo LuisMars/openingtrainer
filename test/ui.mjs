@@ -245,9 +245,13 @@ const free = (r) => !r.rec && r.run === 3 && r.tries === 0 && r.hint === 0;
 
 // Five comparable first moves: the whole top five is inside 9 cp, so every one of
 // them is chess. None may be marked wrong, and none may cost the record anything.
+// Changed with the system rule: this used to expect e4, c4 and g3 to be accepted
+// here too. They are sound, but they are not the Colle, so they are now answered
+// neutrally ("not a Colle move") and the question stays live; Nf3 is still book.
 const many = await probe("ck", 0, ["Nf3", "e4", "c4", "g3"]);
-check("several good moves are all accepted at one position",
-  many.every((r) => !refused(r) && r.ply === 0 && free(r)),
+check("several sound first moves cost nothing, and only the Colle's are credited",
+  many.every((r) => !refused(r) && r.ply === 0 && free(r)) &&
+    many.filter((r) => r.san !== "Nf3").every((r) => /^\w+ is sound, but it is not a Colle move here\. Try again\./.test(r.msg)),
   many.map((r) => r.san + ": " + r.msg.slice(0, 46)).join(" | "));
 check("book too names a line from the same chapter and side",
   /Nf3 is book too — Colle System: Rhamphorhynchus/.test(many.find((r) => r.san === "Nf3").msg),
@@ -257,7 +261,7 @@ check("book too names a line from the same chapter and side",
 const hipD5 = (await probe("syn-london", 1, ["d5"]))[0];
 check("a defence line from another chapter is not book in a Hippo drill",
   !/book too|Koltanowski/i.test(hipD5.msg) && hipD5.ply === 1, hipD5.msg);
-check("the fifth-ranked move is accepted on its number, never on its rank",
+check("the fifth-ranked move is priced on its number, never on its rank",
   !/rank|fifth|sixth|worst/i.test(many.find((r) => r.san === "g3").msg),
   many.find((r) => r.san === "g3").msg);
 
@@ -301,12 +305,16 @@ check("an unanalysed move is said to be unanalysed and costs nothing",
   unan[0].reason === "demanding" && unan[0].msg.includes("has not searched this move") &&
     free(unan[0]) && unan[0].ply === 1,
   unan[0].msg);
-// Where the two depths disagree on accepting a move, it is accepted and the page
+// Where the two depths disagree on accepting a move, it is sound and the page
 // says the searches disagree, with both stored numbers: kolt ply 24 Re1 is 45 cp
-// behind at depth 20 and 26 at depth 28.
+// behind at depth 20 and 26 at depth 28. Changed with the system rule: no Colle
+// line plays Re1 from this board and it is no formation move, so it is no longer
+// credited - it is answered as sound but outside the system, free, and the
+// disagreement is still stated.
 const split = await probe("kolt", 24, ["Re1"]);
-check("a move only one depth accepts is accepted and the disagreement is stated",
-  !refused(split[0]) && free(split[0]) && split[0].msg.includes("two searches disagree") &&
+check("a move only one depth accepts is sound and the disagreement is stated",
+  !refused(split[0]) && free(split[0]) && split[0].ply === 24 && split[0].msg.includes("not a Colle move") &&
+    split[0].msg.includes("two searches disagree") &&
     split[0].msg.includes("depth 20") && split[0].msg.includes("45 behind") && split[0].msg.includes("26 behind"),
   split[0].msg);
 
@@ -322,13 +330,16 @@ check("a concession carries on with its cost stated in centipawns",
 check("a scored move's rank of 0 is never shown as a place",
   !/rank|sixth|worst|last of/i.test(conc[0].msg), conc[0].msg);
 
-// Shuffle credits an accepted alternative the same way it credits a setup move:
-// the board shows the move the user actually played, and the record gets the tick.
+// Changed with the system rule: this used to expect Shuffle to credit 1.c4 at the
+// start of a Colle line. 1.c4 is sound and is not the Colle, so Shuffle now answers
+// it neutrally and keeps the question live, exactly as Drill does. Shuffle's credit
+// for an in-system alternative that shows the move played is covered by the
+// out-of-order setup check above (hip-e4, ...Nd7).
 const shufGood = await probe("ck", 0, ["c4"], "shuffle");
-check("shuffle credits a good alternative and shows the move played",
-  shufGood[0].msg.includes("Correct") && shufGood[0].text.includes("sound here") &&
-    !!shufGood[0].rec && shufGood[0].rec.ok === 1,
-  shufGood[0].text.slice(0, 120));
+check("shuffle answers a sound move from another opening neutrally and stays live",
+  /^c4 is sound, but it is not a Colle move here\. Try again\./.test(shufGood[0].msg) &&
+    !shufGood[0].msg.includes("Correct") && free(shufGood[0]) && shufGood[0].ply === 0,
+  shufGood[0].msg.slice(0, 120));
 
 // A lost position: the best defence may be named, and nothing may read as a rescue.
 // The W4 audit deleted syn-greek, which used to supply this case, and no drilled
@@ -1060,13 +1071,14 @@ check("a backup without the level setting imports with it on",
 
 // Item 44: where the table accepts more than one move, one answer is not mastery.
 const ways = await page.evaluate(() => {
-  const fenOf = (k) => k.slice(0, k.lastIndexOf(":"));
+  // waysAt takes the stats key now: which moves count depends on the system of
+  // the lines that train it, not on the board alone.
   const keys = Object.values(KEYCACHE);
-  const many = keys.find((k) => waysAt(fenOf(k)) >= 2), one = keys.find((k) => waysAt(fenOf(k)) === 1);
+  const many = keys.find((k) => waysAt(k) >= 2), one = keys.find((k) => waysAt(k) === 1);
   const base = () => ({ ok: 2, no: 0, streak: 2, last: Date.now(), ms: 500 });
   const at = (k, a) => { stats.pos[k] = a ? Object.assign(base(), { a: a }) : base(); return state(k); };
   stats.pos = {}; S.recog = true;
-  const out = { ways: [waysAt(fenOf(many)), waysAt(fenOf(one))] };
+  const out = { ways: [waysAt(many), waysAt(one)] };
   out.noLog = at(many, null);
   out.oneWay = at(many, ["Nf3"]);
   out.twoWays = at(many, ["Nf3", "c4"]);
@@ -1536,10 +1548,13 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
       playMove(pos, sq(m.t), m); return uciOf(m);
     };
     const settle = () => { if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll(); };
-    const accepted = (pos) => {
+    // Changed with the system rule: accepted now means sound AND in the system, so a
+    // sound move from another opening (1.e4 at move 1 of the Colle) is not counted
+    // and must not be drawn.
+    const accepted = (pos, w) => {
       const row = evalFor(pos), deep = DEEP[keyFen(pos)];
       const all = new Set([row, deep].filter(Boolean).flatMap((r) => [...r.m, ...(r.x || [])].map((e) => e[0])));
-      return [...all].filter((u) => GRADE.accept.indexOf(gradeMove(row, pos, u).verdict) >= 0).length;
+      return [...all].filter((u) => GRADE.accept.indexOf(gradeMove(row, pos, u).verdict) >= 0 && inSystem(L(), pos, u, w, row)).length;
     };
     const out = {};
     stats.pos = {};
@@ -1548,7 +1563,7 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     const want = L().moves[0];
     play(pos, want[1].replace(/[+#!?]/g, ""));
     const a1 = drawn();
-    out.right = { arrows: a1, first: evalFor(pos).m[0][0], ok: accepted(pos), reply: L().moves[1][0].slice(0, 4),
+    out.right = { arrows: a1, first: evalFor(pos).m[0][0], ok: accepted(pos, want[0]), reply: L().moves[1][0].slice(0, 4),
       key: el("akey").textContent, pending: !!S.pending };
     skipNext(); settle();
     out.afterSkip = drawn().length;
@@ -1588,10 +1603,11 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     return out;
   });
   const r = ar.right, alts = r.arrows.filter((a) => a.c === "alt");
-  check("after a correct answer: one first-choice arrow, the accepted moves (capped) and the expected reply",
+  check("after a correct answer: one first-choice arrow, the in-system accepted moves (capped), the expected reply, and no 1.e4",
     r.arrows.filter((a) => a.c === "best").length === 1 && r.arrows.find((a) => a.c === "best").u === r.first.slice(0, 4) &&
       alts.length === Math.min(2, r.ok - 1) && alts.every((a) => a.u !== r.first.slice(0, 4)) &&
-      r.arrows.some((a) => a.c === "reply" && a.u === r.reply) && r.pending && /first choice/.test(r.key),
+      r.arrows.some((a) => a.c === "reply" && a.u === r.reply) && r.pending && /first choice/.test(r.key) &&
+      !r.arrows.some((a) => a.u === "e2e4"),
     JSON.stringify(r));
   check("arrows clear when the drill moves on", ar.afterSkip === 0 && ar.afterMenu === false, JSON.stringify({ skip: ar.afterSkip, menu: ar.afterMenu }));
   check("a wrong move draws one red arrow on its own squares while the question is live",
@@ -1716,6 +1732,140 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
 check("app never calls fetch", fetches.length === 0, fetches.join(" | "));
 check("no request leaves the page origin", external.length === 0, external.join(" | "));
 
+// The system rule: a move is credited only when the grader accepts it AND it is in
+// the learner's system (the line's move, another same-chapter same-side line's move
+// from this board, or a credited formation move). Move 1 of a Colle line: the grader
+// accepts 1.e4, 1.c4 and 1.g3, and none of them is the Colle.
+{
+  const sys = await page.evaluate(() => {
+    const li = LINES.findIndex((l) => l.id === "ck"), l = LINES[li], pos = posAt(l, 0), row = evalFor(pos);
+    const k = key(l, 0), sanOf = (u) => san(pos, findMove(pos, u));
+    const inSys = legal(pos).map(uciOf).filter((u) => GRADE.accept.indexOf(gradeMove(row, pos, u).verdict) >= 0 && inSystem(l, pos, u, l.moves[0][0], row));
+    const sound = legal(pos).map(uciOf).filter((u) => GRADE.accept.indexOf(gradeMove(row, pos, u).verdict) >= 0);
+    S.mode = "shuffle"; S.li = li; S.ply = 0; S.flip = false; clearFree();
+    const conf = infoRows(l, 0, true).find((r) => r[0] === "Confidence")[1];
+    // Shuffle, 1.e4: neutral, nothing recorded, the question stays live and no arrow.
+    S.sel = null; S.tries = 0; S.hint = 0; S.missAt = null; S.ans = null; stats.pos = {}; S.run = 3; go("board");
+    const e4 = legal(pos).find((m) => san(pos, m) === "e4");
+    playMove(pos, "e4", e4);
+    const refuse = { msg: el("nMsg").textContent, rec: !!stats.pos[k], run: S.run, tries: S.tries, hint: S.hint, ply: S.ply,
+      live: liveQ(), arrows: document.querySelectorAll("#arrows g.ar").length, pending: !!S.pending };
+    // then 1.d4, the line's move: credited
+    const d4 = legal(pos).find((m) => san(pos, m) === "d4");
+    playMove(pos, "d4", d4);
+    const credit = { msg: el("nMsg").textContent, ok: (stats.pos[k] || {}).ok,
+      arrows: [...document.querySelectorAll("#arrows g.ar")].map((g) => g.dataset.u) };
+    if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll(); stats.pos = {}; S.run = 0; clearFree();
+    return { inSys: inSys.map(sanOf).sort(), sound: sound.length, ways: waysAt(k), need: needWays(k), conf, refuse, credit };
+  });
+  check("move 1 of the Colle: the system holds d4 and Nf3, and needWays counts only those",
+    sys.inSys.join(",") === "Nf3,d4" && sys.sound > 2 && sys.ways === 2 && sys.need === 2, JSON.stringify(sys));
+  check("position details count the system's accepted moves apart from the rest",
+    sys.conf.includes(" 2 stored moves are accepted here; ") && sys.conf.includes("sound but leave the system"), sys.conf);
+  check("1.e4 in a Colle Shuffle is refused neutrally: no miss, no credit, still live, and the Colle is named",
+    /^e4 is sound, but it is not a Colle move here\. Try again\./.test(sys.refuse.msg) && !sys.refuse.rec &&
+      sys.refuse.run === 3 && sys.refuse.tries === 0 && sys.refuse.hint === 0 && sys.refuse.ply === 0 &&
+      sys.refuse.live && !sys.refuse.pending && sys.refuse.arrows === 0,
+    JSON.stringify(sys.refuse));
+  check("1.d4 is then credited, and no arrow shows 1.e4",
+    sys.credit.msg.includes("Correct") && sys.credit.ok === 1 && !sys.credit.arrows.includes("e2e4") && sys.credit.arrows.includes("g1f3"),
+    JSON.stringify(sys.credit));
+}
+// A Hippo position where the system has one move: one answer suffices there.
+{
+  const one = await page.evaluate(() => {
+    const ks = Object.keys(KEYLINES).filter((k) => LINES[KEYLINES[k][0]].ch === "Hippopotamus as Black");
+    const k = ks.find((k) => { const f = k.slice(0, k.lastIndexOf(":")), row = EVL[f]; if (!row) return false;
+      const p = fenPos(f); return row.m.filter((e) => GRADE.accept.indexOf(gradeMove(row, p, e[0]).verdict) >= 0).length >= 2 && waysAt(k) === 1; });
+    S.recog = true;
+    return { k: k || null, need: k ? needWays(k) : null };
+  });
+  check("where the engine accepts several moves and the system plays one, one answer is enough",
+    !!one.k && one.need === 1, JSON.stringify(one));
+}
+// Arrows are drawn above every piece. The castling case from a phone report: h-nf3bc4,
+// Black's O-O ply, ...d6 credited in Shuffle, board flipped - the O-O arrow starts on
+// the king and the ...d6 arrow ends on the pawn. At points along every shaft and head
+// the topmost element must belong to the arrow layer, never a piece. The overlay is
+// pointer-events:none, so it is switched on for the probe only.
+{
+  const layer = await page.evaluate(async () => {
+    const out = [], probe = () => {
+      const svg = el("arrows"), R = svg.getBoundingClientRect();
+      svg.style.pointerEvents = "auto";
+      svg.querySelectorAll("*").forEach((n) => (n.style.pointerEvents = "visiblePainted"));
+      for (const g of svg.querySelectorAll("g.ar")) {
+        const ln = g.querySelector("line.body"), tip = g.querySelector("polygon").getAttribute("points").split(" ")[0].split(",").map(Number);
+        const x1 = +ln.getAttribute("x1"), y1 = +ln.getAttribute("y1"), x2 = +ln.getAttribute("x2"), y2 = +ln.getAttribute("y2");
+        const pts = [0.05, 0.25, 0.5, 0.75, 0.95].map((t) => [x1 + (x2 - x1) * t, y1 + (y2 - y1) * t]);
+        pts.push([(x2 + tip[0]) / 2, (y2 + tip[1]) / 2]);
+        for (const [x, y] of pts) {
+          const e = document.elementFromPoint(R.left + x / 8 * R.width, R.top + y / 8 * R.height);
+          out.push({ u: g.dataset.u, ok: !!(e && e.closest("svg.arrows")), top: e ? (e.closest(".pc") ? "piece" : e.tagName) : null });
+        }
+      }
+      svg.style.pointerEvents = "";
+      svg.querySelectorAll("*").forEach((n) => (n.style.pointerEvents = ""));
+    };
+    const put = (id, ply) => {
+      const li = LINES.findIndex((l) => l.id === id);
+      S.mode = "shuffle"; S.li = li; S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0; S.missAt = null; S.ans = null;
+      clearFree(); S.flip = LINES[li].you === "b"; stats.pos = {}; go("board");
+      return posAt(LINES[li], ply);
+    };
+    const l = LINES.find((x) => x.id === "h-nf3bc4"), oo = l.moves.findIndex((m, i) => i % 2 === 1 && m[1].startsWith("O-O"));
+    let pos = put("h-nf3bc4", oo);
+    const d6 = legal(pos).find((m) => san(pos, m) === "d6");
+    setupGood(pos, d6, "d6", "", null);
+    await new Promise((r) => setTimeout(r, 400));
+    probe();
+    stopAll(); clearFree();
+    // two ordinary answered positions
+    for (const [id, p] of [["ck", 0], ["hip-e4", 5]]) {
+      pos = put(id, p);
+      const w = LINES[S.li].moves[p][0], m = findMove(pos, w);
+      playMove(pos, sq(m.t), m);
+      await new Promise((r) => setTimeout(r, 400));
+      probe();
+      if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll(); clearFree();
+    }
+    stats.pos = {}; S.run = 0; go("menu");
+    return out;
+  });
+  check("every arrow is drawn above every piece along its shaft and head, the castling king included",
+    layer.length >= 12 && layer.some((x) => x.u === "e8g8") && layer.every((x) => x.ok),
+    JSON.stringify(layer.filter((x) => !x.ok)) + " of " + layer.length);
+}
+// A Hippo line written without its own targets still treats the wall as the system:
+// 31 Hippo lines have none, and without the chapter fallback an out-of-order wall
+// move was told it is "not a Hippopotamus move", which is false. With it, the gate
+// either credits the wall move or, where the table's first choice is not a wall move,
+// calls the position demanding - never "no-targets".
+{
+  const fb = await page.evaluate(() => {
+    const l = LINES.find(x => x.id === "h-nf3bc4");
+    const ply = l.moves.findIndex((m, i) => i % 2 === 1 && m[1].startsWith("O-O"));
+    let pos = startPos(); for (let i = 0; i < ply; i++) pos = make(pos, findMove(pos, l.moves[i][0]));
+    const d6 = legal(pos).find(x => san(pos, x) === "d6");
+    const reason = setupGate(evalFor(pos), pos, d6, tgtOf(l)).reason;
+    let credited = 0;
+    for (const x of LINES) {
+      if (x.ch !== CHAPTERS[1] || (x.targets && x.targets.length) || NO_SHUFFLE.has(x.id)) continue;
+      let p = startPos();
+      x.moves.forEach((mv, i) => {
+        if (i % 2 === 1) for (const m of legal(p)) {
+          const g = setupGate(evalFor(p), p, m, tgtOf(x));
+          if (g.credit) credited++;
+        }
+        p = make(p, findMove(p, mv[0]));
+      });
+    }
+    const bad = LINES.filter(x => NO_SHUFFLE.has(x.id)).filter(x => tgtOf(x).length > 0).map(x => x.id);
+    return { own: (l.targets || []).length, fallback: tgtOf(l) === HIPPO_T, reason, credited, bad };
+  });
+  check("a Hippo line without its own targets falls back to the Hippo formation, never for mistake lines",
+    fb.own === 0 && fb.fallback && fb.reason !== "no-targets" && fb.credited > 0 && fb.bad.length === 0, JSON.stringify(fb));
+}
 check("no console or page errors", errors.length === 0, errors.join(" | "));
 await browser.close();
 if (fail) { console.error(`\n${fail} failure(s).`); process.exit(1); }

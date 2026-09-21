@@ -27,8 +27,8 @@ Options (⋮ menu): flip board, target-square ghosts, board colours (Brown, Blue
 piece set (Cburnett standard, or a custom engraved set), and **drill book lines only**.
 
 **Arrows on the board** (on by default, in the same menu) draw on the board what the note says in
-words. Once a position is answered: the stored table's first choice (solid), up to two other moves
-it accepts (thinner), your missed move in red, and the reply the note names (dashed). While a question is live the only arrows are your refused move and, when the
+words. Once a position is answered: the first choice within your system (solid; labelled the table's
+first choice when it is one), up to two other moves the system plays that the table accepts (thinner), your missed move in red, and the reply the note names (dashed). While a question is live the only arrows are your refused move and, when the
 note names one, the reply that punishes it; nothing that points at the answer. Study draws none.
 
 ---
@@ -233,9 +233,9 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
   guess it: it starts on 1500–1899, marked *most games*, because that is where most of the counted games
   fall. The choice is stored with your other settings and travels in an export. Ratings are lichess's
   2014 scale, which is not today's.
-- **Solid needs a second good move** (on by default). Where the table accepts two or more moves
-  within 30 centipawns of the best, a position counts as *solid* only once you have found two
-  different accepted moves there. Where one move is accepted, one answer is enough.
+- **Solid needs a second good move** (on by default). Where your system has two or more moves that
+  the table accepts within 30 centipawns of the best, a position counts as *solid* only once you have
+  found two different ones there. Where the system has one, one answer is enough.
 - **Hint cost**: the first two tiers are neutral (no streak gain, no accuracy hit); "Show me" counts as a miss.
 - **Illegal moves cost nothing.** A legal but non-repertoire move is named back to you and comes with
   the same clue Hint's first tap would give — never the move itself — so a second wrong try is not told
@@ -257,7 +257,13 @@ centipawns behind in one position and far more in another, and a separately scor
   marks a decisive swing. The three numbers were calibrated against this repertoire's own positions rather
   than assumed — in these two openings several moves inside a pawn is the normal case, not the exception.
   The policy, its version and the histogram behind the bands are in `research/GRADING.md`.
-- **Several good moves are accepted at one position**, each on its own gap. Nothing in the app names a rank.
+- **A move must be sound and in your system.** The table accepting a move is not enough: it is credited
+  only when it is also the line's move, a move another line of the same chapter and side plays from this
+  board, or a formation move the setup rule credits. 1.e4 is as sound as 1.d4, and it is not the Colle:
+  a sound move from another opening is answered "e4 is sound, but it is not a Colle move here. Try
+  again.", with its number, and costs nothing — no miss, no credit, no streak change — while the question
+  stays live. Repairing a deliberate mistake is the exception: there any sound move counts. Each move is
+  judged on its own gap; nothing in the app names a rank.
 - **A move outside the stored five is unanalysed, not bad.** It costs nothing: no miss, no broken streak,
   no spent hint, and the app says so rather than implying a verdict. The material search still runs there,
   so a move that demonstrably drops material is still blamed.
