@@ -152,12 +152,12 @@ Examples: scores +0.4/+0.3/+0.2/+0.1/0.0 permit five answers;
   provide neutral feedback and flag common missing candidates for future analysis.
 - [x] Replace unconditional formation credit based on four-ply material search
   with checked position-specific acceptance.
-- [ ] For narrow/forcing positions, confirm the gap to alternatives with deeper
+- [x] For narrow/forcing positions, confirm the gap to alternatives with deeper
   analysis before teaching an only-move claim.
 
 ## 5. Build the position and analysis pipeline
 
-- [ ] Reuse existing evaluations where applicable; generate deeper checks for
+- [x] Reuse existing evaluations where applicable; generate deeper checks for
   tactical, unstable, or disputed decisions and record engine/settings metadata.
 - [ ] Store accepted candidates, concessions, common mistakes, representative
   strong replies, and resulting positions rather than a single preferred path.

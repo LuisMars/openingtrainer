@@ -217,6 +217,8 @@
   .lrow .bar i{display:block;height:100%;background:#4d6379}
   .lrow.ours .bar i{background:var(--amber)}
   .lrow em{font-style:normal;width:56px;text-align:right;font-size:11px}
+  .irow{padding:3px 0;line-height:1.45}
+  .irow b{display:block;color:var(--text);font-weight:600;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
 
   /* progress screen */
   .big{display:flex;gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:16px}

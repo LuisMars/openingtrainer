@@ -1119,3 +1119,24 @@ commit and push.
     table: Kg8 0, Kg6 -307, Kh8 mated in 5.
   - 64 lines, 516 drilled: best 190, equal 296, concession 28, inferior 2,
     losing 0, unknown 0. `npm test`: exit 0, 102 checks.
+- Items 32/33 (deeper checks) done. 116 narrow, demanding or tactical
+  positions re-searched at depth 28, same engine and settings
+  (`research/deep-checks.tsv`, `src/data/deep.js`). 8 of 44 one-answer claims
+  and 10 of 68 "demanding" claims fail at depth 28; hip-150:13 is Nd7 -61 v
+  h5 -62 (checked in the raw cache). Policy: a move either depth accepts is
+  accepted, the disagreement is stated with both numbers; "demanding" only
+  where both depths agree. 516 drilled: best 236, equal 255, concession 23,
+  inferior 2, losing 0 (re-derived independently).
+- Items 34/35 (per-position record) PARTIAL, left unticked. Shipped: common
+  mistakes counted per rating band from the lichess 2014-01 dump
+  (`research/choices-player.json`; checked: after 3.e5 at 1500-1899, ...e6 167
+  of 662, ...b6 67 of 662), priced by the engine, shown after answering and
+  on a wrong move; a Position details panel (occurrence, sample, confidence,
+  source; plan and expected reply after answering) that never leaks the
+  answer (1,032 live positions checked). Gaps recorded in
+  `research/W5-POSITION-METADATA.md`: no per-position goals (plans are per
+  line), no threat analysis (the panel shows the expected reply, labelled as
+  not a threat analysis), resulting positions stored for the best move only.
+- The evals size ceiling is removed (user: page size is not a constraint);
+  the page is 471 KB.
+- `npm test`: exit 0, 111 checks.

@@ -136,6 +136,7 @@ into the swamp — which is what finally gives Black something to hit.
 | Piece graphics (standard set) | Colin M. L. Burnett, via the [lichess repository](https://github.com/lichess-org/lila/tree/master/public/piece/cburnett) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) |
 | Opening names (ECO) | [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) | CC0 |
 | Tactics puzzles | [lichess open database](https://database.lichess.org/) | CC0 |
+| Occurrence and player-choice counts | [lichess open database](https://database.lichess.org/), January 2014 rated games, counted locally | CC0 |
 | Stockfish evaluations | computed at build time by [Stockfish 16](https://stockfishchess.org/) (lichess's [`lila-stockfish-web`](https://www.npmjs.com/package/lila-stockfish-web) small-net WASM build, a dev dependency) | engine GPL-3.0, lila build AGPL-3.0; build-time tools, not shipped in the page |
 | Masters statistics | [lichess opening explorer API](https://lichess.org/api#tag/Opening-Explorer) | live, optional, the only online part |
 | Board colours | lichess and chess.com defaults | — |
@@ -163,7 +164,27 @@ divergences all near-equal alternatives). All scores are stored from the side to
 with forced mates kept distinct from centipawn scores. The tool takes `--extra` (further positions to
 search) and `--force` (named moves searched one at a time through UCI `searchmoves`), which is why every
 drilled repertoire move has a score of its own even when it falls outside the ranked five — 349 of the 421
-are in the five, 72 were searched separately, and none is unanalysed.
+are in the five, 72 were searched separately, and none is unanalysed. The same `--force` pass also scores
+68 moves that real players commonly chose at drilled positions (next paragraph), so that a common choice
+can be priced rather than guessed at.
+
+A second search backs the positions where the trainer makes a narrow claim. `tools/deep-check.mjs`
+re-searches 116 drilled positions at depth 28 with the same engine and settings: those with one accepted
+move, those the setup gate calls demanding, and those whose best move is a mate, capture or check. It
+writes them to `src/data/deep.js`. At those positions a move gets the more generous of its two verdicts,
+so nothing either depth accepts is marked wrong. Where the two depths disagree about a move, the feedback
+says so and gives both numbers. A position counts as demanding only when both depths agree. Everywhere
+else the depth-20 table alone decides.
+
+What players actually choose at each drilled position is counted, not estimated, by
+`tools/count-choices.mjs` from the same lichess January 2014 dump and the same three rating bands the
+occurrence weighting uses: the move of the trained colour is recorded at every drilled position a game
+reaches while it follows the repertoire, including the move that leaves it. `src/data/choices.js` keeps
+a choice when, in some band, at least 30 games reached the position and at least 10 and 5% of them chose
+it — 285 moves at 63 positions. Frequency never grades anything: which of those choices is a mistake is
+decided by the stored engine table alone. 25 of them sit at positions whose forced search is already
+fixed by drilled moves (adding more would shift those moves' own scores), so they stay unscored and the
+app says so instead of pricing them.
 
 ---
 
@@ -218,6 +239,19 @@ centipawns behind in one position and far more in another, and a separately scor
   no spent hint, and the app says so rather than implying a verdict. The material search still runs there,
   so a move that demonstrably drops material is still blamed.
 - **A concession is refused with its price named** — the drill continues and the message states the cost.
+- **Common mistakes are counted, then priced.** A move players at the selected band chose often
+  here (the floor above) that the table grades a concession or worse, and that no line plays from this
+  board, is a common mistake. Play one and the refusal adds how often players chose it; answer the
+  position and Shuffle names the most common one, with its count and its score. At the default band
+  24 such choices exist across the repertoire (21 under 1500, 10 at 1900 and over); most are
+  concessions of 30 to 55 centipawns, a few are inferior.
+- **Position details** (a panel under the board) gathers what the data can say about the position:
+  how often it is reached, how many games reached it, the table's depth and how far its first choice
+  stands clear of the second, and the line it comes from. While the question is live nothing there can
+  name the answer — every row is checked against the move, and Shuffle hides the line. Once answered it
+  adds the line's plan, the table's first choice with the reply it expects (a stored reply, not a
+  threat analysis), and the common mistakes. There is no per-position goal or threat in the data, so
+  none is shown; `research/W5-POSITION-METADATA.md` records those as gaps.
 - **Mates and lost positions are settled before the centipawn bands.** A move that allows mate is losing
   whatever its rank; a position that was already lost stays lost, so naming the best defence never implies
   a rescue; a move that throws away a winning position is called that instead of being priced in pawns.
@@ -301,6 +335,9 @@ src/
   data/puzzles.js          tactics, generated
   data/pieces-cburnett.js  standard piece set
   data/evals.js            precomputed Stockfish scores, generated
+  data/deep.js             depth-28 re-search of 116 narrow drilled positions, generated
+  data/freq.js             how often each position is reached, per rating band, generated
+  data/choices.js          what players chose at each position, per rating band, generated
 test/verify.mjs            engine + data gate, no browser needed
 test/w1b-engine.mjs        move generator and material-search checks
 test/w2b-grading.mjs       the grading policy and its fixtures
@@ -309,7 +346,9 @@ tools/fetch-assets.sh      downloads the CC0 sources into data-src/
 tools/build-eco.mjs        regenerates src/data/eco.js
 tools/build-puzzles.mjs    regenerates src/data/puzzles.js
 tools/build-evals.mjs      regenerates src/data/evals.js with a local Stockfish
+tools/deep-check.mjs       re-searches narrow positions at depth 28 -> src/data/deep.js
 tools/count-replies.mjs    counts reply frequencies from a named game dump
+tools/count-choices.mjs    counts our colour's choices at drilled positions; --tsv, --emit
 docs/index.html            the product
 ```
 

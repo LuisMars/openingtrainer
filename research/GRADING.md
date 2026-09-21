@@ -197,7 +197,10 @@ Plus a whole-repertoire count that pins the §3 totals.
 
 Position `rn1qk1nr/pbp2pbp/1p1pp1p1/8/3PP1P1/2N1BP2/PPPQ3P/R3KBNR b KQkq - 0 1`,
 now with a stored row: **`h5` −68, `Nc6` −75, `Nd7` −79, `a6` −84, `Qh4+` −84;
-`x: Ne7` −106.** `...c5` and `...d5` are in neither.
+`x: Ne7` −86, `d5` −93, `c5` −120** (the `x` entries searched one at a time; see
+the first addendum). The depth-28 row (`src/data/deep.js`, second addendum) is
+**`Nd7` −61, `h5` −62, `Nc6` −71, `Qh4+` −82, `a6` −89; `x: Ne7` −114**, with
+`d5` and `c5` not searched.
 
 The structural half (`isSetupMove`) reproduces the defect exactly as the ledger
 tabulated it: `Nd7`, `a6`, `h6` qualify; `h5`, `c5`, `d5` do not. The four-ply
@@ -208,11 +211,19 @@ search with the stored analysis:
 > with it to the centipawn) is itself a formation move, **and** the move played
 > grades `best` or `equal` against it.
 
-At the tabiya the first choice is `h5`, so every wall move is refused with
-reason `demanding` and handed to the grader instead: `Nd7` equal (11), `a6`
-equal (16), `h6` unknown. `h5` is `best`; `c5` and `d5` are `unknown` (the
-line's note calls them counters; the table does not rank them, and the grader
-says so rather than agreeing). The line's own `Ne7` is a concession at 38.
+On the depth-20 row alone the first choice is `h5`, so every wall move is refused
+with reason `demanding` and handed to the grader instead: `Nd7` equal (11), `a6`
+equal (16), `h6` unknown. At depth 28 the wall move `Nd7` is first and `h5` one
+centipawn behind it. The gate now calls a position demanding only where both
+depths do (second addendum), so **the tabiya is not demanding**: `Nd7` is
+credited `in-band` on its depth-28 number (best), `a6` `in-band` (16 behind at
+depth 20, 28 at depth 28), and `h6`, searched at neither depth, is `unanalysed`
+and falls to the material brake. `h5` is `best` (depth 20; equal at depth 28,
+1 behind). `d5` is equal (25) and `c5` a concession (52), both on depth-20
+numbers only. The line's own `Ne7` is equal at depth 20 (18) and a concession at
+depth 28 (53); the more generous verdict stands, and the page says the two
+searches disagree. What both depths show is a tie between `...Nd7` and `...h5`,
+not a position that wants `...h5`.
 
 Where the wall genuinely goes up in any order the gate stays open: at `hip-e4`
 ply 5 (1.e4 g6 2.d4 Bg7 3.Nc3, first choice `a6`) `a6`, `d6` and the scored
@@ -223,13 +234,15 @@ the ledger's second reproduction. `hip-150` ply 11 is **not**: the table has
 `a6` (7 cp) are credited and the ledger's "same failure at ply 11" is not what
 the stored numbers say.
 
-Across the five `HIPPO_T` lines: 53 Black drill plies, 26 of them `demanding`.
-Of 201 legal wall moves at those plies the gate says `in-band` 72, `demanding`
-88, `unanalysed` 37, `out-of-band` 4 (`hip-e4` ply 15 `h6` 37, `hip-e5` ply 13
-`Bb7` 38 and `h6` 32, ply 15 `Nd7` 39). The 88 refused as demanding grade, on
-their own number, equal 46, unknown 36, concession 4, inferior 2: so the usual
-effect of the gate is not a refusal but the loss of the "order does not matter"
-sentence, replaced by the engine's actual figure.
+Across the five `HIPPO_T` lines: 53 Black drill plies. On the depth-20 rows
+alone, 26 of them are `demanding`, and of 201 legal wall moves the gate says
+`in-band` 74, `demanding` 88, `unanalysed` 35, `out-of-band` 4; the 88 refused
+as demanding grade equal 48, unknown 34, concession 4, inferior 2. With both
+depths (the shipped behaviour), 21 plies are `demanding`: `in-band` 84,
+`demanding` 70, `unanalysed` 42, `out-of-band` 5 (`hip-e5` ply 17 `h6` is the
+new one); the 70 grade equal 39, unknown 26, concession 3, inferior 2. Either
+way the usual effect of the gate is not a refusal but the loss of the "order
+does not matter" sentence, replaced by the engine's actual figure.
 
 Invariant 7 is untouched: `targets: []` on `trap`, `soltis-trap`, `syn-hipdown`
 short-circuits the gate at `no-targets`, and the six synthetic Hippo lines keep
@@ -279,3 +292,105 @@ their own through `tools/build-evals.mjs --force`
 **best 152, equal 252, concession 30, inferior 5, losing 3, unknown 0**, and the
 numbers above have been corrected to match. `src/data/lines.js` was not edited;
 only the analysis grew.
+
+
+## Addendum: deeper checks on narrow decisions (`research/deep-checks.tsv`)
+
+Before the trainer treats a position as having one right answer, the gap behind
+that answer should survive a deeper search. `node tools/deep-check.mjs --depth 28`
+re-searches the drilled positions where the table makes a narrow claim, and writes
+one row per position to `research/deep-checks.tsv`, with the engine and settings in
+its header.
+
+**Method.** The engine and settings are the same as the shipped table: `sf16-7` from
+`lila-stockfish-web` 0.0.11, the small NNUE net (sha256 pinned), one thread,
+64 MB hash cleared with `ucinewgame` per position, MultiPV 5. The only change is a
+fixed depth of 28 instead of 20. The tool runs `tools/build-evals.mjs --worker`
+with `SF_DEPTH` set, so there is no second engine driver. That override only works
+in worker mode, so the shipped table stays at depth 20. Drilled moves outside the
+deep top five get their own `searchmoves` search, as they do in the shipped table.
+The Damiano sign probe is re-run at depth 28 and must still come out negative.
+Raw output is cached in `data-src/local-eval/sf167-d28/`. The depth-20 side of every
+comparison comes from the shipped `src/data/evals.js`, which the tool only reads.
+Depth 28 costs about two minutes per position on one thread, against nine seconds at
+depth 20.
+
+**Selection.** 116 of the 304 drilled positions are checked. A position is selected
+if any of these is true:
+
+- `narrow` (44 positions): only one move is within `GRADE.equal` of the best.
+  This is `waysAt() === 1`: the grader accepts one answer and prices every other move.
+- `demanding` (68): `setupGate` would return `demanding`.
+- `tactical` (51): the best move is a mate, capture or check.
+
+A position can have more than one of these flags.
+
+**Results at depth 28.** Every selected position reached depth 28.
+
+- **Narrow claims: 36 hold and 8 fail.** In all 8 failures the depth-20 best is
+  still the deep best. What changes is the runner-up: it closes to within 30 cp,
+  so a second move would be accepted.
+
+  | line:ply | best (d20 → d28) | runner-up (d20 → d28) | gap d20 → d28 |
+  |---|---|---|---|
+  | kolt:24 | Bf4 77 → 71 | Re1 32 → 45 | 45 → 26 |
+  | ohanlon:34 | Qf3 729 → 902 | Nxf7+ 695 → 893 | 34 → 9 |
+  | hip-e4:17 | ...Ne7 -21 → -37 | ...Qc8 -53 → -56 | 32 → 19 (3 moves in band) |
+  | h-3e5:7 | ...dxe5 26 → 23 | ...a6 -5 → 6 | 31 → 17 |
+  | syn-hipc5:21 | ...exd5 -25 → -39 | ...e5 -63 → -60 | 38 → 21 |
+  | syn-hiph5:15 | ...Qh4+ -14 → -25 | ...Rxh5 -52 → -40 | 38 → 15 |
+  | syn-clamp:20 | e4 58 → 48 | h3 25 → 27 | 33 → 21 (4 moves in band) |
+  | syn-e5colle:22 | cxd4 31 → 22 | Ncxe5 0 → Bf1 3 | 31 → 19 |
+
+  Most failures had a depth-20 gap only just over the 30 cp band (31 to 38).
+  kolt:24 is the exception at 45. Two of these rows drill the runner-up, not the
+  best. ohanlon:34 drills Nxf7+, which moves from concession to equal.
+  syn-hiph5:15 drills ...Rxh5, which also moves from concession to equal.
+
+- **Demanding: 58 hold and 10 fail.** The `demanding` test uses exact ties, so it
+  flips whenever the top few moves are within a few centipawns of each other. That
+  covers 1.d4 vs 1.Nf3, ck:6, ck:10, hip66:1, hip-g16:5, hip-g16:23, c-be7:8 and
+  c-be7:10, where the gaps are 0 to 5 cp at both depths. The failure that matters is
+  **hip-150:13 / syn-hiph5:13**, the storm tabiya in §6. At depth 28, ...Nd7 (-61)
+  is first and ...h5 (-62) second. The fixture's premise, that the first choice is
+  not a formation move, does not hold at depth 28. hip-e5:17 also fails:
+  ...Ne7 -101 overtakes ...d5 -119.
+
+- **Drilled-move grades:** 9 positions change between accepted and rejected.
+  - Accepted at depth 20, rejected at depth 28: ck:4 Bg5, ...g6 after 1.d4 (def-ohanlon:1 and
+    others), hip-g16:5 ...b6 and hip-150:13 ...Ne7 (equal → concession).
+  - Rejected at depth 20, accepted at depth 28: cz:14 Ne5, anti:10 c5,
+    ohanlon:34 Nxf7+, hip-g16:21 ...Qe8 and syn-hiph5:15 ...Rxh5
+    (concession → equal).
+
+**What this does not change.** `src/data/evals.js` and the depth-20 bands are not
+edited. The results show that a gap of 30 to 45 cp at depth 20 does not reliably
+separate the moves. The depth-20 score does not reliably tell which of two formation
+moves the engine prefers when they are a few centipawns apart.
+
+**How the app uses it.** The tool also writes the 116 depth-28 rows to
+`src/data/deep.js` (`DEEP`, EVL's row shape without `pv`, keyed by `posKey`; every
+key is an EVL key, checked by `test/verify.mjs`). The policy is one rule: the page
+never penalises a move that either depth accepts.
+
+- `gradeMove` grades the move on both rows (`gradeRow` is the one-row grader) and
+  returns the more generous verdict, in the order best, equal, concession,
+  inferior, losing. A depth that did not search the move gives way to one that
+  did; on equal verdicts the depth-20 record stands. The deeper row applies only
+  when the row passed in *is* the shipped `EVL` row, so constructed fixture rows
+  grade on themselves. Where one depth accepts and the other does not, the
+  record's `split` carries both depths' numbers and the feedback says "the
+  table's two searches disagree about this move" with both.
+- `setupGate` says `demanding` only where both depths say it.
+- `waysAt` counts a move accepted at either depth.
+- Positions without a depth-28 row behave exactly as before.
+
+Consequences, all at the 116 checked positions: five drilled moves go from
+concession to accepted (cz:14 Ne5, anti:10 c5, ohanlon:34 Nxf7+, hip-g16:21
+...Qe8, syn-hiph5:15 ...Rxh5), so the repertoire count is best+equal 491 (was
+486) and concession 23 (was 28); the four drilled moves depth 28 would reject
+(ck:4 Bg5, ...g6 after 1.d4, hip-g16:5 ...b6, hip-150:13 ...Ne7) stay accepted
+on their depth-20 numbers, and the page says the two searches disagree.
+`waysAt` rises at 43 positions, from 1 to 2 or more at the eight whose narrow
+claim failed above. The ten positions whose demanding claim failed stop being
+demanding, the storm tabiya (§6) among them.

@@ -2,7 +2,7 @@
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
   run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,freqW:true,band:FRQ_DEF,recog:true,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
-  arrow:null,passKeys:null,evNote:null,epoch:0};
+  arrow:null,passKeys:null,evNote:null,infoAt:null,epoch:0};
 let stats={pos:{},pz:{},day:"",today:0,theme:0};
 // True when neither window.storage nor localStorage would take a write, so the
 // session lives in memory only. Declared here rather than beside STORE so crash()
@@ -191,15 +191,18 @@ function quick(r){return r&&r.ms&&r.ms<SLOW;}
 const WAYS={};
 function waysAt(fen){
   if(WAYS[fen]!==undefined)return WAYS[fen];
-  const row=EVL[fen];let n=0;
-  if(row&&row.m&&row.m.length){
+  // At a deep-checked position (DEEP, src/data/deep.js) a move either depth
+  // accepts counts, once: the same union gradeMove grades by.
+  const ok=new Set();
+  for(const row of [EVL[fen],typeof DEEP!=="undefined"?DEEP[fen]:null]){
+    if(!row||!row.m||!row.m.length)continue;
     const b=row.m[0];
     for(const e of row.m){
-      if(b[3]!==null&&b[3]!==undefined){if(e[3]===b[3])n++;}
-      else if((e[3]===null||e[3]===undefined)&&e[2]!==null&&b[2]-e[2]<=GRADE.equal)n++;
+      if(b[3]!==null&&b[3]!==undefined){if(e[3]===b[3])ok.add(e[0]);}
+      else if((e[3]===null||e[3]===undefined)&&e[2]!==null&&b[2]-e[2]<=GRADE.equal)ok.add(e[0]);
     }
   }
-  return WAYS[fen]=n;
+  return WAYS[fen]=ok.size;
 }
 // Two at most: the point is deciding twice, not reciting a list.
 function needWays(k){
@@ -647,6 +650,7 @@ function render(anim){
   renderCtl();
   renderNote();
   renderPlan();
+  renderInfo();
   renderSheet();
   renderSess();
   const bar=el("progBar");
@@ -796,7 +800,7 @@ function armNext(ms){
   // is set, or they stay live (targeting the opponent's ply) for the whole wait
   // (finding 6). renderPlan() has the same dependence on S.pending: the plan
   // panel only exists in Shuffle's post-answer window, which starts here.
-  if(S.mode==="shuffle"){renderCtl();renderPlan();}
+  if(S.mode==="shuffle"){renderCtl();renderPlan();renderInfo();}
 }
 // shuffle(false) is the Shuffle-mode advance and picks a fresh line/ply out of LINES.
 // In puzzle mode S.pending is armed by armPz() and L() still returns PZLINE, so doing
@@ -825,7 +829,7 @@ function armWait(){
   // render(true), so the Hint/Skip pair rendered for the ply just answered is
   // still on screen unless rebuilt here. renderPlan() likewise: the plan panel's
   // Shuffle visibility is S.pending, which was still falsy during that render.
-  if(S.mode==="shuffle"){renderCtl();renderPlan();}
+  if(S.mode==="shuffle"){renderCtl();renderPlan();renderInfo();}
 }
 function mark(c){const m=document.createElement("span");m.className="mk "+c;return m;}
 function slide(u){
@@ -1052,6 +1056,7 @@ function holdForReading(){
 }
 el("planBox").addEventListener("toggle",holdForReading);
 el("libBox").addEventListener("toggle",holdForReading);
+el("infoBox").addEventListener("toggle",holdForReading);
 function ecoNow(){
   const e=(typeof ECO!=="undefined")&&ECO[L().id];
   if(!e)return "";
@@ -1232,8 +1237,8 @@ function playMove(pos,name,m){
   // Read the verdict and never the rank: rank 5 is 5 cp behind in one row and 78 in
   // another, and a scored move carries rank 0, which is not a place at all.
   // Two exclusions. A formation move the gate refused (demanding, out-of-band) is
-  // never credited here however it grades - at the storm tabiya the engine wants
-  // ...h5 and "the order does not matter" is simply false. And the three lines that
+  // never credited here however it grades - where both depths put a non-formation
+  // move first, "the order does not matter" is simply false. And the three lines that
   // exist to show the user losing (NO_SHUFFLE) keep their lesson: a sound move there
   // is still not the move the line is about to punish, and crediting it would hand
   // the drill a way round the point.
@@ -1353,6 +1358,8 @@ function good(){
   const san=L().moves[S.ply][1];
   const to=L().moves[S.ply][0].slice(2,4);
   const evTxt=ev?evalNote(ev,san):null;
+  // The position just answered, for the details panel and the common-mistake line.
+  const asked=nowPos();S.infoAt={id:L().id,ply:S.ply};
   S.sel=null;S.ply++;S.tries=0;S.hint=0;
   render(true);flash(to,"good");
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+san+(clean?"":" (with help)")+(ms?",":".")+"</span>"+
@@ -1415,6 +1422,8 @@ function good(){
       ctx+="<br>The line ends here.";
     }
     if(evTxt)ctx+='<br><span class="neutral">'+evTxt+"</span>";
+    const cm=commonMistakes(asked);
+    if(cm.length)ctx+='<br><span class="neutral">'+esc(mistakeLead(cm[0]))+"</span>";
     if(ecoNow())ctx+='<br><span class="eco">'+ecoNow()+"</span>";
     el("nText").innerHTML=ctx;
     if(hadMiss||note){
@@ -1488,6 +1497,132 @@ function replyAfter(pos,m,row,g){
 }
 // The opponent's move, written the way the move list writes it.
 function theirs(sanTxt){return (L().you==="w"?"…":"")+sanTxt;}
+/* ---------- counted choices (src/data/choices.js) ----------
+   CHO counts what players of the trained colour chose at each drilled position, per
+   rating band. A common mistake is a choice over CHO_FLOOR in the selected band that
+   gradeMove prices as a concession or worse and that no line plays from this board.
+   The count only picks which moves to mention; the grade alone makes one a mistake,
+   and every number printed is a stored one. */
+const MISTAKE=["concession","inferior","losing"];
+const BOOKAT={};
+for(const v of Object.values(KEYCACHE)){const i=v.lastIndexOf(":");(BOOKAT[v.slice(0,i)]=BOOKAT[v.slice(0,i)]||new Set()).add(v.slice(i+1));}
+function choAt(pos){return (typeof CHO!=="undefined"&&CHO[keyFen(pos)])||null;}
+// One move's count in the selected band, or null when it is under the floor there.
+function choCount(pos,uci){
+  const r=choAt(pos);if(!r)return null;
+  const n=r[0][S.band];
+  if(n<CHO_FLOOR.parent)return null;
+  const e=r.slice(1).find(x=>x[0]===uci);
+  const g=e?e[2+S.band]:0;
+  return (g>=CHO_FLOOR.games&&g/n>=CHO_FLOOR.share)?{uci:e[0],san:e[1],g:g,n:n}:null;
+}
+// Counted choices over the floor in the selected band that no line plays here, each
+// with its grade. A choice the table never scored stays "unknown" and is never priced.
+function counted(pos){
+  const r=choAt(pos),row=evalFor(pos);
+  if(!r||!row)return [];
+  const book=BOOKAT[keyFen(pos)]||new Set(),out=[];
+  for(const e of r.slice(1)){
+    if(book.has(e[0]))continue;
+    const c=choCount(pos,e[0]);if(!c)continue;
+    c.grade=gradeMove(row,pos,e[0]);out.push(c);
+  }
+  return out.sort((a,b)=>b.g-a.g);
+}
+function commonMistakes(pos){
+  return counted(pos).filter(c=>c.grade.analysis==="checked"&&MISTAKE.indexOf(c.grade.verdict)>=0);
+}
+function countTxt(c){return c.g+" of "+c.n+" counted games ("+Math.round(100*c.g/c.n)+"%)";}
+// A concession is named as one: 30 to 70 centipawns is a price, not a blunder.
+function mistakeTxt(c){
+  return c.san+(c.grade.verdict==="concession"?" (a concession)":"")+", chosen in "+countTxt(c)+
+    ". Stockfish 16, depth "+c.grade.why.depth+": "+fmtScore(c.grade)+lossTxt(c.grade)+".";
+}
+function mistakeLead(c){return "A common "+(c.grade.verdict==="concession"?"concession":"mistake")+" here at "+
+  FRQ_BANDS[S.band]+" ("+CHO_SRC+"): "+mistakeTxt(c).replace(" (a concession)","");}
+/* ---------- position details ----------
+   One place for what the stored data can say about the position being asked, and
+   nothing it cannot: occurrence (FRQ, CHO), the table's depth and the gap behind its
+   first choice, the line's provenance, and once the position is answered, the line's
+   plan, the table's first choice with the reply it expects, and the common mistakes.
+   While a question is live only the first group is shown, and every row is run
+   through refuteLeaks against the expected move, so nothing here can hand over the
+   answer (invariant 4). No per-position goal or threat exists in the data, so the
+   panel shows the line's plan and the table's expected reply, labelled as those. */
+const OCC=["under 0.1%","at least 0.1%","at least 0.3%","at least 1%","at least 3%","at least 10%"];
+function infoAt(){
+  const l=L();
+  if(S.mode==="puzzle")return null;
+  // A credited setup move in Shuffle shows the user's own move through S.free, so the
+  // answered check comes before the free-move one.
+  if(S.mode==="shuffle"&&S.pending)return (S.infoAt&&S.infoAt.id===l.id)?{ply:S.infoAt.ply,answered:true}:null;
+  if(S.free.length)return null;
+  const mine=p=>p>=0&&p<l.moves.length&&(p%2===0?"w":"b")===l.you;
+  if(S.mode==="shuffle")return mine(S.ply)?{ply:S.ply,answered:false}:null;
+  if(mine(S.ply))return {ply:S.ply,answered:false};
+  for(let p=Math.min(S.ply,l.moves.length)-1;p>=0;p--)if(mine(p))return {ply:p,answered:true};
+  return null;
+}
+function infoRows(l,ply,answered){
+  const pos=posAt(l,ply),k=keyFen(pos),row=evalFor(pos),want=l.moves[ply],rows=[];
+  const band=FRQ_BANDS[S.band],h=fhash(k),b=FRQB[h],cho=choAt(pos);
+  let occ=b===undefined
+    ?"No occurrence bucket for this board at "+band+", so Shuffle weights it neutral."
+    :"Reached in "+OCC[b]+" of the counted "+band+" games in this repertoire's tree.";
+  if(cho&&cho[0][S.band])occ+=" "+cho[0][S.band]+" counted game"+(cho[0][S.band]===1?"":"s")+" reached this exact board.";
+  if(FRQS.has(h))occ+=" A rare forcing position, so it keeps full weight.";
+  rows.push(["Occurrence",occ]);
+  if(row){
+    let c="Stockfish 16, depth "+row.d+".";
+    if(row.m[0][3]!==null&&row.m[0][3]>0)c+=" Its first choice forces mate.";
+    else if(row.m.length>1){
+      const g2=gradeRow(row,pos,row.m[1][0]); // this row's own gap, at this row's depth
+      if(g2.lossCp!==null)c+=GRADE.accept.indexOf(g2.verdict)>=0
+        ?" Its top two moves are "+g2.lossCp+" centipawn"+(g2.lossCp===1?"":"s")+" apart, inside the noise band: more than one move is sound."
+        :" Its first choice stands "+g2.lossCp+" centipawn"+(g2.lossCp===1?"":"s")+" clear of the second: a narrow position.";
+    }
+    const deep=typeof DEEP!=="undefined"?DEEP[k]:null;
+    if(deep)c+=" A second search at depth "+deep.d+" is stored too, and a move either search accepts is accepted.";
+    const all=new Set([row,deep].filter(Boolean).flatMap(r=>[...r.m,...(r.x||[])].map(e=>e[0])));
+    const ok=[...all].filter(u=>GRADE.accept.indexOf(gradeMove(row,pos,u).verdict)>=0).length;
+    c+=" "+ok+" stored move"+(ok===1?" is":"s are")+" accepted here.";
+    rows.push(["Confidence",c]);
+  }
+  if(S.mode!=="shuffle"||answered){
+    const others=(ALT[k]||[]).filter(a=>LINES[a[0]].id!==l.id).length;
+    rows.push(["Source",[l.name,l.src].filter(Boolean).join(" · ")+(KIND[l.id]?" ("+KIND[l.id]+")":"")+
+      (others?"; "+others+" other line"+(others===1?"":"s")+" reach this board.":".")]);
+  }
+  if(answered){
+    const p=(l.plan||"").split(". ")[0].replace(/\.$/,"");
+    if(p)rows.push(["Plan","This line's aim: "+p+"."]);
+    if(row){
+      let e="First choice "+row.m[0][1]+" "+fmtScore({cp:row.m[0][2],mate:row.m[0][3]});
+      if(row.pv&&row.pv.length>1)e+="; the reply the table expects after it is "+theirs(row.pv[1])+". Not a threat analysis: the table stores replies, not threats.";
+      else e+=".";
+      rows.push(["Engine",e]);
+    }
+    const all=counted(pos),cm=all.filter(c=>c.grade.analysis==="checked"&&MISTAKE.indexOf(c.grade.verdict)>=0);
+    const un=all.filter(c=>c.grade.analysis!=="checked").length;
+    let t;
+    if(cm.length)t=cm.slice(0,2).map(c=>mistakeTxt(c)).join(" ")+" Counted at "+band+", "+CHO_SRC+".";
+    else if(cho&&cho[0][S.band]>=CHO_FLOOR.parent)t="None among the scored moves: nothing players at "+band+" chose that often here is priced as a concession or worse.";
+    else t="Too few counted games at "+band+" to name one.";
+    if(un)t+=" "+un+" other common choice"+(un===1?" has":"s have")+" no stored score, so nothing is said about "+(un===1?"it.":"them.");
+    rows.push(["Common mistakes",t]);
+  }
+  // A live question shows nothing that names the move, its squares, or its piece.
+  return answered?rows:rows.filter(r=>!refuteLeaks(r[1],want[0],want[1]));
+}
+let infoFor=null;
+function renderInfo(){
+  const box=el("infoBox"),l=L();
+  if(infoFor!==l.id){box.open=false;infoFor=l.id;}
+  const t=infoAt();
+  box.style.display=t?"":"none";
+  el("infoTxt").innerHTML=t?infoRows(l,t.ply,t.answered).map(r=>
+    '<div class="irow"><b>'+esc(r[0])+"</b> "+esc(r[1])+"</div>").join(""):"";
+}
 // Distance from the row's first choice, in the unit the policy is calibrated in.
 function lossTxt(g){
   if(g.lossCp===null)return "";
@@ -1505,11 +1640,19 @@ function afterTxt(g){
   if(g.after==="lost")return g.situation==="lost"?"The position stays lost; this is defence, not a rescue.":"It leaves the position lost.";
   return "";
 }
+/* gradeMove's split: the two stored searches of a deep-checked position disagree
+   on whether this move is accepted. Both numbers are stored ones; the move is
+   accepted because one of the two searches accepts it. */
+function splitTxt(sp){
+  const one=r=>"depth "+r.d+" "+fmtScore(r)+(r.lossCp===null?"":r.lossCp===0?" (its first choice)":" ("+r.lossCp+" behind its first choice)");
+  return "The table's two searches disagree about this move: "+sp.map(one).join(", ")+". Either one accepting it is enough.";
+}
 /* The full stored sentence about one graded move: its own score, its distance from
    the first choice, what it leaves and the reply the table answers with. */
 function gradeLine(g){
   if(!g||g.analysis!=="checked")return "The table does not cover this move, so nothing is claimed about it either way.";
   let s="Stockfish 16, depth "+g.why.depth+": "+g.san+" "+fmtScore(g)+lossTxt(g)+".";
+  if(g.split)s+=" "+splitTxt(g.split);
   const a=afterTxt(g);
   if(a)s+=" "+a;
   if(g.reply)s+=" The table answers "+theirs(g.reply)+".";
@@ -1538,8 +1681,9 @@ function setupLead(t,g,row){
       ?"the table has it within the noise band of its own first choice. "+gradeLine(g)+pvTxt(g,row)
       :"a four-ply material check finds no punishment for it here.");
 }
-/* The storm tabiya, and every position like it: the row's first choice is not a
-   formation move, so building is not free here whatever the wall move scores. Run
+/* A demanding position (hip66 plies 21 and 25, for two): the first choice is not a
+   formation move at either depth the table holds, so building is not free here
+   whatever the wall move scores. Run
    through the same leak filter a refutation is, because "not a formation move" is
    a fact about the position that could point at the answer. */
 function demandLead(){
@@ -1615,6 +1759,10 @@ function offBook(name,t,v,g,extra){
   }
   // analysis "unknown" is the only state with no number to print, so it is the one
   // state that gets said out loud instead.
+  // How often players at the selected band chose this very move here: a count about
+  // the move played, so it cannot point at the one wanted.
+  const cc=(checked&&blame&&!pz)?choCount(nowPos(),g.uci):null;
+  const common=cc?"Players at "+FRQ_BANDS[S.band]+" chose it here in "+countTxt(cc)+", "+CHO_SRC+".":null;
   const none=(!checked&&!punish&&!pz)?"The table has not searched this move, so nothing is claimed about it either way.":null;
   render(false);flash(name,blame?"bad":"warn");
   el("nMsg").innerHTML='<span class="'+(blame?"no":"neutral")+'">'+t+(pz
@@ -1623,6 +1771,7 @@ function offBook(name,t,v,g,extra){
     (punish?' <span class="no">'+punish+"</span>":"")+
     (extra?' <span class="neutral">'+extra+"</span>":"")+
     (evTxt?' <span class="neutral">'+evTxt+"</span>":"")+
+    (common&&first?' <span class="neutral">'+esc(common)+"</span>":"")+
     (none?' <span class="neutral">'+none+"</span>":"")+
     (why?' <span class="neutral">'+why+"</span>":"");
 }
@@ -1665,6 +1814,7 @@ function setupGood(pos,m,t,lead){
   if(clean)S.run++;else S.run=0;
   bumpToday();
   S.free=[{uci:uciOf(m),san:t,ok:1}];S.fpos=make(pos,m);
+  S.infoAt={id:L().id,ply:S.ply};
   S.sel=null;S.tries=0;S.hint=0;
   render(true);flash(sq(m.t),"good");
   const l=L(),want=l.moves[S.ply][1];

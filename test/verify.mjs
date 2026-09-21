@@ -13,8 +13,8 @@ const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"
 const upto = js.indexOf("/* ================= state ================= */");
 const bundle = js.slice(0, upto);
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE,gradeMove,posKey});")(ctx);
-const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE, gradeMove, posKey } = ctx;
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE,DEEP,cmpScore,gradeMove,posKey,CHO,CHO_BANDS,CHO_FLOOR,FRQ_BANDS});")(ctx);
+const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE, DEEP, cmpScore, gradeMove, posKey, CHO, CHO_BANDS, CHO_FLOOR, FRQ_BANDS } = ctx;
 const keyOf = posKey;
 
 let fail = 0;
@@ -188,6 +188,38 @@ console.log(`✓ ${pz}/${PZ.length} puzzles replay legally with matching display
       `, ${pvs} PVs replay, probe sign holds`);
 }
 
+// 6b. the depth-28 rows (src/data/deep.js): same shape and rules as EVL minus
+// the pv, every key already an EVL key and already in posKey form, deeper than
+// the row it re-searches, and ranked best first. They are only ever read beside
+// the EVL row, so a DEEP key with no EVL row would be a search nothing consults.
+{
+  let rows = 0, deepFail = fail;
+  for (const [k, e] of Object.entries(DEEP)) {
+    let p;
+    try { p = fenPos(k); } catch { bad(`DEEP key does not parse: ${k}`); continue; }
+    if (!EVL[k]) bad(`DEEP ${k}: no EVL row under the same key`);
+    if (posKey(p) !== k) bad(`DEEP ${k}: not a posKey string (posKey gives ${posKey(p)})`);
+    if (!(e.m && e.m.length)) { bad(`DEEP ${k}: no moves stored`); continue; }
+    if (!(EVL[k] && e.d > EVL[k].d)) bad(`DEEP ${k}: depth ${e.d} is not deeper than the EVL row's`);
+    if (e.x !== undefined) {
+      if (!Array.isArray(e.x) || !e.x.length) { bad(`DEEP ${k}: x present but not a non-empty list`); continue; }
+      const ranked = new Set(e.m.map((y) => y[0]));
+      for (const y of e.x) if (ranked.has(y[0])) bad(`DEEP ${k}: ${y[0]} is in both m and x`);
+    }
+    for (let i = 1; i < e.m.length; i++)
+      if (cmpScore(e.m[i - 1], e.m[i]) < 0) bad(`DEEP ${k}: ${e.m[i][1]} outranks ${e.m[i - 1][1]}; m must be best first`);
+    for (const [uci, sanTxt, cp, mate] of [...e.m, ...(e.x || [])]) {
+      const m = findMove(p, uci);
+      if (!m) { bad(`DEEP ${k}: ${uci} is not legal`); continue; }
+      if (san(p, m) !== sanTxt) bad(`DEEP ${k}: ${uci} labelled ${sanTxt}, generator says ${san(p, m)}`);
+      if ((cp === null) === (mate === null)) bad(`DEEP ${k}: ${sanTxt} must have exactly one of cp/mate, has ${cp}/${mate}`);
+      rows++;
+    }
+  }
+  if (fail === deepFail)
+    console.log(`✓ ${Object.keys(DEEP).length} depth-28 rows: keys parse and match EVL, ${rows} moves legal with matching SAN, ranked best first`);
+}
+
 // 7. fmtScore is the one formatting choke point for stored evals; a mate must
 // never print as a pawn count. The function is written brace-free so it can be
 // lifted out of app.js (which needs a DOM the sandbox above does not have).
@@ -310,6 +342,44 @@ if (!fail) console.log(`✓ page's stated counts match the data (${LINES.length}
   if (unsourceable.length)
     bad(`annotation marks on lines with no possible source: ${unsourceable.map(([id, i, sanTxt, k]) => `${id}:${i} ${sanTxt} (${k})`).join(", ")}`);
   else console.log(`\u2713 ${marked.length} annotation marks, none on a model or synthetic line`);
+}
+
+// 13. Counted player choices (src/data/choices.js, tools/count-choices.mjs). The
+// app names a "common mistake" from this table and prices it from EVL, so every
+// row must be a drilled position, every move legal with the engine's SAN and
+// already scored, every count a real count no larger than its parent, and every
+// shipped move over the documented floor in at least one band. The bands are
+// read by index against FRQ_BANDS, so the two lists must be the same list.
+{
+  const before = fail;
+  if (JSON.stringify(CHO_BANDS) !== JSON.stringify(FRQ_BANDS))
+    bad(`CHO_BANDS ${JSON.stringify(CHO_BANDS)} is not FRQ_BANDS ${JSON.stringify(FRQ_BANDS)}`);
+  let nPos = 0, nMoves = 0, mistakes = 0, unscored = 0;
+  for (const [key, [parent, ...mv]] of Object.entries(CHO)) {
+    nPos++;
+    const row = EVL[key];
+    if (!row) { bad(`CHO row ${key} is not a drilled position`); continue; }
+    if (!Array.isArray(parent) || parent.length !== FRQ_BANDS.length || !parent.every((n) => Number.isInteger(n) && n >= 0))
+      bad(`CHO ${key}: bad parent counts ${JSON.stringify(parent)}`);
+    const pos = fenPos(key);
+    const scored = new Set([...row.m, ...(row.x || [])].map((e) => e[0]));
+    for (const [uci, s, ...g] of mv) {
+      nMoves++;
+      const m = findMove(pos, uci);
+      if (!m) { bad(`CHO ${key}: ${uci} is not legal`); continue; }
+      if (san(pos, m) !== s) bad(`CHO ${key}: ${uci} labelled ${s}, engine says ${san(pos, m)}`);
+      // Unscored is allowed only where the row already carries a forced search
+      // (row.x), which count-choices must not widen: see lockedKeys there.
+      if (!scored.has(uci)) { unscored++; if (!row.x) bad(`CHO ${key}: ${s} has no score in EVL and nothing stops it getting one`); }
+      if (g.length !== parent.length || g.some((x, b) => !Number.isInteger(x) || x < 0 || x > parent[b]))
+        bad(`CHO ${key}: ${s} counts ${JSON.stringify(g)} do not fit parent ${JSON.stringify(parent)}`);
+      if (!g.some((x, b) => parent[b] >= CHO_FLOOR.parent && x >= CHO_FLOOR.games && x / parent[b] >= CHO_FLOOR.share))
+        bad(`CHO ${key}: ${s} is under the floor in every band`);
+      if (["concession", "inferior", "losing"].includes(gradeMove(row, pos, uci).verdict)) mistakes++;
+    }
+  }
+  if (!nPos) bad("CHO is empty: run tools/count-choices.mjs --emit");
+  if (fail === before) console.log(`\u2713 counted choices: ${nPos} positions, ${nMoves} moves, all legal; ${unscored} unscored at locked rows; ${mistakes} priced as a concession or worse`);
 }
 
 if (fail) { console.error(`\n${fail} problem(s). Do not ship.`); process.exit(1); }

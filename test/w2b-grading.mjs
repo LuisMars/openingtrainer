@@ -17,9 +17,9 @@ const html = readFileSync(join(root, "docs/index.html"), "utf8");
 const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"));
 const bundle = js.slice(0, js.indexOf("/* ================= state ================= */"));
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,START,HIPPO_T,startPos,fenPos,findMove,make,san,legal,uciOf,inCheck,fenOf,posKey,candidateEval,gradeMove,setupGate,isSetupMove,cmpScore,scoreState,GRADE,EVL});")(ctx);
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,START,HIPPO_T,startPos,fenPos,findMove,make,san,legal,uciOf,inCheck,fenOf,posKey,candidateEval,gradeMove,gradeRow,setupGate,isSetupMove,cmpScore,scoreState,GRADE,EVL,DEEP});")(ctx);
 const { LINES, START, HIPPO_T, startPos, fenPos, findMove, make, san, legal, uciOf, inCheck,
-  fenOf, posKey, candidateEval, gradeMove, setupGate, isSetupMove, cmpScore, GRADE, EVL } = ctx;
+  fenOf, posKey, candidateEval, gradeMove, gradeRow, setupGate, isSetupMove, cmpScore, GRADE, EVL, DEEP } = ctx;
 
 let fail = 0;
 const bad = (m) => { console.error("  ✗ " + m); fail++; };
@@ -41,6 +41,13 @@ const g = (ctxPos, sanTxt) => {
   const m = legal(ctxPos.p).find((x) => san(ctxPos.p, x).replace(/[+#]/g, "") === sanTxt.replace(/[+#!?]/g, ""));
   if (!m) throw new Error("illegal " + sanTxt);
   return gradeMove(ctxPos.row, ctxPos.p, m);
+};
+// The same, against the depth-20 row alone: the band policy on one search. At a
+// position src/data/deep.js also covers, g() can differ (block 14).
+const gr = (ctxPos, sanTxt) => {
+  const m = legal(ctxPos.p).find((x) => san(ctxPos.p, x).replace(/[+#]/g, "") === sanTxt.replace(/[+#!?]/g, ""));
+  if (!m) throw new Error("illegal " + sanTxt);
+  return gradeRow(ctxPos.row, ctxPos.p, m);
 };
 // Position a line stands in before its drill move at ply i.
 const lineAt = (id, ply) => {
@@ -78,7 +85,8 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   eq(g(e4, "e6").lossCp, 11, "1.e4 e6 loss");
   const node = at("d4 d5 Nf3 Nf6 e3 e6");   // c-e6-node-transposed, spread 5 cp
   for (const s of ["b3", "Nbd2", "Bd3", "c4", "Be2"]) if (!GRADE.accept.includes(g(node, s).verdict)) bad(`c-e6-node ${s} not accepted`);
-  eq(g(node, "Bd3").lossCp, 2, "drilled 4.Bd3 loss");
+  eq(gr(node, "Bd3").lossCp, 2, "drilled 4.Bd3 loss at depth 20");
+  eq(g(node, "Bd3").verdict, "best", "4.Bd3 is depth 28's first choice, so it grades best");
   const fork = at("d4 d5 Nf3 Nf6 e3 e6 Bd3 c5"); // c-c5-fork-c3-b3: c3 and b3 both drilled
   const b3 = g(fork, "b3"), c3 = g(fork, "c3");
   if (!GRADE.accept.includes(b3.verdict) || !GRADE.accept.includes(c3.verdict)) bad("c3 and b3 must both be accepted");
@@ -100,9 +108,19 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   eq(q.verdict, "concession", "Qxd4 at 32 cp");
   eq(q.lossCp, 32, "Qxd4 loss");
   for (const s of ["c4", "Nf3", "Be2"]) {
-    const r = g(ben, s);
+    const r = gr(ben, s);
     eq(r.verdict, "inferior", `${s} drops the pawn (rank ${r.rank}, loss ${r.lossCp})`);
     if (r.lossCp < 80) bad(`${s} loss ${r.lossCp} should be a clean pawn`);
+  }
+  // Depth 28 has c4 and Nf3 at 66 and 65 behind, so the verdict the page gives
+  // is the more generous concession, on the depth-28 number. Neither depth
+  // accepts either move, so there is no disagreement to report.
+  for (const [s, loss] of [["c4", 66], ["Nf3", 65]]) {
+    const r = g(ben, s);
+    eq(r.verdict, "concession", `${s} graded on both depths`);
+    eq(r.why.depth, 28, `${s} record comes from depth 28`);
+    eq(r.lossCp, loss, `${s} loss at depth 28`);
+    eq(r.split, null, `${s}: neither depth accepts it, no split`);
   }
   const eng = at("d4 e5");                   // dxe5 105, Nc3 27, e3 24, c3 7, e4 4
   eq(g(eng, "dxe5").verdict, "best", "2.dxe5 takes the pawn");
@@ -344,27 +362,44 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   ok("frequency cannot reach the verdict");
 }
 
-// 12. The hip-150 setup-credit defect: the gate fires at the storm tabiya and
-//     stays open where the wall really can go up in any order.
+// 12. The hip-150 setup-credit defect: the gate fires where a position is
+//     demanding and stays open where the wall really can go up in any order.
+//     The storm tabiya is demanding at depth 20 only. There ...h5 is first and
+//     ...Nd7 11 cp behind; at depth 28 (src/data/deep.js) ...Nd7 -61 and ...h5
+//     -62 are one centipawn apart with the wall move first. The gate refuses only
+//     where both depths say demanding, so it is open at the tabiya. The depth-20
+//     refusal is still pinned on a copy of the row, which the deeper search does
+//     not apply to (it attaches to the shipped row object only).
 {
   const tab = lineAt("hip-150", 13);
   eq(posKey(tab.p), "rn1qk1nr/pbp2pbp/1p1pp1p1/8/3PP1P1/2N1BP2/PPPQ3P/R3KBNR b KQkq - 0 1", "the tabiya key");
-  eq(tab.row.m[0][1], "h5", "the row's first choice is ...h5");
+  eq(tab.row.m[0][1], "h5", "depth 20: the row's first choice is ...h5");
+  const deep = DEEP[posKey(tab.p)];
+  eq(deep.d, 28, "the tabiya has a depth-28 row");
+  eq(deep.m[0][1] + " " + deep.m[0][2], "Nd7 -61", "depth 28: first choice ...Nd7 -61");
+  eq(deep.m[1][1] + " " + deep.m[1][2], "h5 -62", "depth 28: ...h5 -62 second");
   const mv = (s) => legal(tab.p).find((x) => san(tab.p, x) === s);
   // The structural half alone reproduces the defect: three wall moves qualify,
   // the three prescribed counters do not.
   for (const s of ["Nd7", "a6", "h6"]) if (!isSetupMove(HIPPO_T, tab.p, mv(s))) bad(`${s} should be a formation move`);
   for (const s of ["h5", "c5", "d5"]) if (isSetupMove(HIPPO_T, tab.p, mv(s))) bad(`${s} should not be a formation move`);
-  // The gate refuses all three wall moves because the position is demanding.
+  // Depth 20 alone refuses all three wall moves because the position is demanding.
+  const d20 = JSON.parse(JSON.stringify(tab.row));
   for (const s of ["Nd7", "a6", "h6"]) {
-    const r = setupGate(tab.row, tab.p, mv(s), HIPPO_T);
-    eq(r.credit, false, `tabiya ${s} credit`);
-    eq(r.reason, "demanding", `tabiya ${s} reason`);
+    const r = setupGate(d20, tab.p, mv(s), HIPPO_T);
+    eq(r.credit, false, `depth 20 alone: tabiya ${s} credit`);
+    eq(r.reason, "demanding", `depth 20 alone: tabiya ${s} reason`);
     if (!r.grade) bad(`tabiya ${s} should carry its grade`);
   }
-  eq(setupGate(tab.row, tab.p, mv("Nd7"), HIPPO_T).grade.verdict, "equal", "...Nd7 grades equal (11 cp) on its own number");
+  eq(setupGate(d20, tab.p, mv("Nd7"), HIPPO_T).grade.verdict, "equal", "depth 20 alone: ...Nd7 grades equal (11 cp)");
+  // Both depths: depth 28 has a wall move first, so the gate is open.
+  const nd7 = setupGate(tab.row, tab.p, mv("Nd7"), HIPPO_T);
+  eq(nd7.reason, "in-band", "...Nd7 credited: first choice at depth 28");
+  eq(nd7.grade.verdict + " " + nd7.grade.why.depth, "best 28", "...Nd7 graded best on its depth-28 number");
+  eq(setupGate(tab.row, tab.p, mv("a6"), HIPPO_T).reason, "in-band", "...a6 credited: 16 cp behind at depth 20, 28 at depth 28");
+  eq(setupGate(tab.row, tab.p, mv("h6"), HIPPO_T).reason, "unanalysed", "...h6 is searched at neither depth");
   eq(setupGate(tab.row, tab.p, mv("h6"), HIPPO_T).grade.verdict, "unknown", "...h6 is unanalysed here");
-  eq(gradeMove(tab.row, tab.p, mv("h5")).verdict, "best", "...h5 is best");
+  eq(gradeMove(tab.row, tab.p, mv("h5")).verdict, "best", "...h5 is best at depth 20 (1 cp behind at depth 28)");
   eq(setupGate(tab.row, tab.p, mv("h5"), HIPPO_T).reason, "not-target", "...h5 is graded, not setup-credited");
   // The note's other two prescribed counters were unknown until they were given
   // searches of their own through --force (research/named-moves.tsv). They now
@@ -427,7 +462,7 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   }
   if (!credited) bad("the gate should still credit wall moves somewhere");
   if (!refusedDemanding) bad("the gate should refuse wall moves somewhere");
-  ok(`hip-150 gate: fires at the storm tabiya, open where order is free (${plies} Hippo drill plies, ${demandingPlies} demanding; wall moves ${JSON.stringify(tally)})`);
+  ok(`hip-150 gate: demanding only where both depths say so, open where order is free (${plies} Hippo drill plies, ${demandingPlies} demanding; wall moves ${JSON.stringify(tally)})`);
 }
 
 // 13. Every drilled move in the repertoire has a verdict, and the counts are the
@@ -457,13 +492,47 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // accepts, so nothing the trainer asks the user to play is a move the
   // shipped analysis calls lost.
   eq(counts.losing || 0, 0, "losing drilled moves");
-  eq(counts.best + counts.equal, 486, "best+equal drilled moves");
-  eq(counts.concession, 28, "concession drilled moves");
+  // 486 and 28 on the depth-20 table alone. Five drilled moves that depth 20
+  // prices as concessions are accepted at depth 28 (cz:14 Ne5, anti:10 c5,
+  // ohanlon:34 Nxf7+, hip-g16:21 ...Qe8, syn-hiph5:15 ...Rxh5), and a move either
+  // depth accepts is accepted: 491 and 23.
+  eq(counts.best + counts.equal, 491, "best+equal drilled moves");
+  eq(counts.concession, 23, "concession drilled moves");
   // The only two left outside accept are meant to be: ohanlon's Rxd6 is a real
   // game move in a position the table still scores as won, and syn-hipdown is
   // the deliberate-mistake line doing its job.
   eq(counts.inferior, 2, "inferior drilled moves");
   ok(`all ${n} drilled moves graded: ${JSON.stringify(counts)}`);
+}
+
+// 14. The deeper search (src/data/deep.js): at a deep-checked position a move
+//     gets the more generous of its two verdicts, and where the depths disagree
+//     on accepting it the record says so with both stored numbers.
+{
+  for (const k of Object.keys(DEEP)) if (!EVL[k]) bad(`DEEP row without an EVL row: ${k}`);
+  // syn-hiph5 ply 15: ...Qh4+ -14 / ...Rxh5 -52 at depth 20, -25 / -40 at depth 28.
+  const r15 = lineAt("syn-hiph5", 15);
+  const rx = gradeMove(r15.row, r15.p, r15.mv[0]);
+  eq(rx.verdict + " " + rx.why.depth + " " + rx.lossCp, "equal 28 15", "...Rxh5: equal on the depth-28 number");
+  eq(JSON.stringify(rx.split), JSON.stringify([
+    { d: 20, verdict: "concession", cp: -52, mate: null, lossCp: 38 },
+    { d: 28, verdict: "equal", cp: -40, mate: null, lossCp: 15 }]), "...Rxh5: both depths carried");
+  eq(gradeRow(r15.row, r15.p, r15.mv[0]).verdict, "concession", "...Rxh5 on depth 20 alone");
+  // hip-150 ply 13: the line's own ...Ne7 is 18 behind at depth 20 and 53 at
+  // depth 28. Depth 20 accepts it, so it stays accepted, on the depth-20 record.
+  const tab = lineAt("hip-150", 13);
+  const ne7 = gradeMove(tab.row, tab.p, tab.mv[0]);
+  eq(ne7.verdict + " " + ne7.why.depth + " " + ne7.lossCp, "equal 20 18", "...Ne7 keeps its depth-20 equal");
+  eq(ne7.split && ne7.split[1].verdict, "concession", "...Ne7: depth 28 disagrees and the record says so");
+  // Outside the deep set nothing changes: 1.d4 e6 has no depth-28 row.
+  const plain = at("d4 e6");
+  if (DEEP[posKey(plain.p)]) bad("1.d4 e6 was expected to be outside the deep set");
+  for (const s of ["Nf3", "e4", "c4"])
+    eq(JSON.stringify(g(plain, s)), JSON.stringify(gr(plain, s)), `outside the deep set gradeMove is gradeRow (${s})`);
+  // A copy of a shipped row is a different row: the deeper search attaches to
+  // the shipped object only, so constructed and copied rows grade on themselves.
+  eq(gradeMove(JSON.parse(JSON.stringify(r15.row)), r15.p, r15.mv[0]).verdict, "concession", "a copied row is graded alone");
+  ok("deep rows: more generous verdict, disagreement carried, nothing changes outside the set");
 }
 
 console.log(fail ? `\n${fail} check(s) failed.` : "\nAll w2b grading checks passed.");

@@ -448,9 +448,10 @@ function scoreState(e){
   if(e[2]<=-GRADE.decisive)return "lost";
   return "level";
 }
-/* gradeMove(row, pos, mv): the move-grading record of research/CONTRACTS.md.
+/* gradeRow(row, pos, mv): the move-grading record of research/CONTRACTS.md,
+   from one row. Callers use gradeMove below, which adds the deeper search.
    Returns {key, uci, san, cp, mate, rank, reason, analysis, lossCp, verdict,
-   situation, after, why, reply}. verdict is best | equal | concession | inferior
+   situation, after, why, reply, split}. verdict is best | equal | concession | inferior
    | losing | unknown; analysis is "checked" when the engine searched the move
    (listed in the five or scored on its own in row.x) and "unknown" otherwise, in
    which case the verdict is unknown, lossCp is null and why.kind says only that
@@ -470,13 +471,13 @@ function scoreState(e){
    else inferior. A move already inside the lost region before it was played is
    graded on the bands with situation "lost" so nothing calls its best defence
    a save, and nothing calls a losing move "losing" twice. */
-function gradeMove(row,pos,mv){
+function gradeRow(row,pos,mv){
   const c=candidateEval(row,pos,mv);
   const m=typeof mv==="string"?findMove(pos,mv):mv;
   const uci=typeof mv==="string"?mv:uciOf(mv);
   const out={key:posKey(pos),uci:uci,san:m?san(pos,m):"",cp:null,mate:null,rank:c.rank,
     reason:c.reason,analysis:"unknown",lossCp:null,verdict:"unknown",situation:null,
-    after:null,why:{kind:c.reason,best:c.best,move:null,depth:c.depth},reply:null};
+    after:null,why:{kind:c.reason,best:c.best,move:null,depth:c.depth},reply:null,split:null};
   if(c.best)out.situation=scoreState(c.best);
   if(!c.known)return out;
   const e=c.entry,b=c.best;
@@ -509,6 +510,34 @@ function gradeMove(row,pos,mv){
   if(loss<=GRADE.concession)return say("concession","concession");
   return say("inferior","inferior");
 }
+/* A second search (DEEP, src/data/deep.js) covers some drilled positions at a
+   greater depth with the same engine. It applies only when row IS the shipped
+   depth-20 row for the position (EVL[key]) - a constructed row describes nothing
+   the deeper search looked at. Null everywhere else, so positions without a deep
+   row, and every constructed fixture, grade exactly as gradeRow does. */
+function deepRow(row,key){
+  return (row&&typeof DEEP!=="undefined"&&typeof EVL!=="undefined"&&EVL[key]===row&&DEEP[key])||null;
+}
+const LENIENT=["losing","inferior","concession","equal","best"];
+/* gradeMove(row, pos, mv): gradeRow, except at a deep-checked position, where the
+   move gets the MORE GENEROUS of its two verdicts: the page never penalises a move
+   either depth accepts. A depth that did not search the move has no verdict and
+   gives way to one that did; on an equal verdict the depth-20 record stands, so
+   agreement changes nothing. The record returned is the chosen depth's own, with
+   its own numbers and why.depth. Where one depth accepts the move and the other
+   does not, split holds both sides - [{d,verdict,cp,mate,lossCp}, ...] depth 20
+   first - so the caller can say the two searches disagree, with both numbers. */
+function gradeMove(row,pos,mv){
+  const a=gradeRow(row,pos,mv),deep=deepRow(row,a.key);
+  if(!deep)return a;
+  const b=gradeRow(deep,pos,mv);
+  if(b.analysis!=="checked")return a;
+  if(a.analysis!=="checked")return b;
+  const g=LENIENT.indexOf(b.verdict)>LENIENT.indexOf(a.verdict)?b:a;
+  const acc=r=>GRADE.accept.indexOf(r.verdict)>=0;
+  if(acc(a)!==acc(b))g.split=[a,b].map(r=>({d:r.why.depth,verdict:r.verdict,cp:r.cp,mate:r.mate,lossCp:r.lossCp}));
+  return g;
+}
 /* isSetupMove(targets, pos, m): the structural half of setup credit, lifted from
    setupMove in app.js so the fixture and the app test one rule. The move puts the
    right piece on one of the formation's squares and is not a shuffle from one
@@ -522,7 +551,7 @@ function isSetupMove(targets,pos,m){
    matters more than the order it goes up in" may be said of this move here.
    Returns {credit, reason, grade}. credit is true only when the stored analysis
    backs the claim on both sides: the row's own first choice is itself a formation
-   move (so the position tolerates building - when the engine wants ...h5 or a
+   move (so the position tolerates building - when the engine wants a flank strike or a
    central break, the order matters and the claim is false however safe the wall
    move looks to a four-ply material search), and the move played grades best or
    equal against it. reason is one of:
@@ -547,11 +576,15 @@ function setupGate(row,pos,mv,targets){
   out.grade=gradeMove(row,pos,m);
   // The first choice, and anything tied with it to the centipawn (hip-150 ply 11:
   // c5 -78, Nd7 -78 - the table itself says the wall move is a joint first
-  // choice there). A tie is exact; the noise band is not applied here, or the
-  // storm tabiya's Nd7 at 11 cp behind h5 would reopen the gate the fixture
-  // exists to keep shut.
-  const top=row.m.filter(e=>cmpScore(e,row.m[0])===0).map(e=>findMove(pos,e[0]));
-  if(!top.some(bm=>bm&&isSetupMove(targets,pos,bm))){out.reason="demanding";return out;}
+  // choice there). A tie is exact; the noise band is not applied here, or every
+  // wall move within 30 cp of a concrete first choice would reopen the gate.
+  // At a deep-checked position both depths must say demanding before the gate
+  // refuses: at hip-150 ply 13 depth 20 puts ...h5 first (...Nd7 11 cp behind)
+  // and depth 28 puts ...Nd7 first (...h5 1 cp behind), so the gate is open there.
+  const demanding=r=>!r.m.filter(e=>cmpScore(e,r.m[0])===0).map(e=>findMove(pos,e[0]))
+    .some(bm=>bm&&isSetupMove(targets,pos,bm));
+  const deep=deepRow(row,posKey(pos));
+  if(demanding(row)&&(!deep||demanding(deep))){out.reason="demanding";return out;}
   if(out.grade.verdict==="unknown"){out.reason="unanalysed";return out;}
   if(out.grade.verdict==="best"||out.grade.verdict==="equal"){out.credit=true;out.reason="in-band";return out;}
   out.reason="out-of-band";

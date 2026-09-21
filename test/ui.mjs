@@ -270,23 +270,37 @@ check("an only-move position stays demanding",
     demand[0].msg.includes("asks for something concrete") && !refused(demand[1]),
   demand[0].msg);
 
-// The hip-150 storm tabiya, the defect research/GRADING.md §6 settles: the engine
-// wants ...h5, so no wall move gets the move-order sentence here. ...h6 is not in
-// the table at all and must therefore cost nothing.
-const storm = await probe("hip-150", 13, ["Nd7", "a6", "h6", "h5"]);
+// The hip-150 storm tabiya, research/GRADING.md §6. Depth 20 puts ...h5 first
+// with ...Nd7 11 cp behind; depth 28 puts ...Nd7 -61 first with ...h5 -62. The
+// gate calls a position demanding only where both depths do, so here the wall
+// moves the table scores are credited, and ...h5 is accepted as well.
+const storm = await probe("hip-150", 13, ["Nd7", "a6", "h5"]);
 const stormH5 = await page.evaluate(() => {
   const li = LINES.findIndex((l) => l.id === "hip-150");
   const pos = posAt(LINES[li], 13), row = evalFor(pos);
   const m = legal(pos).find((x) => san(pos, x) === "h5");
   return gradeMove(row, pos, m).verdict;
 });
-check("the storm tabiya refuses the wall moves and accepts ...h5",
-  storm.slice(0, 3).every((r) => r.reason === "demanding" && !r.msg.includes("builds the setup")) &&
-    !refused(storm[3]) && stormH5 === "best",
+check("the storm tabiya credits the scored wall moves and accepts ...h5",
+  storm.slice(0, 2).every((r) => r.reason === "in-band" && r.msg.includes("builds the setup")) &&
+    !refused(storm[2]) && stormH5 === "best",
   storm.map((r) => r.san + ": " + r.reason).join(" | ") + " · h5 grades " + stormH5);
+// A wall move neither depth searched, at a position both depths call demanding
+// (1.e4: first choice ...c5 at depth 20, ...c6 at depth 28, neither a wall move):
+// unanalysed, so it must cost nothing.
+const unan = await probe("hip-e4", 1, ["h6"]);
 check("an unanalysed move is said to be unanalysed and costs nothing",
-  storm[2].msg.includes("has not searched this move") && free(storm[2]) && storm[2].ply === 13,
-  storm[2].msg);
+  unan[0].reason === "demanding" && unan[0].msg.includes("has not searched this move") &&
+    free(unan[0]) && unan[0].ply === 1,
+  unan[0].msg);
+// Where the two depths disagree on accepting a move, it is accepted and the page
+// says the searches disagree, with both stored numbers: kolt ply 24 Re1 is 45 cp
+// behind at depth 20 and 26 at depth 28.
+const split = await probe("kolt", 24, ["Re1"]);
+check("a move only one depth accepts is accepted and the disagreement is stated",
+  !refused(split[0]) && free(split[0]) && split[0].msg.includes("two searches disagree") &&
+    split[0].msg.includes("depth 20") && split[0].msg.includes("45 behind") && split[0].msg.includes("26 behind"),
+  split[0].msg);
 
 // 4.c3 against 3...Bf5 is the autopilot move: scored, 36 cp behind 4.c4, playable
 // and priced. The number must be on screen and the drill must carry on.
@@ -1111,6 +1125,78 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
   check("a deliberate-mistake line asks to be repaired, not reproduced",
     ok(rep.trap) && ok(rep["syn-hipdown"]),
     JSON.stringify({ trapOwn: rep.trap.own.msg.slice(0, 70), trapBetter: rep.trap.better.msg.slice(0, 70) }));
+}
+
+// Position details and common mistakes. Invariant 4 over the whole repertoire:
+// while a question is live, the details panel shows nothing that names the move,
+// its squares or its piece's squares, in Drill and in Shuffle; Shuffle also hides
+// the line's name. Once answered, a common mistake is a counted choice the grader
+// prices as a concession or worse, printed with its stored count and score.
+{
+  const info = await page.evaluate(() => {
+    const out = { live: 0, leaks: [], shuffleName: [], hidden: [], answered: 0, sample: null, offbook: null, shuffleCtx: null, notMistake: [] };
+    const reset = (mode, li, ply) => {
+      S.screen = "board"; S.mode = mode; S.li = li; S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0;
+      S.passKeys = new Set(); clearFree(); if (S.pending && S.pending !== 1) clearTimeout(S.pending); S.pending = 0;
+    };
+    LINES.forEach((l, li) => {
+      for (const p of drillPlies(l)) {
+        const want = l.moves[p];
+        for (const mode of ["line", "shuffle"]) {
+          reset(mode, li, p); render(false);
+          const txt = el("infoTxt").textContent;
+          if (el("infoBox").style.display === "none") { out.hidden.push(l.id + ":" + p + ":" + mode); continue; }
+          out.live++;
+          if (refuteLeaks(txt, want[0], want[1])) out.leaks.push(l.id + ":" + p + ":" + mode + " " + txt.slice(0, 80));
+          if (mode === "shuffle" && l.name && txt.indexOf(l.name) >= 0) out.shuffleName.push(l.id + ":" + p);
+        }
+        // every priced mistake is priced, counted and never a move some line plays here
+        const pos = posAt(l, p);
+        for (const c of commonMistakes(pos)) {
+          if (["concession", "inferior", "losing"].indexOf(c.grade.verdict) < 0 || c.g < CHO_FLOOR.games ||
+            c.n < CHO_FLOOR.parent || c.g / c.n < CHO_FLOOR.share || (BOOKAT[keyFen(pos)] || new Set()).has(c.uci))
+            out.notMistake.push(l.id + ":" + p + " " + c.san);
+        }
+        if (!out.sample && !NO_SHUFFLE.has(l.id) && commonMistakes(pos).length) out.sample = { li, p, id: l.id };
+      }
+    });
+    if (out.sample) {
+      const { li, p } = out.sample, l = LINES[li], pos = posAt(l, p), c = commonMistakes(pos)[0];
+      out.sample.mistake = c.san; out.sample.count = c.g + " of " + c.n;
+      // answered, in Drill: the panel describes the board just answered
+      reset("line", li, p + 1); render(false);
+      out.sample.panel = el("infoTxt").textContent; out.answered = el("infoBox").style.display !== "none";
+      // the mistake itself played in Drill: refused, priced, and its count named
+      reset("line", li, p); render(false);
+      const m = legal(pos).find((x) => uciOf(x) === c.uci);
+      playMove(pos, sq(m.t), m);
+      out.offbook = el("nMsg").textContent;
+      // the right move in Shuffle: the context block carries the common mistake
+      reset("shuffle", li, p); render(false);
+      const w = findMove(pos, l.moves[p][0]);
+      playMove(pos, sq(w.t), w);
+      out.shuffleCtx = el("nText").textContent;
+      if (S.pending && S.pending !== 1) clearTimeout(S.pending);
+      reset("line", li, 0);
+    }
+    stats.pos = {};
+    return out;
+  });
+  check("details panel never leaks the live answer (Drill and Shuffle, every drill ply)",
+    info.live > 0 && info.leaks.length === 0 && info.shuffleName.length === 0 && info.hidden.length === 0,
+    JSON.stringify({ live: info.live, leaks: info.leaks.slice(0, 3), shuffleName: info.shuffleName.slice(0, 3), hidden: info.hidden.slice(0, 3) }));
+  check("every common mistake is counted over the floor, priced as a mistake, and no line's move",
+    info.notMistake.length === 0, info.notMistake.slice(0, 3).join(" | "));
+  const s = info.sample || {};
+  check("answered position shows its common mistake with the stored count",
+    !!info.sample && info.answered && s.panel.indexOf(s.mistake) >= 0 && s.panel.indexOf(s.count + " counted games") >= 0 &&
+      /Stockfish 16, depth \d+/.test(s.panel), JSON.stringify(s).slice(0, 300));
+  check("playing a common mistake is priced and says how often players chose it",
+    !!info.offbook && /centipawns? behind/.test(info.offbook) && info.offbook.indexOf("chose it here in " + s.count) >= 0,
+    (info.offbook || "").slice(0, 200));
+  check("Shuffle's answer names the common mistake",
+    !!info.shuffleCtx && /A common (mistake|concession) here/.test(info.shuffleCtx) && info.shuffleCtx.indexOf(s.mistake) >= 0,
+    (info.shuffleCtx || "").slice(-200));
 }
 
 check("app never calls fetch", fetches.length === 0, fetches.join(" | "));
