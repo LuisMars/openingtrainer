@@ -34,40 +34,31 @@ when the owner has chosen, and the code and README match the choice.
 
 ---
 
-## Verify
-
-**VERIFY — The in-system rule and the opaque arrows on a phone.** Shipped in
-`5858f8a`. Check at phone width: Colle move 1 answered (arrows for d4 and
-Nf3, none for e4); 1.e4 refused as "not a Colle move here"; the
-`h-nf3bc4` castling arrow over the e8 king; the Rhamphorhynchus 1.Nf3 order
-still credited; an out-of-order Hippo wall move still credited. Done when
-the owner has looked, or a defect from the look is filed here as a BUG.
-
----
-
 ## Bugs
 
-**BUG — Shuffle refuses every Hippo move after 1.d4 when it serves a
-defence line.** Owner report with a phone screenshot, 2026-09-22: Shuffle
-showed "Black to play · Colle as White · Defending the Koltanowski clamp:
-...h6 first" after 1.d4, and "none of the basic hippo moves are valid". The
-cause: `def-kolt` and `def-ohanlon` are Black lines in the Colle chapter, so
-their early boards (1.d4, 1.d4 d5 2.Nf3 …) are served in Shuffle. The
-in-system rule counts only moves from lines of the same chapter and side,
-so ...g6, ...e6 and the other wall moves are refused as "not a move of the
-defence this chapter trains", and only the game's ...d5 is accepted. The
-header "Colle as White" over "Black to play" also misleads. The lesson of
-those lines is the defence (10...h6 in `def-kolt`, the Greek-gift defence
-in `def-ohanlon`), not O'Hanlon's opening moves. Proposed fix: drill a
-defence line only from the ply where the defence starts. Earlier plies
-play themselves, the same way the opponent's moves do, so Shuffle never
-serves a move-1 board under a defence line. Files: `src/data/lines.js` (a
-first-drill-ply field on the two lines), `src/app.js` (`drillPlies`, and
-the chapter label for Black-to-play boards in the Colle chapter), and
-`test/ui.mjs`. Verified by a UI check that Shuffle serves no `def-*` board
-before its first drill ply, and that ...g6 after 1.d4 in Shuffle is
-credited or sent to a Hippo line. Done when a Hippo player never meets a
-board where the Hippo move is refused because a defence line owns it.
+**BUG — Stay inside the learner's system: Colle as White, Hippo as Black.**
+The owner's rule (2026-09-22): "We're playing the Colle system and the
+Hippo, not all should be accepted." The in-system rule shipped in `5858f8a`,
+but it is not complete:
+- **Defence lines take over Hippo boards.** Owner report with a phone
+  screenshot: Shuffle showed "Black to play · Colle as White · Defending the
+  Koltanowski clamp" after 1.d4, and "none of the basic hippo moves are
+  valid". `def-kolt` and `def-ohanlon` are Black lines in the Colle chapter,
+  so their opening boards are served in Shuffle and only the game's ...d5 is
+  in the system there. Their lesson is the defence (10...h6, the Greek-gift
+  defence), not O'Hanlon's opening. Proposed: drill a defence line only
+  from the ply where the defence starts, let earlier plies play themselves,
+  and never label a Black-to-play board "Colle as White".
+- **Still to check on a phone:** Colle move 1 answered (arrows for d4 and
+  Nf3, none for e4); 1.e4 refused as "not a Colle move here"; the
+  Rhamphorhynchus 1.Nf3 order credited; an out-of-order Hippo wall move
+  credited; the `h-nf3bc4` castling arrow over the e8 king.
+Files: `src/data/lines.js` (a first-drill-ply field on the defence lines),
+`src/app.js` (`drillPlies`, `inSystem`, the chapter label), `test/ui.mjs`.
+Verified by a UI check that Shuffle serves no `def-*` board before its first
+drill ply, that ...g6 after 1.d4 is credited in Shuffle, and by the phone
+checks above. Done when a Hippo player never has a Hippo move refused
+because another chapter's line owns the board, and the phone checks pass.
 
 **BUG — Two accepted moves from one square draw overlapping arrows.** For
 example ...d6 and ...d5 from d7: the shorter arrow sits inside the longer.
