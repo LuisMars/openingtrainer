@@ -1259,6 +1259,7 @@ Fifteen `synthetic` lines: `c-englund`, `c-bb4`, `c-2c6`, `c-1c6`, `c-1d6`,
   that gives the answer away.
 - "Arrows on the board" toggle, on by default, stored as an optional
   setting (no key bump). Flip-correct, scales with the board.
+- Accepted-move arrows are violet (#a970f0), distinct from the green first choice.
 - Known cosmetic issue: two accepted moves from the same square overlap
   (e.g. ...d6 and ...d5).
 - Known timing issue: under load average 20+, the worker can miss its 8 s
