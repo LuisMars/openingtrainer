@@ -58,13 +58,17 @@ already used anywhere else is a silent build break that only shows at runtime.
 4. **Hints must never contain the answer.** `moveClue()` rejects any clue containing
    the move's notation, its origin or destination square, or the piece name. If you add
    clue sources, keep that filter.
-5. **Storage keys are versioned** (`colle-hippo:v5`). If the shape of `stats` changes,
+5. **Storage keys are versioned** (`colle-hippo:v6`). If the shape of `stats` changes,
    bump the key and migrate, or users silently lose progress. The v3 to v4 bump was a
    deliberate clean reset: positions are keyed by position identity now, not `line:ply`,
    and no remapping was written. The v4 to v5 bump was the opposite — adoption, not reset.
    Records gained an optional `w` (a bounded SAN-to-count map of the wrong moves actually
    played) and the keys did not change, so `load()` reads a v4 blob verbatim and rewrites
-   it as v5. `validateImport()` still accepts v4 and unstamped-v4-shaped backups.
+   it as v5. The v5 to v6 bump was adoption again: records gained an optional `a` (the
+   accepted moves the user has found at that position, so mastery needs more than one
+   answer where the table accepts several), and the stats blob gained two settings, `freqW` (occurrence weighting) and `recog`.
+   `load()` tries v6, then v5, then v4, and rewrites what it finds as v6.
+   `validateImport()` still accepts v4, v5 and unstamped-v4-shaped backups.
    The lichess token lives under its own key, deliberately outside this blob: it is not
    progress, so it must never travel in an export and must survive a Reset.
 6. **Persistence order is `window.storage`, then `localStorage`, then memory.** An

@@ -165,6 +165,14 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
 - **Shuffle weights**: due 3.0, new 2.2, learning 1.6, solid 0.2, plus 0.8 if you have been slow there.
   The position you just saw is excluded. While anything is due, everything that is not due is cut to a
   tenth, so a backlog is worked off rather than merely competing for draws — it still interleaves.
+- **Positions that come up more often come up more often** (*Favour positions that come up*,
+  on by default). Each position's weight is multiplied by 0.55 to 1.5 according to how often it
+  was reached in the counted player games (see `research/METHOD.md`). Due reviews are never
+  reweighted, so they still come first. A position the count never reached is left at 1, not
+  treated as rare, and a handful of rare but forcing counters are held at 1 as well.
+- **Solid needs a second good move** (on by default). Where the table accepts two or more moves
+  within 30 centipawns of the best, a position counts as *solid* only once you have found two
+  different accepted moves there. Where one move is accepted, one answer is enough.
 - **Hint cost**: the first two tiers are neutral (no streak gain, no accuracy hit); "Show me" counts as a miss.
 - **Illegal moves cost nothing.** A legal but non-repertoire move is named back to you and comes with
   the same clue Hint's first tap would give — never the move itself — so a second wrong try is not told
@@ -238,6 +246,8 @@ solutions were validated the same way.
   you actually played, so the Progress screen can say "usually Bd3 (4×)" rather than a bare miss rate.
   Five distinct wrong moves are kept per position; rarer ones are evicted.
 - Progress lives in this browser's storage. Export from the Progress screen after any serious session.
+  Updating the page keeps it: progress saved by earlier versions (v4 and v5) is read and rewritten
+  in the current format on load, and backups exported from them still import.
 - **The offline promise is conditional, not absolute.** Everything except one panel works on a plane. The
   masters panel on the Study screen is the only online feature: it fetches from `explorer.lichess.org`, it
   needs a lichess token you supply yourself, and it does not appear until you store one — lichess made the

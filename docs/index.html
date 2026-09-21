@@ -1063,13 +1063,21 @@ function matOrder(p,ms){
 }
 /* Quiescence: captures only (and queening), so the search never stands on a
    position where half an exchange is still hanging. Two shaping rules keep it from
-   exploding - both were measured to matter, not guessed. After two quiescence plies
-   only recaptures on the square just captured on are tried: an exchange still runs
-   to the end (that is the whole point of quiescing), but unrelated capture flurries
-   across the board stop multiplying. And a capture that cannot lift the score to
-   alpha even if the victim came free is skipped. Both trim the tree towards
-   "exchanges resolve, nothing else", which is exactly the claim the caller makes
-   with the result.
+   exploding: captures are tried best-looking first (matOrder), and a capture that
+   cannot lift the score to alpha even if the victim came free is skipped.
+   Every capture is tried at every quiescence ply. An earlier rule tried only
+   recaptures on the square just captured on after the first ply, and it was
+   unsound, not just a trim: a capture elsewhere that wins the material back, or a
+   piece left hanging by the exchange, was invisible, so the search stood pat a pawn
+   down and matVerdict claimed a swing the position does not have - measured against
+   the exact reference in tools/check-matsearch.mjs, 13 overclaims in 3,879
+   comparisons, five of which reached the user as a false sentence. Dropping it
+   costs about a fifth more nodes on average and turns 25 of 3,880 sampled
+   verdicts into budget misses (was 1); a budget miss is silence, not a claim.
+   Delta pruning is still not exact: a capture that gives check denies the
+   opponent a stand-pat, so it can win more than its victim. One sampled verdict
+   (ohanlon:28 g4) would overclaim for that reason if MAT_CAP were raised enough
+   to finish it; at the current budget it is silent. See tools/check-matsearch.mjs.
    In check there is no stand-pat at all. A side in check cannot decline to move,
    so the static score is not a lower bound on what it can hold, and a cutoff taken
    on it is a bound the node cannot claim - measured, on R6k/1R6/8/8/8/8/q7/6K1 b
@@ -1081,7 +1089,7 @@ function matOrder(p,ms){
    Termination of a long checking sequence rests on MAT_CAP: a check chain that will
    not resolve spends the budget and the caller gets null, which is the honest
    answer, not a wrong one. */
-function matQuiesce(p,alpha,beta,ply,qd,lastTo){
+function matQuiesce(p,alpha,beta,ply){
   if(++matNodes>MAT_CAP)throw MAT_STOP;
   const stand=(p.w?1:-1)*matBal(p.b),chk=inCheck(p);
   if(!chk){
@@ -1099,15 +1107,9 @@ function matQuiesce(p,alpha,beta,ply,qd,lastTo){
       // material search skips them here; matOrder still ranks them if a full-width
       // ply above hands one over.
       if(m.p&&m.p!=="q")continue;
-      if(qd>=1&&m.t!==lastTo&&!m.p)continue;
       if(stand+v<alpha)continue;
     }
-    // A check evasion is not a capture, so it must not consume a quiescence ply:
-    // qd (and with it the recaptures-on-lastTo-only rule) is carried through
-    // unchanged. Incrementing it here would let the evasion be searched and then
-    // score the position after it at stand-pat anyway, because nothing recaptures
-    // on the square the king stepped to - which is the bug this was meant to fix.
-    const s=-matQuiesce(make(p,m),-beta,-alpha,ply+1,chk?qd:qd+1,chk?lastTo:m.t);
+    const s=-matQuiesce(make(p,m),-beta,-alpha,ply+1);
     if(s>=beta)return s;
     if(s>alpha)alpha=s;
   }
@@ -1115,7 +1117,7 @@ function matQuiesce(p,alpha,beta,ply,qd,lastTo){
 }
 function matSearch(p,depth,alpha,beta,ply){
   if(++matNodes>MAT_CAP)throw MAT_STOP;
-  if(depth===0)return matQuiesce(p,alpha,beta,ply,0,-1);
+  if(depth===0)return matQuiesce(p,alpha,beta,ply);
   const ms=legal(p);
   if(!ms.length)return inCheck(p)?-(MATE-ply):0;
   matOrder(p,ms);
@@ -1150,7 +1152,7 @@ function matVerdict(pos,m){
     // tight window instead of being searched in full. Measured, this and the
     // ordering rules above are the difference between fitting the node budget on
     // a full opening position and blowing it on half of them.
-    const seed=replies.map(r=>[-matQuiesce(make(after,r),-MATE,MATE,1,1,r.t),r]);
+    const seed=replies.map(r=>[-matQuiesce(make(after,r),-MATE,MATE,1),r]);
     seed.sort((a,b)=>b[0]-a[0]);
     let best=null,bestS=-MATE-1;
     for(const [,r] of seed){

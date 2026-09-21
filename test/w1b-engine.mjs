@@ -43,7 +43,7 @@ if (!fail) console.log("✓ castling notation takes the check and mate suffix");
   const p = fenPos("3q3k/5N2/8/8/8/8/8/5RK1 b - - 0 1");
   if (!inCheck(p)) bad("test position should have Black in check");
   if (legal(p).some((m) => p.b[m.t])) bad("test position should have no capture evasions");
-  eq(matQuiesce(p, -1000, 1000, 0, 0, -1), -8, "quiescence sees quiet check evasions");
+  eq(matQuiesce(p, -1000, 1000, 0), -8, "quiescence sees quiet check evasions");
 }
 //    And a node in check must not cut on stand-pat: here stand-pat is -1, so the
 //    old code returned it against beta -500 as if it were a bound it could claim.
@@ -51,8 +51,8 @@ if (!fail) console.log("✓ castling notation takes the check and mate suffix");
 {
   const p = fenPos("R6k/1R6/8/8/8/8/q7/6K1 b - - 0 1");
   if (!inCheck(p)) bad("test position should have Black in check");
-  eq(matQuiesce(p, -1000, 1000, 0, 0, -1), 4, "quiescence resolves the capture in check");
-  const s = matQuiesce(p, -1000, -500, 0, 0, -1);
+  eq(matQuiesce(p, -1000, 1000, 0), 4, "quiescence resolves the capture in check");
+  const s = matQuiesce(p, -1000, -500, 0);
   if (s < -500) bad(`in-check fail-high should rest on a searched score, got ${s}`);
 }
 if (!fail) console.log("✓ quiescence searches check evasions instead of standing pat");
@@ -67,7 +67,7 @@ if (!fail) console.log("✓ quiescence searches check evasions instead of standi
   eq(gains["h2g1q"], 13, "capture-promotion counts victim and promotion");
   // A quiet promotion used to be invisible to quiescence (victim 0 meant "skip").
   const q = fenPos("8/P7/8/8/8/8/7k/K7 w - - 0 1");
-  eq(matQuiesce(q, -1000, 1000, 0, 0, -1), 9, "quiescence plays out a quiet promotion");
+  eq(matQuiesce(q, -1000, 1000, 0), 9, "quiescence plays out a quiet promotion");
 }
 if (!fail) console.log("✓ promotions are valued as the promoted piece");
 
@@ -175,6 +175,32 @@ const replay = (sans) => {
   const sound = matVerdict(p, findMove(p, "d2d3"));      // a quiet book move
   if (sound && sound.swing >= 1) bad(`d3 should not be refuted, swing ${sound.swing}`);
   if (!fail) console.log("✓ material search refutes a blunder and stays silent on a sound move");
+}
+
+// 7. Quiescence tries every capture at every ply. It used to try only recaptures
+//    on the square just captured on after the first ply, so a capture elsewhere
+//    that won the material back was invisible and matVerdict claimed a pawn swing
+//    the exact reference in tools/check-matsearch.mjs denies. These are the five
+//    moves where that false claim reached the user; each must now get a verdict
+//    (not a budget miss, which would pass vacuously) and claim nothing.
+{
+  const cases = [
+    ["syn-hipc5:21", "r2qk2r/1bpnnpb1/pp1pp1pp/3P4/P3P3/2N1BN2/1PPQBPPP/3R1RK1 b kq - 0 1", ["g7c3", "h6h5", "a8b8"]],
+    ["anti:16", "r3kb1r/ppqn1ppp/2p1pn2/2PpNb2/3P4/1Q1BP3/PP3PPP/RNB1K2R w KQkq - 0 1", ["d3f1", "e1d2", "h1f1"]],
+    ["eco-london:6", "rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq c6 0 1", ["g2g4"]],
+    ["h-g4storm:11", "rnbqk1nr/1pp1ppb1/p2p2p1/7p/3PP1P1/2N1BP2/PPP4P/R2QKBNR b KQkq - 0 1", ["c7c5"]],
+  ];
+  for (const [id, fen, ucis] of cases) {
+    const p = fenPos(fen);
+    for (const u of ucis) {
+      const m = findMove(p, u);
+      if (!m) { bad(`${id} ${u} is not legal`); continue; }
+      const v = matVerdict(p, m);
+      if (!v) bad(`${id} ${san(p, m)} ran out of budget`);
+      else if (v.swing >= 1) bad(`${id} ${san(p, m)} claims a swing of ${v.swing} (reference: 0), reply ${v.san}`);
+    }
+  }
+  if (!fail) console.log("✓ quiescence sees captures that win material back, not only recaptures");
 }
 
 console.log(fail ? `\n${fail} check(s) failed.` : "\nAll w1b engine checks passed.");

@@ -1094,3 +1094,15 @@ commit and push.
 - `npm test`: exit 0, 97 checks. Page 412,195 bytes raw, 147,451 gzipped,
   under the 448 KB budget (raised from 400 KB, see above; reversible).
 - Item 8 (material-search measurement) still open.
+- Item 8 closed. The 13 overclaims were real: `matQuiesce` tried only
+  recaptures on the last capture square after the first quiescence ply. Five
+  reached the user as "a pawn's worth of material does not come back" where
+  nothing checked it. Rule removed. `tools/check-matsearch.mjs` over 485
+  positions x 8 moves: 3,855 compared, 0 overclaims, 2 underclaims (silent),
+  25 cap hits (silent). Regression section 7 in `test/w1b-engine.mjs` fails
+  8/8 on the old engine, passes on the new. Cost: mean nodes per verdict
+  14,390 -> 16,377. Known limit: delta pruning can skip a checking capture;
+  that is why MAT_CAP stays at 60,000 (raising it made ohanlon:28 g4
+  overclaim).
+- Page size: the user does not treat it as a constraint (2026-09-21).
+- `npm test`: exit 0, 98 checks.
