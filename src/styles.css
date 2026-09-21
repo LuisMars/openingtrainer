@@ -63,6 +63,11 @@
   /* memory-only notice: the same amber "read this" idiom as the off-book banner */
   .store{margin:0 0 10px;padding:8px 11px;background:rgba(224,161,60,.1);
     border:1px solid rgba(224,161,60,.35);color:#d9c9a8;font-size:12.5px}
+  /* the learner's level: text carries the numbers, the bar only echoes them */
+  .lvl{display:flex;align-items:center;gap:10px;margin:-6px 0 12px;
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--dim)}
+  .lvl span:first-child{flex:1;min-width:0}
+  .lvl .pbar{width:72px}
   .card{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;background:var(--panel);
     border:1px solid var(--line);border-left:3px solid transparent;padding:13px 14px;margin-bottom:7px}
   .card:hover{background:var(--panel2)}

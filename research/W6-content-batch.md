@@ -1,0 +1,195 @@
+# W6 — the next content batch: ranking, cut-off, and what was built
+
+The coverage matrix listed 235 counted opponent replies with no line (88 covered,
+14 transposing). This note ranks them, states where the batch stopped and why,
+and records the fifteen lines built. After the batch the matrix reads
+**covered 102, transposes 16, missing 219**.
+
+Frequency is not quality. Nothing here says a common move is good or a rare one
+bad; the three factors are kept apart as METHOD.md requires and never combined
+into a score.
+
+## 1. How the ranking was computed
+
+**Reach, not conditional share.** For every `missing` reply in the three
+rating-band files (`research/freq-{colle,hippo}-player-{u1500,1500-1899,1900}.json`)
+the probability of meeting it was taken as the product of the opponent's
+conditional shares along the path from the start, with the learner's own moves
+passed through at probability 1. For the Colle that is "per game in which the
+learner opens 1.d4"; for the Hippopotamus "per game the learner plays Black".
+The default band is 1500–1899; the other two are printed beside it.
+
+**Whose move order.** The learner's own moves were taken only from lines that are
+not `eco`. Without that filter the top of the list is `1.Nf3 d5` (35% reach),
+`1.Nf3 e6` and the Bf4/Bg5 orders, which exist only because `eco-rham`,
+`eco-london` and `eco-torre` are recognition lines for sister systems. A player
+who opens 1.d4 does not meet them. They are excluded, not hidden: 1.Nf3 d5 still
+reads `missing` in the matrix.
+
+**What follows a gap.** The probe tree has no data past an unanswered reply
+(METHOD.md, "blind spot"). The opponent's continuations in the new lines were
+chosen from a literal move-order count of the same dump, same bands:
+`tools/count-prefix.mjs` (new). It matches SAN text, not positions, so its
+counts are floors for the position. Every such count quoted in a note says
+"games in the band" and is from this tool.
+
+## 2. The ranking (1500–1899 reach; u1500 / 1900+ beside it)
+
+| # | gap | reach | u1500 | 1900+ | disposition |
+|---|---|---|---|---|---|
+| 1 | 1.e4 d6 2.Nf3 | 16.84% (2,907/10,411) | 16.37% | 8.49% | **built** `h-d6nf3` (conditional on the learner choosing 1...d6) |
+| 2 | 1.e4 g6 2.Bc4 | 5.89% (876/8,962) | 9.37% | 1.21% | **built** `h-bc4`, with 3.Qf3 (220 of 736 at the next node) |
+| 3 | 1.e4 d6 2.f4 | 5.25% | 2.16% | 3.03% | not built: 1...d6 order, see §3 |
+| 4 | 1.e4 d6 2.Bc4 | 5.16% | 8.47% | 0.94% | not built: 1...d6 order |
+| 5 | 1.e4 g6 2.f4 | 4.90% (728/8,962) | 2.15% | 3.68% | **built** `h-f4` |
+| 6 | 1.e4 d6 2.d4 Nf6 3.Bd3 | 4.50% | 2.27% | 6.36% | not built: 1...d6 order |
+| 7 | 1.d4 d5 2.Nf3 c6 | 4.40% (830/8,159) | 2.57% | 6.08% | **built** `c-2c6` |
+| 8 | 1.d4 d6 | 4.39% (4,830/109,938) | 3.93% | 6.86% | **built** `c-1d6` |
+| 9 | 1.e4 g6 2.Nf3 Bg7 3.Bc4 | 3.85% (505/2,000) | 4.24% | 1.05% | **built** `h-nf3bc4` |
+| 10 | 1.d4 b6 | 3.72% (4,093/109,938) | 2.63% | 3.71% | **built** `c-1b6` |
+| 11 | 1.d4 d5 2.Nf3 Bf5 | 3.44% (649/8,159) | 3.68% | 1.29% | **built** `c-2bf5` |
+| 12 | 1.d4 c6 | 3.38% (3,721/109,938) | 2.21% | 3.85% | **built** `c-1c6` |
+| 13 | 1.d4 g6 2.Nf3 | 3.37% (728/5,419) | 2.32% | 5.02% | **built** `h-d4nf3` |
+| 14 | 1.e4 d6 2.Nc3 | 3.14% | 3.02% | 2.74% | not built: 1...d6 order |
+| 15 | 1.e4 d6 2.d3 | 3.05% | 2.64% | 1.01% | not built: 1...d6 order |
+| 16 | 1.e4 g6 2.d3 | 2.83% | 2.90% | 1.98% | not built: folds into `h-2nf3`'s shape |
+| 17 | 1.e4 g6 2.Nc3 | 2.82% | 2.88% | 3.07% | not built: 2...Bg7 3.d4 is the main line |
+| 18 | 1.e4 g6 2.d4 Bg7 3.c3 | 2.73% | 1.76% | 3.25% | not built: no decision, the wall goes up |
+| 19 | 1.d4 d5 2.Nf3 e6 3.e3 c5 | 2.57% | 2.41% | 1.67% | not built: 4.Bd3 Nf6 rejoins `ck` |
+| 20 | 1.d4 e5 | 2.40% (2,640/109,938) | 3.15% | 2.57% | **built** `c-englund` (also critical, §4) |
+| 21 | 1.e3 | 2.40% | 4.65% | 1.67% | not built: folded into `h-g3` in batch 3 |
+| 22 | 1.d4 d5 2.Nf3 c5 | 2.27% (428/8,159) | 2.29% | 1.11% | **built** `c-2c5` (also critical, §4) |
+| 23 | 1.e4 g6 2.d4 Bg7 3.Be3 | 2.25% | 0.83% | 2.52% | not built: joins the Be3 tabiya after Nc3 |
+| 24 | 1.d4 g6 2.e3 | 2.24% | 3.35% | 1.15% | not built: same shape as `h-d4nf3` |
+| 25 | 1.d4 d5 2.Nf3 Bg4 | 2.20% (415/8,159) | 3.80% | 0.44% | **built** `c-2bg4` |
+| — | *cut-off* | | | | |
+| 26 | 1.d4 e6 2.Nf3 c5 | 1.99% | 1.84% | 0.71% | next |
+| 27 | 1.d4 d5 2.Nf3 Nc6 3.e3 Nf6 | 1.93% | 4.11% | 0.50% | next |
+
+## 3. The cut-off, and the rows above it that were not built
+
+The batch stops at 2.20% (row 25). The next row is 1.99% (1...e6 2.Nf3 c5), and below it every gap is under 2%
+in the default band, most of them Colle move orders that rejoin a line within
+two moves or Hippopotamus orders in which the wall simply goes up. Stopping there, rather than
+at a round number, is the plan's rule: stop where the next gap is marginal.
+
+Twelve rows above the line were not built, for two stated reasons:
+
+- **The 1...d6 order (rows 3, 4, 6, 14, 15).** Their reach assumes a learner
+  who always answers 1.e4 with 1...d6. Before this batch only `h-bg5` (synthetic) and two `eco`
+  lines taught that order; the repertoire's answer to 1.e4 is 1...g6 in every
+  other Black line. Of that fan, only 2.Nf3 was built, because it is the largest
+  (28% of White's replies to 1...d6) and because it funnels straight back into
+  the crouch. **2.f4 and 2.Bc4 after 1...d6 are the first candidates for the
+  next batch** and are recorded here as open.
+- **Fold-ins (rows 16–19, 21, 23, 24).** The reply is missing from the matrix
+  only because no line plays that exact order; one or two system moves later the
+  position is one the repertoire already drills. A line would teach nothing the
+  existing ones do not.
+
+## 4. Criticality: rare forcing replies, taken regardless of frequency
+
+From W1-C §3 and W1-D §3. Frequencies are printed only so nobody mistakes them
+for popular.
+
+| W1 ref | reply | reach (1500–1899) | disposition |
+|---|---|---|---|
+| C 3.1 | 1...e5, Englund Gambit | 2.40% | **built** `c-englund` |
+| C 3.2 | 3...Bb4+ (1.d4 Nf6 2.Nf3 e6 3.e3) | 0.21% (7/146 at the node) | **built** `c-bb4`; METHOD.md named it as undrilled |
+| C 3.4 | ...Qa5+ from another order | no data past the gap | **built** inside `c-2c5` (5.Bb5 Qa5+) |
+| C 3.5 | ...Bxf3 after 3...Bg4 4.h3 | below the 20-game floor | **built** `c-bxf3` |
+| C 3.6 | early ...cxd4 before c3/b3 | 33 of 109 at the node | **built** inside `c-2c5` |
+| C 3.3 | ...Qb6 against the b3 window | not measurable | open: needs a branch inside a Zukertort line |
+| C 3.7 | ...Ne4 in the c3 structure | 1/989 pgnmentor | open: same |
+| (new) | 2.Bc4 and 3.Qf3, two pieces on f7 | 220 of 736 after 2...Bg7 | **built** in `h-bc4` |
+| — | ...Bb4+ in other orders (1.d4 e6 2.Nf3 Bb4+) | 34 of 2,394 at the node | open |
+
+The five new positions of this kind that the trainer now drills are added to `FRQ_SHARP`
+(`tools/build-freq.mjs`), so rarity never demotes them: 3...Bb4+, ...Qa5+, the
+...Bxf3 recapture, early ...cxd4, and the f7 double attack.
+
+What the table says about them is the reason they matter:
+
+- **Englund.** After 4...Qb4+ only Bd2 (112) and Nc3 (35) keep a plus; Nbd2,
+  Qd2 and c3 are all below -300. After 5...Qxb2 (every one of the 33 games in
+  the band) Nc3 is 169 and the next move -202. Bc3, chosen by 18 of 32 players,
+  is not among the five the table keeps; the fifth is -343. After 6...Nb4, Nd4
+  is 210 and Rc1 38. All three narrow claims hold at depth 28.
+- **...Qa5+ in `c-2c5`.** Nc3 is -1; every other block is below -370, because
+  each leaves the b5 bishop unguarded. Holds at depth 28.
+- **...Bxf3.** It is Black's first choice after 4.h3 (-25, level with ...Bf5);
+  the ...Bh5 that `anti-bg4` assumes is 27 behind. Then Qxf3 is 45 ahead of
+  gxf3 (50 at depth 28).
+- **f7.** After 3.Qf3, ...e6 is 72 ahead of the next move (74 at depth 28).
+- **2.f4.** Not rare (row 5), but the finding is: ...Bg7, played by 598 of 726,
+  is 46 behind ...c5 in the table. The line drills ...c5.
+
+## 5. The lines
+
+All fifteen are tagged `synthetic`: built from the stored analysis, nobody's
+game, no book. `tools/build-eco.mjs` gives them opening names; none matches the
+CC0 data set move for move beyond its named prefix, so none is `eco`.
+SAN was produced by the engine; notes are keyed to the move (ply and SAN
+asserted together).
+
+| id | answers | drilled moves | grades |
+|---|---|---|---|
+| `c-englund` | 1...e5 2.dxe5 Nc6 3.Nf3 Qe7 4.Bf4 Qb4+ | 7 | 6 best, 1 equal |
+| `c-bb4` | 3...Bb4+ in the Nf6/e6 order | 6 | 3 best, 3 equal |
+| `c-2c6` | 2...c6 3.e3 Bg4 | 7 | 2 best, 5 equal |
+| `c-1c6` | 1...c6 2.Nf3 d5 3.e3 Bf5 | 6 | 3 best, 3 equal |
+| `c-1d6` | 1...d6, into the King's Indian shell | 6 | 5 best, 1 equal |
+| `c-1b6` | 1...b6 | 6 | 2 best, 4 equal |
+| `c-2bf5` | 2...Bf5, Nh4 takes the bishop | 7 | 4 best, 3 equal |
+| `c-2c5` | 2...c5 3.e3 cxd4, ...Qa5+ | 7 | 4 best, 3 equal |
+| `c-2bg4` | 2...Bg4, 3.Ne5 | 6 | 5 best, 1 equal |
+| `c-bxf3` | 3...Bg4 4.h3 Bxf3 | 8 | 4 best, 4 equal |
+| `h-bc4` | 2.Bc4 and 3.Qf3 | 5 | 2 best, 3 equal |
+| `h-f4` | 2.f4, ...c5 before ...Bg7 | 5 | 4 best, 1 equal |
+| `h-nf3bc4` | 2.Nf3 Bg7 3.Bc4 | 5 | 0 best, 5 equal |
+| `h-d6nf3` | 1...d6 2.Nf3, back to Petrosian–Spassky g16 | 3 | 1 best, 2 equal |
+| `h-d4nf3` | 1.d4 g6 2.Nf3 and 3.e3 | 5 | 1 best, 4 equal |
+
+Every drilled move grades `best` or `equal` on the depth-20 table. Three were
+changed before any prose was written because their first draft did not:
+3.e3 against 2...Bg4 (46 behind 3.Ne5, so the line plays Ne5), 6.Nd2 in
+`c-bxf3` (36 behind c4), and 4...Ne7 in `h-bc4` (19 behind ...Nc6; the line
+plays ...c6, 4 behind, so that ...d5 follows). `h-f4` was drafted with the
+crouch's 2...Bg7 and graded a 46 concession; the line now drills ...c5.
+
+Where the system move itself sits near the edge of the band the note says so
+with the number: 2.Nf3 against 1...b6 is 26 behind 2.e4, 3.e3 against 2...c5 is
+25 behind 3.c4.
+
+**Opponent moves priced in notes.** A note that states what the table thinks of
+the opponent's move needs a row for the position before it, and no line drills
+those positions. Seventeen were added to `research/pilot-positions.txt` (the
+`--extra` list) and five moves outside the ranked five were added to
+`research/named-moves.tsv`, each searched alone at a position no earlier line
+reaches. The price of 2...Bg4 (-58, 34 behind ...e6) was already in the existing
+row after 2.Nf3 and is quoted from there rather than searched again.
+
+## 6. Numbers after the batch
+
+- **Grading**, 605 drilled moves (was 516): best 282, equal 298, concession 23,
+  inferior 2, losing 0, unknown 0. Best+equal 491 -> 580; the 89 new drilled
+  moves are all accepted. `test/w2b-grading.mjs` pins recomputed.
+- **Evaluation table**: 310 -> 384 rows. Rerunning
+  `tools/build-evals.mjs --extra research/pilot-positions.txt --force research/named-moves.tsv`
+  reproduced 306 of the 310 existing rows byte for byte. The four that changed
+  changed only in fields the batch was meant to touch: after 1.d4 e5, now
+  drilled, the row gained its threat `t` and three counted common choices;
+  at two Hippopotamus positions (1.e4 g6 2.d4 Bg7 3.Nc3 d6 4.Nf3, and
+  1.Nf3 g6 2.c4 Bg7 3.d4) the recount of player choices changed which choices
+  cross the floor, because the new lines let more games transpose into them,
+  so their shared common-choice search (`x`) was redone; at 1.Nf3 g6 2.c4 Bg7
+  3.d4 d6 4.Nc3 one choice was added and searched alone. No `m`, `pv` or `p`
+  field of any existing row moved.
+- **Depth 28**: 116 -> 128 positions checked. New narrow claims: 8 hold, 2 fail
+  (at 4.Nf3 in `c-englund` and 5.cxd5 in `c-2bg4`, depth 28 accepts a second
+  move; no note there claims the only move).
+- **Common choices** (`tools/count-choices.mjs`, regenerated in its documented
+  order): 419 moves at 94 positions (was 285 at 63).
+- **Occurrence buckets**: 88 / 112 / 90 of 384 positions per band; 9 sharp
+  floors (was 4).
+- **Coverage matrix**: covered 88 -> 102, transposes 14 -> 16, missing 235 -> 219.

@@ -394,3 +394,7 @@ on their depth-20 numbers, and the page says the two searches disagree.
 `waysAt` rises at 43 positions, from 1 to 2 or more at the eight whose narrow
 claim failed above. The ten positions whose demanding claim failed stop being
 demanding, the storm tabiya (§6) among them.
+
+After the W6 content batch (`W6-content-batch.md`): 605 drilled moves, best
+282, equal 298, concession 23, inferior 2 (best+equal 580); every one of the
+89 new drilled moves is accepted, and 128 positions are checked at depth 28.

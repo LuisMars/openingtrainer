@@ -7,7 +7,7 @@ exception and it is opt-in: paste a lichess API token in Settings and the Study 
 statistics panel, which fetches from `explorer.lichess.org` each time you open it. Without a stored
 token, nothing leaves the page.
 
-**64 lines · 516 trainable positions · 80 tactics puzzles.**
+**79 lines · 605 trainable positions · 80 tactics puzzles.**
 
 ---
 
@@ -28,7 +28,7 @@ piece set (Cburnett standard, or a custom engraved set), and **drill book lines 
 
 ---
 
-## The 64 lines and where each came from
+## The 79 lines and where each came from
 
 Every line carries a visible tag. The tag is the claim being made.
 
@@ -83,7 +83,7 @@ Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
 1...e6, the move order that waits (added after the coverage count showed it was
 the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 27)
+### `model` and `synthetic` — written for this trainer (3 + 42)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
 Zukertort against a Queen's Indian · d5 without c4, taking on d5 · ...h5 against the pawn storm ·
@@ -95,8 +95,11 @@ defending the Greek gift in Colle–O'Hanlon (13...Kg8) · ...h6 against the Kol
 4...Be7, where there is no bishop to shoot at · 2...Nc6, the knight in front of the c-pawn ·
 the King's Indian shell completed · 3.e5 before it is prepared · 4.Bg5 against the
 ...Nf6 order · 2.Nf3 and the King's Indian Attack · flank openings · h4 and g4 straight out of the
-Be3 tabiya. The last nine
-were built from the coverage count: each answers a reply the repertoire measurably
+Be3 tabiya · 1...e5, the Englund Gambit · 3...Bb4+ · 2...c6 and 3...Bg4 · 1...c6 and 3...Bf5 ·
+1...d6 · 1...b6 · 2...Bf5, hunt the bishop · 2...c5 and an early ...cxd4 · 2...Bg4, Ne5 at once ·
+3...Bg4 4.h3 Bxf3 · 2.Bc4 and 3.Qf3 against f7 · 2.f4, strike before the bishop · 2.Nf3 and 3.Bc4 ·
+1...d6 2.Nf3 back into the crouch · 1.d4 g6 2.Nf3 and 3.e3. The last twenty-four
+were built from the coverage count (`research/W6-content-batch.md` ranks the latest fifteen): each answers a reply the repertoire measurably
 met and had no line for, and every move in them was graded before a word was
 written about it. One more, the queenside answer to g4 out of the same
 tabiya, was built from the stored analysis itself: against g4 the engine
@@ -152,8 +155,9 @@ of the full data set.
 The evaluations in `src/data/evals.js` are Stockfish 16 scores computed once at build time
 (`tools/build-evals.mjs`) by a local engine — lichess's `lila-stockfish-web` sf16-7 build (a 433 KB WASM
 plus one 6.5 MB NNUE network, package version and network checksum both pinned) — so the page itself never
-runs an engine and never touches the network. The table holds 267 positions: all 246 distinct boards
-you are asked to move in, plus 21 more searched while the grading bands were being calibrated. Each was searched
+runs an engine and never touches the network. The table holds 384 positions: all 364 distinct boards
+you are asked to move in, plus 20 more searched while the grading bands were being calibrated or because a
+line's note prices the opponent's move there. Each was searched
 single-threaded to depth 20 with a cleared hash, which makes this step reproducible, unlike the puzzle
 set: the same engine version and network at the same depth regenerates the same table. Stockfish and its
 network are GPL-3.0 and the lila build AGPL-3.0; they are used here as build tools, the way a compiler
@@ -163,13 +167,13 @@ against them before the switch (best-move agreement on the cached positions, wit
 divergences all near-equal alternatives). All scores are stored from the side to move's point of view,
 with forced mates kept distinct from centipawn scores. The tool takes `--extra` (further positions to
 search) and `--force` (named moves searched one at a time through UCI `searchmoves`), which is why every
-drilled repertoire move has a score of its own even when it falls outside the ranked five — 349 of the 421
-are in the five, 72 were searched separately, and none is unanalysed. The same `--force` pass also scores
-68 moves that real players commonly chose at drilled positions (next paragraph), so that a common choice
+drilled repertoire move has a score of its own even when it falls outside the ranked five — of the 385 distinct
+position-and-move pairs drilled, 330 are in the five, 55 were searched separately, and none is unanalysed. The same `--force` pass also scores
+135 moves that real players commonly chose at drilled positions (next paragraph), so that a common choice
 can be priced rather than guessed at.
 
 A second search backs the positions where the trainer makes a narrow claim. `tools/deep-check.mjs`
-re-searches 116 drilled positions at depth 28 with the same engine and settings: those with one accepted
+re-searches 128 drilled positions at depth 28 with the same engine and settings: those with one accepted
 move, those the setup gate calls demanding, and those whose best move is a mate, capture or check. It
 writes them to `src/data/deep.js`. At those positions a move gets the more generous of its two verdicts,
 so nothing either depth accepts is marked wrong. Where the two depths disagree about a move, the feedback
@@ -181,10 +185,10 @@ What players actually choose at each drilled position is counted, not estimated,
 occurrence weighting uses: the move of the trained colour is recorded at every drilled position a game
 reaches while it follows the repertoire, including the move that leaves it. `src/data/choices.js` keeps
 a choice when, in some band, at least 30 games reached the position and at least 10 and 5% of them chose
-it — 285 moves at 63 positions. Frequency never grades anything: which of those choices is a mistake is
-decided by the stored engine table alone. 25 of them sit at positions whose forced search is already
-fixed by drilled moves (adding more would shift those moves' own scores), so they stay unscored and the
-app says so instead of pricing them.
+it — 419 moves at 94 positions. Frequency never grades anything: which of those choices is a mistake is
+decided by the stored engine table alone. 34 of the searched ones sit at positions whose forced search is already
+fixed by drilled moves (adding more would shift those moves' own scores), so each is searched on its own
+and no stored score moves.
 
 ---
 
@@ -197,8 +201,22 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
 - **Speed counts.** Answer in under 7 seconds and the position banks the full interval and can become
   *solid*. Answer correctly but slowly and the interval shrinks to 40%, and it never counts as solid.
 - **Shuffle weights**: due 3.0, new 2.2, learning 1.6, solid 0.2, plus 0.8 if you have been slow there.
-  The position you just saw is excluded. While anything is due, everything that is not due is cut to a
-  tenth, so a backlog is worked off rather than merely competing for draws — it still interleaves.
+  A new position other than the next untouched one in its line is cut to 0.15 of that, and while anything
+  is due new ones are cut to a quarter; neither cut takes a new position below 0.3, so new outranks solid
+  before the occurrence and level factors below are applied. The position you just saw is
+  excluded. While anything is due, everything that is not due is cut to a tenth, so a backlog is worked
+  off rather than merely competing for draws — it still interleaves.
+- **Levels by depth** (*Favour your current level*, on by default). Every drilled position belongs to a
+  level by the move number you answer at: moves 1–3, 4–5, 6–7, 8–10, and 11 onwards. A board that two
+  lines reach at different depths takes the shallower one; puzzles have no level. A level is *cleared*
+  once 80% of its positions that Shuffle can serve are solid (with *Drill book lines only* on, only book
+  positions count), and your level is the first one not cleared. Shuffle multiplies positions in your
+  level by 2, leaves easier levels at 1, and cuts deeper ones to 0.6, 0.4, 0.3 and 0.2 by distance — less
+  often, never not at all. Due reviews are not reweighted. Measured over 600 seeded draws: a fresh profile
+  gets about 72% of its draws from level 1 (35% with the setting off); a profile with levels 1 and 2
+  solid gets about 82% from level 3 (61% off). The menu shows your level and how much of it is solid;
+  Progress lists every level. Nothing new is stored beyond the setting itself: levels are worked out from
+  the same records as everything else, and the level counts shift as lines are added.
 - **Positions that come up more often come up more often** (*Favour positions that come up*,
   on by default). Each position's weight is multiplied by 0.55 to 1.5 according to how often it
   was reached in the counted player games (see `research/METHOD.md`). Due reviews are never
@@ -249,7 +267,7 @@ centipawns behind in one position and far more in another, and a separately scor
   how often it is reached, how many games reached it, the table's depth and how far its first choice
   stands clear of the second, the line it comes from, and the opponent's threat where there is one: the
   same board searched at build time with the move handed to the opponent, shown only when that free move
-  gains at least 150 centipawns over the position as it stands (44 of 516 drill plies). While the
+  gains at least 150 centipawns over the position as it stands (50 of 605 drill plies). While the
   question is live nothing there can name the answer — every row is checked against the move, a threat
   that touches the answer's squares waits until it is answered, and Shuffle hides the line and its plan.
   Once answered it adds the line's plan, the line's own note on the move, the table's first choice with

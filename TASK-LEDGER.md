@@ -1203,3 +1203,48 @@ commit and push.
    identical. 12 equal, 11 concessions, 2 inferior. Mistakes priced 35 -> 48;
    every shipped choice is now scored.
 `npm test`: exit 0, 122 checks.
+
+## W6 content batch — 2026-09-21
+
+Ranked the 235 `missing` replies by reach along the path (product of opponent
+shares, learner's own moves from non-`eco` lines only), per band, and
+separately by criticality (W1-C/W1-D §3). Cut-off at 2.20% reach in the
+1500–1899 band; ranking, cut-off and the twelve rows above it deliberately not
+built are in `research/W6-content-batch.md`.
+
+Fifteen `synthetic` lines: `c-englund`, `c-bb4`, `c-2c6`, `c-1c6`, `c-1d6`,
+`c-1b6`, `c-2bf5`, `c-2c5`, `c-2bg4`, `c-bxf3`, `h-bc4`, `h-f4`, `h-nf3bc4`,
+`h-d6nf3`, `h-d4nf3`. Opponent continuations from `tools/count-prefix.mjs`
+(new: literal move-order counts past a gap, same dump and bands).
+
+- 89 new drilled moves, all best or equal. Repertoire 605: best 282, equal
+  298, concession 23, inferior 2.
+- `evals.js` 310 -> 384 rows; 306 existing rows byte-identical, the other four
+  changed only in threat / common-choice fields (listed in the note).
+- Depth 28: 128 positions; new narrow claims 8 hold, 2 fail (no note claims
+  an only move at either).
+- Five §3 positions added to `FRQ_SHARP`; common choices 419 at 94 positions.
+- Coverage matrix: covered 88 -> 102, transposes 14 -> 16, missing 235 -> 219.
+
+## Content batch W6, levels, and the material worker — 2026-09-21
+
+- 15 new lines (79 total); ranked by reach along the path, criticality and
+  opening connection (research/W6-content-batch.md). Coverage: covered
+  88 -> 102, missing 235 -> 219. 605 drilled: best 282, equal 298,
+  concession 23, inferior 2, losing 0 (re-derived independently). Checked:
+  c-englund 6.Nc3 +169 v next -202.
+- Found in integration: the batch's common-choice regeneration moved stored
+  x scores at two Hippo positions (e.g. ...f5 -130 -> -107). count-choices
+  now freezes every committed shared set and adds new moves `alone`.
+  Re-checked: all 310 old rows unchanged in d/m/pv/p/t, and each old x/xp is
+  a prefix of the new one.
+- Material search runs in a Worker built from the page's own script,
+  budget 250,000 (main-thread fallback keeps 110,000). Reference check over
+  605 positions: 0 overclaims, 0 underclaims, 0 cap hits. The two old
+  underclaims were the reference stopping mid-exchange (QCAP 8 -> 12).
+- Levels by depth: moves 1-3 / 4-5 / 6-7 / 8-10 / 11+, cleared at 80%
+  solid; current level x2, deeper x0.6 to x0.2, due untouched. Fresh
+  profile: 72% of draws from level 1 (35% with the setting off).
+- The due-first scheduling check is now seeded. Unseeded, it failed once:
+  the level weighting brought the expected margin down to about 2:1.
+- `npm test`: exit 0, 133 checks, three consecutive runs.

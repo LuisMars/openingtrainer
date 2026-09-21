@@ -484,7 +484,7 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
       p = make(p, m);
     });
   }
-  eq(n, 516, "drilled moves");
+  eq(n, 605, "drilled moves");
   eq(counts.unknown || 0, 0, "unknown drilled moves");
   // No drilled move reaches the lost region any more. The W4 content audit
   // deleted syn-greek (its Bxh7+ was -269 in a position kolt reaches and
@@ -495,8 +495,9 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // 486 and 28 on the depth-20 table alone. Five drilled moves that depth 20
   // prices as concessions are accepted at depth 28 (cz:14 Ne5, anti:10 c5,
   // ohanlon:34 Nxf7+, hip-g16:21 ...Qe8, syn-hiph5:15 ...Rxh5), and a move either
-  // depth accepts is accepted: 491 and 23.
-  eq(counts.best + counts.equal, 491, "best+equal drilled moves");
+  // depth accepts is accepted: 491 and 23. The W6 content batch added 89 drilled
+  // moves, every one best or equal (research/W6-content-batch.md): 580 and 23.
+  eq(counts.best + counts.equal, 580, "best+equal drilled moves");
   eq(counts.concession, 23, "concession drilled moves");
   // The only two left outside accept are meant to be: ohanlon's Rxd6 is a real
   // game move in a position the table still scores as won, and syn-hipdown is

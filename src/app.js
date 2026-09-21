@@ -1,7 +1,7 @@
 /* ================= state ================= */
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
-  run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,freqW:true,band:FRQ_DEF,recog:true,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
+  run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,freqW:true,band:FRQ_DEF,recog:true,lvW:true,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
   arrow:null,passKeys:null,evNote:null,infoAt:null,epoch:0};
 let stats={pos:{},pz:{},day:"",today:0,theme:0};
 // True when neither window.storage nor localStorage would take a write, so the
@@ -184,6 +184,70 @@ function altAt(pos,uci,cur){
   return a?a.find(x=>x[2]===uci&&(!cur||(LINES[x[0]].ch===cur.ch&&LINES[x[0]].you===cur.you))):null;
 }
 function key(l,p){return l.id.indexOf("pz:")===0?l.id+":"+p:(KEYCACHE[l.id+":"+p]||l.id+":"+p);}
+/* ---------- levels by depth ---------- */
+/* Every drilled position sits in a level by the full-move number the learner answers
+   at, counted from the line's own start. A board two lines reach at different depths
+   takes the shallowest one: it is met there first. Puzzles have no level. The band
+   edges are fixed and were chosen from the distribution of drill positions so that no
+   level is a handful; the counts inside them are computed from LINES, never stored.
+   A level is cleared when LV_CLEAR of the positions Shuffle can serve in it are solid,
+   and the learner's level is the first one not cleared. Everything here is derived
+   from stats; nothing new is stored but the on/off setting. */
+const LEVELS=[[1,3],[4,5],[6,7],[8,10],[11,Infinity]];
+// 80%: high enough that a level is really known before the next one is favoured, low
+// enough that a few stubborn boards, or solid ones that have just come due again, do
+// not hold the learner back for good.
+const LV_CLEAR=.8;
+// Shuffle multipliers for keys that are not due: the current level, then one, two,
+// three and four levels deeper. Easier levels stay at 1. Never zero: deep positions
+// still come up, only less often.
+const LV_CUR=2,LV_DEEP=[.6,.4,.3,.2];
+// Takes a line list so the transposition rule can be checked on lines built for the
+// test; for LINES the keys come out of KEYCACHE, for anything else they are computed
+// the same way KEYCACHE computes them.
+function depthsOf(lines){
+  const D={};
+  for(const l of lines)for(const p of drillPlies(l)){
+    const k=KEYCACHE[l.id+":"+p]||keyFen(posAt(l,p))+":"+l.moves[p][0],d=Math.floor(p/2)+1;
+    if(!(D[k]<=d))D[k]=d;
+  }
+  return D;
+}
+const DEPTH=depthsOf(LINES);
+function levelOf(k){
+  const d=DEPTH[k];
+  if(d===undefined)return -1;
+  for(let i=0;i<LEVELS.length;i++)if(d<=LEVELS[i][1])return i;
+  return LEVELS.length-1;
+}
+function levelSpan(i){const e=LEVELS[i];return e[1]===Infinity?"moves "+e[0]+" and later":"moves "+e[0]+"–"+e[1];}
+// Per-level counts over the positions Shuffle can serve (the same filter as shuffle(),
+// so "drill book lines only" narrows the levels too), each key counted once. cur is the
+// first level not cleared, or -1 when every level is. An empty level counts as cleared.
+function levels(){
+  const rows=LEVELS.map(()=>({n:0,solid:0})),done=new Set();
+  for(const l of LINES){
+    if(NO_SHUFFLE.has(l.id)||bookExcluded(l))continue;
+    for(const p of drillPlies(l)){
+      const k=key(l,p);
+      if(done.has(k))continue;
+      done.add(k);
+      const r=rows[levelOf(k)];r.n++;if(state(k)==="solid")r.solid++;
+    }
+  }
+  let cur=-1;
+  rows.forEach((r,i)=>{r.need=Math.ceil(LV_CLEAR*r.n-1e-9);r.cleared=r.solid>=r.need;if(cur<0&&!r.cleared)cur=i;});
+  return {rows:rows,cur:cur};
+}
+// The Shuffle multiplier for one key given the current level; 1 when levels are off,
+// all cleared, or the key has no level.
+function levelFactor(k,cur){
+  if(!S.lvW||cur<0)return 1;
+  const lv=levelOf(k);
+  if(lv<0||lv<cur)return 1;
+  if(lv===cur)return LV_CUR;
+  return LV_DEEP[Math.min(lv-cur,LV_DEEP.length)-1];
+}
 function rec(k){return stats.pos[k];}
 const SLOW=7000;
 function quick(r){return r&&r.ms&&r.ms<SLOW;}
@@ -295,6 +359,15 @@ function renderMenu(){
   let solvedPz=0;for(const q of PZ)if(((stats.pz||{})[q.id]||{}).ok)solvedPz++;
   el("bPz").textContent=solvedPz+"/"+PZ.length+" solved";
   el("kToday").textContent=stats.today||0;
+  const lv=levels(),lt=el("mLevelT"),lb=el("mLevelB");
+  if(lv.cur<0){
+    let s=0,n=0;for(const r of lv.rows){s+=r.solid;n+=r.n;}
+    lt.textContent="Every level cleared · "+s+" of "+n+" solid";lb.style.width="100%";
+  }else{
+    const r=lv.rows[lv.cur];
+    lt.textContent="Level "+(lv.cur+1)+" · "+levelSpan(lv.cur)+" · "+r.solid+" of "+r.n+" solid";
+    lb.style.width=(r.n?r.solid/r.n*100:0)+"%";
+  }
   // Say it plainly when nothing is being written: spaced repetition that forgets
   // everything on refresh is worth knowing about before an hour is spent on it.
   const st=el("mStore"),note=storeNote();
@@ -394,6 +467,17 @@ function renderProgress(){
   const t=totals();
   el("pSolid").textContent=t.solid;el("pSeen").textContent=t.seen+"/"+t.all;el("pAcc").textContent=t.acc+"%";
   renderWeak();
+  const lv=levels(),pl=el("pLevels");pl.innerHTML="";
+  lv.rows.forEach((r,i)=>{
+    const d=document.createElement("div");d.className="prow";
+    const nm=document.createElement("span");
+    nm.textContent="Level "+(i+1)+" · "+levelSpan(i)+
+      (i===lv.cur?" · your level, "+r.need+" solid clears it":(r.cleared?" · cleared":""));
+    const bar=document.createElement("span");bar.className="pbar";bar.setAttribute("aria-hidden","true");
+    const fill=document.createElement("i");fill.style.width=(r.n?r.solid/r.n*100:0)+"%";bar.appendChild(fill);
+    const em=document.createElement("em");em.textContent=r.solid+"/"+r.n;
+    d.appendChild(nm);d.appendChild(bar);d.appendChild(em);pl.appendChild(d);
+  });
   const c=el("pRows");c.innerHTML="";let ch=null;
   for(const l of LINES){
     if(l.ch!==ch){ch=l.ch;const h=document.createElement("div");h.className="chapter";h.textContent=ch;c.appendChild(h);}
@@ -541,7 +625,9 @@ function cleanStats(d){
     // Absent in every backup made before bands existed: the default band, the
     // same table those users were already weighted by the nearest equivalent of.
     band:bandIdx(d.band),
-    recog:d.recog===undefined?true:!!d.recog};
+    recog:d.recog===undefined?true:!!d.recog,
+    // Same rule: a backup made before levels existed favours the current level.
+    lvW:d.lvW===undefined?true:!!d.lvW};
 }
 // Sanitise a record's miss log at the import trust boundary: keep only string->
 // positive-number entries, re-bound to the same limits grade() enforces on write
@@ -589,7 +675,7 @@ el("pImport").onclick=()=>{
     return;
   }
   stats=cleanStats(d);
-  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;
+  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;S.lvW=stats.lvW;
   SAVE_HELD=false; // the user has chosen what to keep; writing is theirs to allow again
   applyTheme();syncOpts(); // apply immediately; do not make the user reload to see it
   save();renderProgress();el("pData").value="Imported.";
@@ -600,7 +686,7 @@ el("pReset").onclick=function(){
   // bookOnly is a setting, not progress: leaving it out of the rebuilt object wiped
   // it from storage while S.bookOnly still showed it on in the options sheet.
   stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set,bookOnly:S.bookOnly,
-    freqW:S.freqW,band:S.band,recog:S.recog};S.run=0;
+    freqW:S.freqW,band:S.band,recog:S.recog,lvW:S.lvW};S.run=0;
   SAVE_HELD=false; // "erase everything" is explicit consent to write over whatever is there
   save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
 };
@@ -1152,6 +1238,84 @@ function tap(name){
    end of playMove) can tell that the user has since played something else. */
 let matTok=0;
 const MAT_DEFER=40; // ms: long enough for the "checking" line to be painted first
+/* ===== material search off the main thread =====
+   matVerdict can need a quarter of a million nodes, most of a second on a desktop
+   and several on a phone, and on the page's own thread that is a frozen board. So
+   matAsk runs it in a Web Worker built from this page's own script text - everything
+   before the app state, which is the rules, the engine and the data, and touches no
+   DOM - through a Blob URL: nothing is fetched and the page stays one offline file.
+   There it gets MAT_CAP_BG. Where a Worker cannot be made (no Worker, no Blob URL,
+   a host policy that forbids either, a script text that cannot be read) or dies,
+   the search runs here as before: deferred with later() and held to MAT_CAP, so
+   the fallback stalls no longer than it used to and a few more verdicts are
+   silent there. The same move can therefore get a verdict in one browser and
+   silence in another; never two different verdicts, since both run the same code.
+   Staleness is the caller's (matTok, line, ply, mode) plus the session epoch,
+   checked when the answer arrives: a result for a left session is dropped here. */
+const MAT_MARK="/* ================= state ================= */";
+const MAT_SRC=(()=>{
+  try{
+    const t=document.currentScript.textContent,i=t.indexOf(MAT_MARK);
+    return i>0?t.slice(0,i):"";
+  }catch(e){return "";}
+})();
+const MAT_BOOT=8000; // ms for the worker to parse the script and say it is ready
+let matW=null,matWDead=false,matWReady=false,matWSeq=0,matWSeen=0,matVia="";
+const matWQ=new Map();
+function matWorker(){
+  if(matW||matWDead)return matW;
+  try{
+    if(typeof Worker!=="function"||!MAT_SRC)throw 0;
+    const src=MAT_SRC+"\nself.onmessage=function(e){var d=e.data;"+
+      "var v=matVerdict(d.pos,d.m,MAT_CAP_BG);self.postMessage({id:d.id,v:v,n:matNodes});};"+
+      "self.postMessage({ready:1});";
+    matW=new Worker(URL.createObjectURL(new Blob([src],{type:"text/javascript"})));
+    matW.onmessage=matHear;
+    matW.onerror=e=>{if(e&&e.preventDefault)e.preventDefault();matFail();};
+    // A worker that never starts (a policy can block it without an error event)
+    // must not leave the "checking" line up for good. Bare setTimeout, like
+    // flash(): this has to run whatever session is open by then.
+    setTimeout(()=>{if(!matWReady)matFail();},MAT_BOOT);
+  }catch(e){matWDead=true;matW=null;}
+  return matW;
+}
+function matHear(e){
+  const d=e.data;
+  if(d.ready){matWReady=true;return;}
+  matWSeen++;
+  const r=matWQ.get(d.id);
+  if(!r)return;
+  matWQ.delete(d.id);
+  if(r.ep!==S.epoch||!r.live.call(null))return;
+  matNodes=d.n;matVia="worker"; // mirrored for the tests; the search ran over there
+  r.cb.call(null,d.v);
+}
+// The worker failed: retire it and answer whatever it still owed on this thread.
+function matFail(){
+  if(matWDead)return;
+  matWDead=true;
+  try{if(matW)matW.terminate();}catch(e){}
+  matW=null;
+  const owed=[...matWQ.values()];
+  matWQ.clear();
+  for(const r of owed)if(r.ep===S.epoch)matMain(r.pos,r.m,r.live,r.cb);
+}
+// live is checked before the search starts, so a stale one costs nothing here.
+function matMain(pos,m,live,cb){
+  later(()=>{
+    if(!live.call(null))return;
+    const v=matVerdict(pos,m);matVia="main";cb.call(null,v);
+  },MAT_DEFER);
+}
+// cb receives matVerdict's result (null when out of budget), and only while
+// live() still holds and the session it was asked in is still open.
+function matAsk(pos,m,live,cb){
+  const w=matWorker();
+  if(!w){matMain(pos,m,live,cb);return;}
+  const id=++matWSeq;
+  matWQ.set(id,{pos:pos,m:m,live:live,cb:cb,ep:S.epoch});
+  w.postMessage({id:id,pos:pos,m:m});
+}
 function playMove(pos,name,m){
   matTok++;
   const study=S.mode==="study";
@@ -1276,17 +1440,15 @@ function playMove(pos,name,m){
   }
   // Only here is the search still the best evidence available: the table does not
   // cover this move (or, defensively, there is no row at all).
-  // The search runs on this thread and can take a noticeable fraction of a second
-  // on a slow device, and its answer decides the grade - so say what is happening
-  // first, let the page paint, and grade when it returns. later() drops it if the
-  // session changed meanwhile; matTok drops it if another move was played, and the
-  // line/ply check drops it if Skip or anything else moved the drill on.
+  // The search can take most of a second, several on a slow device (off this
+  // thread where a Worker exists, see matAsk), and its answer decides the grade -
+  // so say what is happening first and grade when it returns. matAsk drops it if
+  // the session changed meanwhile; matTok drops it if another move was played, and
+  // the line/ply check drops it if Skip or anything else moved the drill on.
   S.sel=null;render(false);
   el("nMsg").innerHTML='<span class="neutral">'+t+" is legal. Checking what it costs in material…</span>";
   const tok=matTok,li=L(),ply=S.ply,mode=S.mode;
-  later(()=>{
-    if(tok!==matTok||L()!==li||S.ply!==ply||S.mode!==mode)return;
-    const v=matVerdict(pos,m);
+  matAsk(pos,m,()=>tok===matTok&&L()===li&&S.ply===ply&&S.mode===mode,v=>{
     if(!pz&&setupMove(pos,m,v,gate)){
       if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,null,null));return;}
       noteWay(key(L(),S.ply),t);
@@ -1295,7 +1457,7 @@ function playMove(pos,name,m){
       return;
     }
     offBook(name,t,v,g,null);
-  },MAT_DEFER);
+  });
 }
 function touch(k,ms){
   if(k.indexOf("pz:")===0)return;
@@ -2111,6 +2273,8 @@ function shuffle(first){
   }
   const uniq=[...byKey.values()];
   const anyDue=uniq.some(x=>x.st==="due");
+  // Read once per draw: levels() walks the same filtered lines as the loop above.
+  const curLv=S.lvW?levels().cur:-1;
   const pool=[];
   for(const x of uniq){
     const r=rec(x.k);
@@ -2149,6 +2313,11 @@ function shuffle(first){
     // at the cost of a due review, and skipping due keys is what keeps that true.
     // Uncounted positions are neutral, rare forcing ones have a floor.
     if(S.freqW&&x.st!=="due")wt*=freqFactor(x.k);
+    // Depth, on the same terms: the learner's current level is favoured, deeper levels
+    // fade with distance but never to zero, easier ones are left alone, and due keys
+    // are never reweighted. Like the occurrence factor it lands after the new-above-
+    // solid floor, so that floor holds within a level; across levels depth leads.
+    if(x.st!=="due")wt*=levelFactor(x.k,curLv);
     if(anyDue&&x.st!=="due")wt*=.1;
     if(x.k===S.lastKey)wt=0;
     pool.push([x.i,x.p,x.k,wt]);
@@ -2189,6 +2358,8 @@ function syncOpts(){
   el("oBandS").textContent=FRQ_BANDS[S.band]+(S.band===FRQ_DEF?" (most games)":"");
   el("oRecogS").textContent=S.recog?"on":"off";
   el("oRecog").setAttribute("aria-pressed",S.recog);
+  el("oLevelS").textContent=S.lvW?"on":"off";
+  el("oLevel").setAttribute("aria-pressed",S.lvW);
   el("oRestart").style.display=S.mode==="shuffle"?"none":"";
 }
 el("oFlip").onclick=()=>{S.flip=!S.flip;syncOpts();render(false);};
@@ -2203,6 +2374,7 @@ el("oBand").onclick=()=>{setBand((S.band+1)%FRQBS.length);stats.band=S.band;save
 // Turning this off does not rewrite any record: the answer logs stay, and turning
 // it back on reads them again.
 el("oRecog").onclick=()=>{S.recog=!S.recog;stats.recog=S.recog;save();syncOpts();if(S.screen==="menu")renderMenu();};
+el("oLevel").onclick=()=>{S.lvW=!S.lvW;stats.lvW=S.lvW;save();syncOpts();};
 el("oRestart").onclick=()=>{openOpts(false);stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);
   if(S.mode==="line"&&!yourTurn())later(autoReply,250);};
 el("oMenu").onclick=()=>{openOpts(false);go("menu");};
@@ -2334,7 +2506,7 @@ async function load(){
     try{d=JSON.parse(raw);}catch(e){d=null;}
     if(d&&typeof d==="object"&&d.pos&&typeof d.pos==="object"&&!Array.isArray(d.pos)){
       stats=cleanStats(d);
-      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;
+      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;S.lvW=stats.lvW;
       if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
       if(fromOld)save();
     }else{

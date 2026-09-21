@@ -197,3 +197,6 @@ already recorded, factor by factor, and nowhere combined into a composite:
   `3...Bb4+`, `...Bxf3` after `anti-bg4`) have no floor because there is no
   position to put it on; they remain content gaps in W1-C/W1-D §2, not weighting
   gaps.
+  The W6 batch (`W6-content-batch.md`) drills both of those, plus ...Qa5+ and an
+  early ...cxd4 from other orders, and they now carry the floor. Still undrilled:
+  ...Qb6 in the b3 window and ...Ne4 in the c3 structure.

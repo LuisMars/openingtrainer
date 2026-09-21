@@ -213,7 +213,14 @@ function perft(p,d){
 // would need 225,000 and about 0.7 s, twice the worst-case stall on a phone for 16
 // verdicts. 60,000 left 41 verdicts silent (73 once checking captures were no
 // longer delta-pruned).
-const MATE=1000,MAT_CAP=110000,MAT_STOP={};
+// MAT_CAP is the budget where the search runs on the page's own thread, which is
+// now only the fallback. The page normally runs it in a Web Worker (matAsk in
+// app.js), where a long search stalls nothing, and passes MAT_CAP_BG instead:
+// every one of the 16 finishes inside it (the largest, ohanlon:28 g4, at 219,450
+// nodes), with about a seventh to spare. A verdict past it is still null.
+const MATE=1000,MAT_CAP=110000,MAT_CAP_BG=250000,MAT_STOP={};
+// The budget in force for the verdict being searched; matVerdict sets it.
+let matCap=MAT_CAP;
 // matTests counts legality tests (legalMove calls, from anywhere), reset with
 // matNodes per verdict: tests per node is the per-node cost the regression check
 // in test/w1b-engine.mjs holds down, because wall time on a loaded box cannot.
@@ -291,7 +298,7 @@ function matOrder(p,ms){
    moves) came back identical, swing, reply, null and node count - at about a sixth
    of the wall time. test/w1b-engine.mjs holds the cost down by counting work. */
 function matQuiesce(p,alpha,beta,ply){
-  if(++matNodes>MAT_CAP)throw MAT_STOP;
+  if(++matNodes>matCap)throw MAT_STOP;
   const b=p.b,w=p.w,ki=kingIdx(b,w);
   const stand=(w?1:-1)*matBal(b),chk=attacked(b,ki,!w);
   let ms;
@@ -327,7 +334,7 @@ function matQuiesce(p,alpha,beta,ply){
   return alpha;
 }
 function matSearch(p,depth,alpha,beta,ply){
-  if(++matNodes>MAT_CAP)throw MAT_STOP;
+  if(++matNodes>matCap)throw MAT_STOP;
   if(depth===0)return matQuiesce(p,alpha,beta,ply);
   const ms=legal(p);
   if(!ms.length)return inCheck(p)?-(MATE-ply):0;
@@ -350,9 +357,10 @@ function matSearch(p,depth,alpha,beta,ply){
    so the tail search is 2, not 3 - so "does not come back inside four plies", which
    is what the UI says, is exactly what a swing proves. It used to be 4 against 5,
    and a swing measured across two different horizons is partly a horizon artefact
-   rather than material lost. */
-function matVerdict(pos,m){
-  matNodes=0;matTests=0;
+   rather than material lost.
+   cap is the node budget, MAT_CAP when omitted; see MAT_CAP_BG above. */
+function matVerdict(pos,m,cap){
+  matNodes=0;matTests=0;matCap=cap||MAT_CAP;
   try{
     const before=matSearch(pos,4,-MATE,MATE,0);
     const after=make(pos,m);

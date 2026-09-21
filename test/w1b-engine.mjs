@@ -15,9 +15,9 @@ const html = readFileSync(join(root, "docs/index.html"), "utf8");
 const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"));
 const bundle = js.slice(0, js.indexOf("/* ================= state ================= */"));
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,START,startPos,fenPos,findMove,make,san,legal,uciOf,inCheck,fenOf,matBal,matGain,matQuiesce,matVerdict,posKey,candidateEval,EVL,matCost:()=>[matNodes,matTests]});")(ctx);
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,START,startPos,fenPos,findMove,make,san,legal,uciOf,inCheck,fenOf,matBal,matGain,matQuiesce,matVerdict,posKey,candidateEval,EVL,MAT_CAP,MAT_CAP_BG,matCost:()=>[matNodes,matTests]});")(ctx);
 const { LINES, START, startPos, fenPos, findMove, make, san, legal, uciOf, inCheck,
-  fenOf, matGain, matQuiesce, matVerdict, posKey, candidateEval, EVL, matCost } = ctx;
+  fenOf, matGain, matQuiesce, matVerdict, posKey, candidateEval, EVL, MAT_CAP, MAT_CAP_BG, matCost } = ctx;
 
 let fail = 0;
 const bad = (m) => { console.error("  ✗ " + m); fail++; };
@@ -207,25 +207,27 @@ const replay = (sans) => {
 //     check has no stand-pat, so such a capture can win far more than its victim.
 //     Pruning it made ohanlon:28 g4 claim a swing of 1 against the exact
 //     reference's 0 once the node budget was lifted enough to finish it. The
-//     verdict needs about 219,000 nodes, past MAT_CAP, so as shipped it must be
-//     silent; with the budget lifted in a copy of the bundle it must claim nothing.
+//     verdict needs 219,450 nodes: past MAT_CAP, so on the main-thread fallback it
+//     must be silent, and inside MAT_CAP_BG, the budget the page's worker uses, so
+//     there it must finish and claim nothing. Node counts are exact, so the count
+//     is pinned too: a change that grows this tree past the worker budget would
+//     silence the 16 verdicts the worker budget was raised for.
 {
   const fen = "r1bq3r/pp1n1pp1/3bp1k1/6N1/3p3P/2P5/PP3PP1/R1BQR1K1 w - - 0 1";
   const p = fenPos(fen), m = findMove(p, "g2g4");
   const v = matVerdict(p, m);
-  if (v && v.swing >= 1) bad(`ohanlon:28 g4 claims a swing of ${v.swing} (reference: 0), reply ${v.san}`);
-  const big = {};
-  const lifted = bundle.replace(/MAT_CAP=\d+/, "MAT_CAP=1000000");
-  if (lifted === bundle) bad("MAT_CAP not found in the bundle");
-  new Function("ctx", lifted + "\nObject.assign(ctx,{fenPos,findMove,matVerdict});")(big);
-  const q = big.fenPos(fen), w = big.matVerdict(q, big.findMove(q, "g2g4"));
-  if (!w) bad("ohanlon:28 g4 ran out of a 1,000,000-node budget");
-  else if (w.swing >= 1) bad(`ohanlon:28 g4 with the budget lifted claims a swing of ${w.swing} (reference: 0), reply ${w.san}`);
-  if (!fail) console.log(`✓ a checking capture is not delta-pruned: ohanlon:28 g4 ${v ? "swing " + v.swing : "silent at MAT_CAP"}, swing ${w.swing} with the budget lifted`);
+  if (v) bad(`ohanlon:28 g4 finished inside MAT_CAP (${MAT_CAP}); the fallback budget or the tree changed, swing ${v.swing}`);
+  const w = matVerdict(p, m, MAT_CAP_BG), used = matCost()[0];
+  if (!w) bad(`ohanlon:28 g4 ran out of MAT_CAP_BG (${MAT_CAP_BG})`);
+  else if (w.swing >= 1) bad(`ohanlon:28 g4 at MAT_CAP_BG claims a swing of ${w.swing} (reference: 0), reply ${w.san}`);
+  if (used !== 219450) bad(`ohanlon:28 g4 took ${used} nodes, measured 219,450`);
+  if (MAT_CAP_BG < used * 1.1) bad(`MAT_CAP_BG ${MAT_CAP_BG} leaves under a tenth of headroom over ohanlon:28 g4 (${used})`);
+  if (!fail) console.log(`✓ a checking capture is not delta-pruned: ohanlon:28 g4 silent at MAT_CAP, swing ${w.swing} in ${used} nodes at MAT_CAP_BG`);
 }
 
-// 8. The search stays cheap enough to run on the page. matVerdict runs on the main
-//    thread (deferred, so the move's message paints first) and wall time on a loaded
+// 8. The search stays cheap enough to run on the page. matVerdict runs in a worker
+//    where one can be made, and on the main thread (deferred, so the move's message
+//    paints first) where it cannot, which is the case this guards; wall time on a loaded
 //    CI box proves nothing, so this counts work instead - both numbers are exact and
 //    machine-independent. Over every 25th drill position x 3 wrong moves (63
 //    verdicts): mean search nodes, measured 18,650 (17,782 before checking

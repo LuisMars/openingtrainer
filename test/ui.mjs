@@ -615,14 +615,19 @@ check("queening when a knight was wanted is not accepted",
   promoGrade.right.ply === 1 && promoGrade.right.msg.includes("Solved"),
   JSON.stringify(promoGrade));
 
-// The material search runs on the main thread, so a wrong move the table does not
-// cover must paint its message BEFORE the search starts, and grade when it returns.
-// Checked by order, not by the clock: matNodes is set to -1 and must still be -1
-// when playMove returns. Then the result must never land on a later position -
-// neither after another move nor after leaving the session.
+// The material search runs in a Web Worker built from the page's own script where
+// one can be made, and deferred on the main thread where not. Either way a wrong
+// move the table does not cover must paint its message BEFORE the search runs here,
+// and grade when the answer arrives. Checked by order, not by the clock: matNodes is
+// set to -1 and must still be -1 when playMove returns. Then the result must never
+// land on a later position - neither after another move nor after leaving the
+// session - on either path. For the worker path the stale checks wait until the
+// worker has actually answered (matWSeen), so a dropped result is proved dropped
+// rather than merely late.
 const deferred = await page.evaluate(async () => {
   const savedLine = PZLINE, savedMode = S.mode, savedStats = JSON.stringify(stats.pos);
-  const settle = async () => { for (let i = 0; i < 3000 && /Checking what it costs/.test(el("nMsg").textContent); i++) await new Promise((r) => setTimeout(r, 20)); };
+  const until = async (f) => { for (let i = 0; i < 3000 && !f(); i++) await new Promise((r) => setTimeout(r, 20)); };
+  const settle = () => until(() => !/Checking what it costs/.test(el("nMsg").textContent));
   const wait = () => new Promise((r) => setTimeout(r, MAT_DEFER * 4));
   const setup = () => {
     PZLINE = { id: "pz:w1b", ch: "Tactics", you: "w", name: "test",
@@ -633,33 +638,73 @@ const deferred = await page.evaluate(async () => {
     clearFree(); render(false);
   };
   const play = (u) => { const pos = nowPos(); playMove(pos, "a8", legal(pos).find((x) => uciOf(x) === u)); };
-  const out = {};
-  setup(); matNodes = -1; play("a7a8q");
-  out.now = { msg: el("nMsg").textContent, nodes: matNodes, tries: S.tries };
+  const round = async (worker) => {
+    const out = {};
+    setup(); matNodes = -1; matVia = ""; play("a7a8q");
+    out.now = { msg: el("nMsg").textContent, nodes: matNodes, tries: S.tries };
+    await settle();
+    out.done = { msg: el("nMsg").textContent, nodes: matNodes, tries: S.tries, via: matVia };
+    // superseded by another move before the answer came back
+    let seen = matWSeen;
+    setup(); matNodes = -1; matVia = ""; play("a7a8q"); play("a7a8n");
+    const solved = el("nMsg").textContent;
+    if (worker) await until(() => matWSeen > seen); else await wait();
+    out.superseded = { nodes: matNodes, same: el("nMsg").textContent === solved, tries: S.tries, via: matVia,
+      answered: matWSeen > seen };
+    // abandoned by leaving the session
+    seen = matWSeen;
+    setup(); matNodes = -1; matVia = ""; play("a7a8q"); stopAll();
+    if (worker) await until(() => matWSeen > seen); else await wait();
+    out.left = { nodes: matNodes, tries: S.tries, via: matVia, answered: matWSeen > seen };
+    stopAll();
+    return out;
+  };
+  const res = {};
+  res.worker = await round(true);
+  res.workerAlive = !!matW && matWReady && !matWDead;
+  // The worker dies with a search in flight: what it owed is answered here.
+  setup(); matNodes = -1; matVia = ""; play("a7a8q");
+  matW.onerror(new Event("error"));
   await settle();
-  out.done = { msg: el("nMsg").textContent, nodes: matNodes, tries: S.tries };
-  // superseded by another move before the search ran
-  setup(); matNodes = -1; play("a7a8q"); play("a7a8n");
-  const solved = el("nMsg").textContent;
-  await wait();
-  out.superseded = { nodes: matNodes, same: el("nMsg").textContent === solved, tries: S.tries };
-  // abandoned by leaving the session
-  setup(); matNodes = -1; play("a7a8q"); stopAll();
-  await wait();
-  out.left = { nodes: matNodes, tries: S.tries };
+  res.died = { msg: el("nMsg").textContent, tries: S.tries, via: matVia, dead: matWDead, w: matW };
+  stopAll();
+  // No worker at all: the old main-thread path, same guards.
+  res.main = await round(false);
+  // Budget: ohanlon:28 g4 needs 219,450 nodes. On the fallback it is silent; the
+  // worker's MAT_CAP_BG finishes it, and it claims nothing, as the reference says.
+  const q = fenPos("r1bq3r/pp1n1pp1/3bp1k1/6N1/3p3P/2P5/PP3PP1/R1BQR1K1 w - - 0 1");
+  const g4 = findMove(q, "g2g4");
+  res.mainBudget = matVerdict(q, g4);
+  matWDead = false; matW = null; matWReady = false;
+  let got;
+  matAsk(q, g4, () => true, (v) => { got = { v, via: matVia, nodes: matNodes }; });
+  await until(() => got);
+  res.bgBudget = got || null;
   stopAll(); PZLINE = savedLine; S.mode = savedMode; stats.pos = JSON.parse(savedStats);
   S.ply = 0; S.sel = null; S.tries = 0; clearFree(); go("menu");
-  return out;
+  return res;
 });
-check("an uncovered wrong move says so before the material search runs, and grades after",
-  /a8=Q\+ is legal/.test(deferred.now.msg) && /Checking what it costs/.test(deferred.now.msg) &&
-    deferred.now.nodes === -1 && deferred.now.tries === 0 &&
-    deferred.done.nodes > 0 && deferred.done.tries === 1 && !/Checking/.test(deferred.done.msg),
-  JSON.stringify(deferred));
-check("a pending material search never lands on a later move or a left session",
-  deferred.superseded.nodes === -1 && deferred.superseded.same && deferred.superseded.tries === 0 &&
-    deferred.left.nodes === -1 && deferred.left.tries === 0,
-  JSON.stringify({ superseded: deferred.superseded, left: deferred.left }));
+for (const [path, r] of [["worker", deferred.worker], ["main thread", deferred.main]]) {
+  check(`an uncovered wrong move says so before the material search runs, and grades after (${path})`,
+    /a8=Q\+ is legal/.test(r.now.msg) && /Checking what it costs/.test(r.now.msg) &&
+      r.now.nodes === -1 && r.now.tries === 0 &&
+      r.done.nodes > 0 && r.done.tries === 1 && !/Checking/.test(r.done.msg) &&
+      r.done.via === (path === "worker" ? "worker" : "main"),
+    JSON.stringify(r.now) + " " + JSON.stringify(r.done));
+  check(`a pending material search never lands on a later move or a left session (${path})`,
+    r.superseded.nodes === -1 && r.superseded.same && r.superseded.tries === 0 && r.superseded.via === "" &&
+      r.left.nodes === -1 && r.left.tries === 0 && r.left.via === "" &&
+      (path !== "worker" || (r.superseded.answered && r.left.answered)),
+    JSON.stringify({ superseded: r.superseded, left: r.left }));
+}
+check("the material search runs in a worker here, and a worker that dies is answered on the main thread",
+  deferred.workerAlive && deferred.died.tries === 1 && deferred.died.via === "main" &&
+    deferred.died.dead && !/Checking/.test(deferred.died.msg),
+  JSON.stringify({ alive: deferred.workerAlive, died: deferred.died }));
+check("ohanlon:28 g4 is silent at the main-thread budget and finishes, claiming nothing, in the worker",
+  deferred.mainBudget === null && deferred.bgBudget && deferred.bgBudget.v && deferred.bgBudget.v.swing < 1 &&
+    deferred.bgBudget.via === "worker" && deferred.bgBudget.nodes === 219450,
+  JSON.stringify({ main: deferred.mainBudget, worker: deferred.bgBudget }));
 
 // The masters panel paints remote JSON. Strings go through esc(); the numbers have
 // to be coerced, because a string where a count belongs concatenates instead of
@@ -843,10 +888,15 @@ const duefirst = await page.evaluate(() => {
   const fenOf = (k) => k.slice(0, k.lastIndexOf(":"));
   const bucket = (k) => FRQB[fhash(fenOf(k))];
   stats.pos = {}; S.freqW = true; S.recog = true; S.mode = "shuffle";
+  // Seeded, like the other scheduling checks: the pass condition compares two draw
+  // counts, and with level weighting on the expected margin is about 2:1, so an
+  // unseeded run could lose it by chance without anything being wrong.
+  const rnd = Math.random; let seed = 4242;
+  Math.random = () => ((seed = Math.imul(seed ^ (seed >>> 15), 2246822507) + 0x9e3779b9 | 0) >>> 0) / 4294967296;
   const seen = new Map();
   for (let i = 0; i < 60; i++) { shuffle(true); const b = bucket(S.lastKey); if (b !== undefined) seen.set(S.lastKey, b); }
   const sorted = [...seen.entries()].sort((a, b) => a[1] - b[1]);
-  if (sorted.length < 2) return { skipped: true };
+  if (sorted.length < 2) { Math.random = rnd; return { skipped: true }; }
   const rare = sorted[0][0], common = sorted[sorted.length - 1][0];
   stats.pos[rare] = { ok: 1, no: 0, streak: 1, last: 0, ms: 500 };            // due
   // streak 1, just answered: LADDER[0] is 0 hours, so a streak-0 record is due the
@@ -854,6 +904,7 @@ const duefirst = await page.evaluate(() => {
   stats.pos[common] = { ok: 1, no: 3, streak: 1, last: Date.now(), ms: 9000 }; // hot, slow, common
   const counts = {};
   for (let i = 0; i < 220; i++) { shuffle(true); counts[S.lastKey] = (counts[S.lastKey] || 0) + 1; }
+  Math.random = rnd;
   return { rare: counts[rare] || 0, common: counts[common] || 0,
     rareBucket: bucket(rare), commonBucket: bucket(common),
     state: state(rare), commonState: state(common), factor: freqFactor(rare) };
@@ -878,6 +929,134 @@ const rareSeen = await page.evaluate(() => {
 });
 check("rare positions are still served with occurrence weighting on",
   rareSeen.rare > 0 && rareSeen.minWeight > 0, JSON.stringify(rareSeen));
+
+// Levels by depth. Every expectation is derived from LINES, so lines added later move
+// the counts without breaking the checks.
+const lvA = await page.evaluate(() => {
+  const all = {}, out = { mismatch: [], transposed: null, levelled: 0, pzLevel: levelOf("pz:0000a:3") };
+  for (const l of LINES) for (const p of drillPlies(l)) {
+    const k = key(l, p);
+    (all[k] = all[k] || []).push(Math.floor(p / 2) + 1);
+  }
+  for (const k in all) {
+    const lo = Math.min(...all[k]);
+    if (DEPTH[k] !== lo) out.mismatch.push(k);
+    const lv = levelOf(k), e = LEVELS[lv];
+    if (!(lo >= e[0] && lo <= e[1])) out.mismatch.push("band " + k);
+    out.levelled++;
+    if (!out.transposed && Math.max(...all[k]) > lo)
+      out.transposed = { depths: [...new Set(all[k])], depth: DEPTH[k], level: lv };
+  }
+  out.counts = levels().rows.map((r) => r.n);
+  // No shipped line may transpose across move numbers, so build two that do: the
+  // knights go out and back, and 3.d4 is answered on the same board as 1.d4.
+  const a = { id: "tst-a", you: "w", start: START, moves: [["g1f3"], ["g8f6"], ["f3g1"], ["f6g8"], ["d2d4"]] };
+  const b = { id: "tst-b", you: "w", start: START, moves: [["d2d4"]] };
+  const onlyA = depthsOf([a]), both = depthsOf([a, b]), both2 = depthsOf([b, a]);
+  const k = keyFen(posAt(a, 4)) + ":d2d4";
+  out.synthetic = { same: k === keyFen(posAt(b, 0)) + ":d2d4", onlyA: onlyA[k], both: both[k], both2: both2[k] };
+  return out;
+});
+check("levels: each position takes the shallowest move number it is answered at",
+  lvA.mismatch.length === 0 && lvA.pzLevel === -1 && lvA.counts.every((n) => n > 0) &&
+    lvA.synthetic.same && lvA.synthetic.onlyA === 3 && lvA.synthetic.both === 1 && lvA.synthetic.both2 === 1 &&
+    (!lvA.transposed || lvA.transposed.depth === Math.min(...lvA.transposed.depths)),
+  JSON.stringify({ mismatch: lvA.mismatch.slice(0, 3), synthetic: lvA.synthetic, transposed: lvA.transposed, counts: lvA.counts }));
+console.log("  level sizes (Shuffle-served positions): " + lvA.counts.join(", "));
+
+// The clear threshold at its edge: one short of it is not cleared, reaching it is.
+const lvB = await page.evaluate(() => {
+  const saved = JSON.stringify(stats), sv = { book: S.bookOnly, lvW: S.lvW };
+  S.bookOnly = false; S.lvW = true;
+  const keys = [], seen = new Set();
+  for (const l of LINES) {
+    if (NO_SHUFFLE.has(l.id)) continue;
+    for (const p of drillPlies(l)) { const k = key(l, p); if (!seen.has(k) && levelOf(k) === 0) { seen.add(k); keys.push(k); } }
+  }
+  const solid = () => ({ ok: 2, no: 0, streak: 2, last: Date.now(), ms: 1000 });
+  const need = Math.ceil(LV_CLEAR * keys.length - 1e-9);
+  stats.pos = {};
+  for (const k of keys.slice(0, need - 1)) stats.pos[k] = solid();
+  const below = levels();
+  stats.pos[keys[need - 1]] = solid();
+  const at = levels();
+  renderMenu();
+  const menuAt = el("mLevelT").textContent;
+  // Every level cleared: the menu says so rather than naming a level.
+  for (const l of LINES) if (!NO_SHUFFLE.has(l.id)) for (const p of drillPlies(l)) stats.pos[key(l, p)] = solid();
+  const allClear = levels().cur;
+  renderMenu();
+  const menuAll = el("mLevelT").textContent;
+  stats = JSON.parse(saved); S.bookOnly = sv.book; S.lvW = sv.lvW;
+  return { n: keys.length, need, belowCur: below.cur, belowSolid: below.rows[0].solid, atCur: at.cur,
+    atCleared: at.rows[0].cleared, menuAt, allClear, menuAll };
+});
+check("levels: a level is cleared at 80% solid and not one position before",
+  lvB.belowCur === 0 && lvB.belowSolid === lvB.need - 1 && lvB.atCur === 1 && lvB.atCleared && lvB.allClear === -1,
+  JSON.stringify(lvB));
+check("menu names the level, its moves and how much of it is solid",
+  /^Level 2 · moves 4–5 · 0 of \d+ solid$/.test(lvB.menuAt) && /^Every level cleared · (\d+) of \1 solid$/.test(lvB.menuAll),
+  JSON.stringify({ at: lvB.menuAt, all: lvB.menuAll }));
+
+// Weighting, seeded: the current level is drawn more than a deeper one and more than
+// with the setting off, the deepest level is still drawn, and a due review in the
+// deepest level still outranks a hot, slow key in the current one.
+const lvC = await page.evaluate(() => {
+  const saved = JSON.stringify(stats), sv = { lvW: S.lvW, freqW: S.freqW };
+  const rnd = Math.random;
+  const draw = (on, n) => {
+    S.lvW = on; S.lastKey = null;
+    let seed = 777;
+    Math.random = () => ((seed = Math.imul(seed ^ (seed >>> 15), 2246822507) + 0x9e3779b9 | 0) >>> 0) / 4294967296;
+    const c = LEVELS.map(() => 0);
+    try { for (let i = 0; i < n; i++) { shuffle(true); c[levelOf(S.lastKey)]++; } } finally { Math.random = rnd; }
+    return c;
+  };
+  stats.pos = {}; S.freqW = true; S.recog = true; S.mode = "shuffle"; S.bookOnly = false;
+  const on = draw(true, 600), off = draw(false, 600);
+  const pick = (lv) => { for (const l of LINES) if (!NO_SHUFFLE.has(l.id)) for (const p of drillPlies(l)) { const k = key(l, p); if (levelOf(k) === lv) return k; } };
+  const deep = pick(LEVELS.length - 1), hot = pick(0);
+  stats.pos[deep] = { ok: 1, no: 0, streak: 1, last: 0, ms: 500 };            // due
+  stats.pos[hot] = { ok: 1, no: 3, streak: 1, last: Date.now(), ms: 9000 };   // current level, slow, missed
+  S.lvW = true;
+  const counts = {};
+  for (let i = 0; i < 220; i++) { shuffle(true); counts[S.lastKey] = (counts[S.lastKey] || 0) + 1; }
+  const res = { on, off, deepDue: counts[deep] || 0, hot: counts[hot] || 0, deepState: state(deep), cur: levels().cur };
+  stats = JSON.parse(saved); S.lvW = sv.lvW; S.freqW = sv.freqW; S.lastKey = null;
+  return res;
+});
+check("Shuffle favours the current level and still serves the deepest one",
+  lvC.on[0] > lvC.on[2] && lvC.on[0] > lvC.off[0] && lvC.on[lvC.on.length - 1] > 0,
+  JSON.stringify({ on: lvC.on, off: lvC.off }));
+check("a due review in a deep level outranks the current level",
+  lvC.deepState === "due" && lvC.cur === 0 && lvC.deepDue > lvC.hot, JSON.stringify(lvC));
+console.log("  fresh-profile draws by level, 600 seeded: on " + lvC.on.join("/") + ", off " + lvC.off.join("/"));
+
+// The setting: a toggle, stored, kept by a reset, and defaulted on for backups that
+// predate it.
+const lvD = await page.evaluate(() => {
+  const saved = JSON.stringify(stats);
+  el("oLevel").click();
+  const off = { live: S.lvW, stored: stats.lvW, label: el("oLevelS").textContent, pressed: el("oLevel").getAttribute("aria-pressed") };
+  el("pReset").click(); el("pReset").click();
+  const afterReset = { live: S.lvW, stored: stats.lvW };
+  el("pExport").click();
+  const exported = JSON.parse(el("pData").value).lvW;
+  el("pData").value = JSON.stringify({ v: 6, pos: {}, pz: {} }); el("pImport").click();
+  const absent = { live: S.lvW, stored: stats.lvW, label: el("oLevelS").textContent };
+  el("pData").value = JSON.stringify({ v: 6, pos: {}, pz: {}, lvW: false }); el("pImport").click();
+  const explicit = S.lvW;
+  el("pData").value = saved; el("pImport").click();
+  S.lvW = true; stats.lvW = true; save(); syncOpts();
+  return { off, afterReset, exported, absent, explicit };
+});
+check("favour-your-level is a setting that persists, survives a reset and travels in an export",
+  lvD.off.live === false && lvD.off.stored === false && lvD.off.label === "off" && lvD.off.pressed === "false" &&
+    lvD.afterReset.live === false && lvD.afterReset.stored === false && lvD.exported === false,
+  JSON.stringify(lvD));
+check("a backup without the level setting imports with it on",
+  lvD.absent.live === true && lvD.absent.stored === true && lvD.absent.label === "on" && lvD.explicit === false,
+  JSON.stringify(lvD));
 
 // Item 44: where the table accepts more than one move, one answer is not mastery.
 const ways = await page.evaluate(() => {

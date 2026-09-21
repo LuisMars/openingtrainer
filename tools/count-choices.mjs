@@ -30,6 +30,7 @@ import { createInterface } from "node:readline";
 import { createZstdDecompress } from "node:zlib";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -90,21 +91,79 @@ function lockedKeys() {
   }
   return locked;
 }
+
+/* ---- committed (HEAD) lines from the Counted player choices section --------
+ * This section is the ONLY registry for these moves - unlike a drilled move
+ * (recorded in LINES) or a hand-named one (its own line above the marker), a
+ * counted choice exists nowhere else. Regenerating it wholesale from the
+ * current choices-player.json and current thresholds, as the old --tsv did,
+ * could silently narrow a position's SHARED job (a choice that no longer
+ * clears the bar drops out) or widen it (a newly-qualifying choice merges
+ * into the same searchmoves job) - either way the set searched together
+ * changes, and build-evals.mjs's shared job moves every score already stored
+ * there, not just the one that changed. An "alone" line is safe from that -
+ * each of its moves gets its own one-move job - but build-evals.mjs appends
+ * "alone" results to x in the TSV line's move order, so silently dropping a
+ * move that stops qualifying still drops its stored x entry, and inserting a
+ * newly-qualifying move ahead of older ones in that same line still reorders
+ * entries already shipped. So every line already committed here, alone or
+ * not, is reprinted verbatim; anything new is a line of its own, appended
+ * after. Read HEAD's own committed section, not the working tree's (which
+ * may already hold an in-progress, possibly wrong, regeneration) - HEAD is
+ * the last shipped, trusted table.
+ */
+function committedCountedLines() {
+  let text;
+  try {
+    text = execFileSync("git", ["show", "HEAD:research/named-moves.tsv"], { cwd: root, encoding: "utf8" });
+  } catch {
+    return new Map(); // no HEAD commit of the file yet (e.g. a fresh repo): nothing to freeze
+  }
+  const byKey = new Map(); // keyFen -> { lines: [raw tsv line...], moves: Set(uci already committed) }
+  if (!text.includes(TSV_MARK)) return byKey;
+  for (const raw of text.slice(text.indexOf(TSV_MARK)).split("\n")) {
+    const t = raw.trim();
+    if (!t || t.startsWith("#")) continue;
+    const [k, list] = t.split("\t");
+    if (!byKey.has(k)) byKey.set(k, { lines: [], moves: new Set() });
+    const e = byKey.get(k);
+    e.lines.push(t);
+    for (const u of list.split(" ")) e.moves.add(u);
+  }
+  return byKey;
+}
 if (process.argv.includes("--tsv")) {
   const doc = JSON.parse(readFileSync(join(root, out), "utf8"));
   const locked = lockedKeys();
+  const committed = committedCountedLines();
   const lines = [];
   let n = 0, nPos = 0, na = 0, naPos = 0;
+  // Every line already committed for a position, alone or shared, is
+  // reprinted exactly as shipped - whether or not every move in it still
+  // clears today's threshold - so build-evals.mjs reruns the same jobs and
+  // no stored score, or its place in x, moves.
+  for (const [, e] of committed) for (const raw of e.lines) {
+    lines.push(raw);
+    const [, list, mode] = raw.split("\t");
+    if (mode === "alone") { na += list.split(" ").length; naPos++; }
+    else { n += list.split(" ").length; nPos++; }
+  }
   for (const p of doc.positions) {
     const row = EVL[p.key];
     if (!row) continue;
     const scored = new Set(row.m.map((e) => e[0]));
     const shared = locked.get(p.key);
+    const already = committed.get(p.key);
     const want = p.moves.filter((mv) => !scored.has(mv.uci) && !(shared && shared.has(mv.uci)) &&
+      !(already && already.moves.has(mv.uci)) &&
       mv.games.some((g, b) => p.parent[b] >= MIN_PARENT && g >= MIN_GAMES && g / p.parent[b] >= MIN_SHARE))
       .map((mv) => mv.uci);
     if (!want.length) continue;
-    if (shared) { lines.push(p.key + "\t" + want.join(" ") + "\talone"); na += want.length; naPos++; }
+    // A position locked by a drilled/hand-named job, OR one already carrying
+    // any committed line of its own (shared or alone), must not have a new
+    // choice merged into an existing line: it gets a line of its own, marked
+    // alone, appended after.
+    if (shared || already) { lines.push(p.key + "\t" + want.join(" ") + "\talone"); na += want.length; naPos++; }
     else { lines.push(p.key + "\t" + want.join(" ")); n += want.length; nPos++; }
   }
   console.log(TSV_MARK + " the ranked five do not contain (tools/count-choices.mjs");
@@ -112,8 +171,11 @@ if (process.argv.includes("--tsv")) {
   console.log(`# games reaching the position in one rating band, and at least ${MIN_GAMES} times, so`);
   console.log("# the app may name it as a common choice; it needs a score before it may be");
   console.log(`# priced. ${n} moves at ${nPos} positions share one search per position. ${na} more, at`);
-  console.log(`# ${naPos} positions whose shared search is fixed by drilled or hand-named moves, are`);
-  console.log("# marked alone: each gets a search of its own, so no stored score moves.");
+  console.log(`# ${naPos} positions whose shared search is fixed by drilled or hand-named moves, or`);
+  console.log("# which already carry a committed line of their own, are marked alone: each move");
+  console.log("# gets a search of its own, so no stored score moves. Every line already committed");
+  console.log("# here is reprinted exactly as shipped, even if a move in it no longer clears the");
+  console.log("# threshold - dropping or reordering it here would move or drop its stored score.");
   console.log("# Keep this section last. Regenerate it, do not edit it.");
   for (const l of lines) console.log(l);
   process.exit(0);

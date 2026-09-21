@@ -148,6 +148,11 @@ const SHARP = [
   ["e4 g6 d4 Bg7 Nc3 d6 h4", "W1-D 3.1 the h4 lunge: the answer is timing-bound"],
   ["e4 g6 d4 Bg7 Nc3 d6 Be3 a6 h4", "W1-D 3.1 the same lunge from the Be3 tabiya"],
   ["e4 g6 d4 Bg7 e5", "W1-D 3.5 an early e5 space grab: common below master level"],
+  ["d4 Nf6 Nf3 e6 e3 Bb4", "W1-C 3.2 3...Bb4+: a check where the system move is illegal"],
+  ["d4 d5 Nf3 c5 e3 cxd4 exd4 Nc6 Bb5 Qa5", "W1-C 3.4 ...Qa5+ from another order: one block keeps the bishop"],
+  ["d4 d5 Nf3 Nf6 e3 Bg4 h3 Bxf3", "W1-C 3.5 ...Bxf3 at once: the recapture decides the structure"],
+  ["d4 d5 Nf3 c5 e3 cxd4", "W1-C 3.6 ...cxd4 before c3 or b3: the recapture fork"],
+  ["e4 g6 Bc4 Bg7 Qf3", "W6 two pieces on f7 before a knight has moved"],
 ];
 const sharp = [];
 for (const [pgn, why] of SHARP) {

@@ -56,6 +56,26 @@
 // reference on 5 rows (ohanlon:32 x3 6 v 5, ohanlon:34 Qf3 2 v 1, syn-clamp:24
 // Ra2 6 v 3) and now on none; exact agreement 4,043 -> 4,082 rows. Mean nodes per
 // verdict 16,698 -> 18,063 (p95 35,721 -> 38,012). A budget miss is silence.
+//
+// The page now runs the search in a Web Worker where it can, with MAT_CAP_BG
+// (250,000) instead of MAT_CAP; the main-thread fallback keeps MAT_CAP. This tool
+// measures MAT_CAP_BG by default (--main for the fallback) and also counts the
+// verdicts that would be silent on the fallback. Full run, 516 positions x 8 moves
+// = 4,110 verdicts, before -> after: compared 4,094 -> 4,110; OVERCLAIM 0 -> 0;
+// budget misses 16 -> 0 (silent on the fallback: 16, the same two positions). The
+// 16 new rows all equal the reference exactly (syn-hipc5:25 Bc6 and Ng3 3, the
+// other six 0; ohanlon:28 Re3 4, Nxf7 and Kh1 2, Nh3 and b3 1, g4, Qc2+ and Qxd4
+// 0), and none of the other 4,094 app swings moved. Largest verdict 219,450 nodes
+// (ohanlon:28 g4); mean 18,325, p95 38,012, p99 72,477.
+//
+// The last two underclaims, cz:16 e4 and cz-tab:16 e4, were this tool's own
+// horizon, not the app's: QCAP was 8, and after 9...dxe4 the exchanges on e4 run
+// past eight quiescence plies, so the reference stood pat mid-sequence a pawn up
+// for Black and called 9.e4 a pawn lost. The app's quiescence has no ply limit
+// and saw the sequence out: 0. At QCAP 9, 10, 11, 12, 14 and 20 the reference
+// says 0 as well, so QCAP is now 12. Same full run at QCAP 12: agree 4,108 ->
+// 4,110, underclaim 2 -> 0, exact swing agreement 4,098 -> 4,104 rows, app larger
+// than the reference on 0 rows; wall time unchanged (about 7 minutes in 10 shards).
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -65,8 +85,13 @@ const html = readFileSync(join(root, "docs/index.html"), "utf8");
 const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"));
 const ctx = {};
 new Function("ctx", js.slice(0, js.indexOf("/* ================= state ================= */")) +
-  "\nObject.assign(ctx,{LINES,startPos,make,legal,uciOf,san,matVerdict,VAL,inCheck,fenOf,matSearch,matReset:()=>{matNodes=0;}});")(ctx);
-const { LINES, startPos, make, legal, uciOf, san, matVerdict, VAL, inCheck, matSearch, matReset } = ctx;
+  "\nObject.assign(ctx,{LINES,startPos,make,legal,uciOf,san,matVerdict,VAL,inCheck,fenOf,matSearch,MAT_CAP,MAT_CAP_BG,matUsed:()=>matNodes,matReset:()=>{matNodes=0;matCap=MAT_CAP_BG;}});")(ctx);
+const { LINES, startPos, make, legal, uciOf, san, matVerdict, VAL, inCheck, matSearch, matReset,
+  MAT_CAP, MAT_CAP_BG, matUsed } = ctx;
+// The budget measured is the one the page uses where it can: MAT_CAP_BG, in a Web
+// Worker. --main measures the fallback instead (MAT_CAP, on the page's thread).
+// Either way the run also counts the verdicts the fallback leaves silent.
+const CAP = process.argv.includes("--main") ? MAT_CAP : MAT_CAP_BG;
 // The app's own `before`, for the breakdown on an overclaim row. matVerdict
 // resets the node budget itself; a bare matSearch does not, hence matReset.
 const appBefore = (pos) => { matReset(); try { return matSearch(pos, 4, -MATE, MATE, 0); } catch (e) { return NaN; } };
@@ -90,8 +115,9 @@ const noisy = (p, m) => p.b[m.t] || m.p || m.ep;   // capture, promotion, en pas
 // which is what the first run of this tool did. Left at 8: generous enough that
 // the captures dry up long before it is reached in these positions. Overridable
 // with MATSEARCH_QCAP so the choice can be shown not to matter rather than
-// asserted; at 12 it returns the same verdicts.
-const QCAP = +(process.env.MATSEARCH_QCAP || 8);
+// asserted. It did matter once: 8 was too short at cz:16 e4 (see the header), so
+// it is 12, and on the full run 12 changes nothing else.
+const QCAP = +(process.env.MATSEARCH_QCAP || 12);
 // Captures and promotions first, biggest victim first. Ordering visits the same
 // tree in a different order; it cannot change the value a full-window root
 // search returns. --selftest is what proves that rather than asserting it.
@@ -227,12 +253,16 @@ function picksOf(pos, want, n) {
 }
 
 let compared = 0, agree = 0, overclaim = [], underclaim = [], nulls = 0, rows = [];
+const nodes = [], fallbackSilent = [];
 const t0 = Date.now();
 for (const s of sample) {
   const picks = picksOf(s.pos, s.want, NMOV);
   let before = null;
   for (const m of picks) {
-    const v = matVerdict(s.pos, m);
+    const v = matVerdict(s.pos, m, CAP);
+    const used = matUsed();
+    nodes.push(used);
+    if (used > MAT_CAP) fallbackSilent.push(`${s.id} ${san(s.pos, m)} ${used}`);
     if (!v) { nulls++; continue; }
     if (before === null) before = search(s.pos, 4);
     const r = refSwing(s.pos, m, before);
@@ -252,12 +282,17 @@ for (const s of sample) {
 }
 const out = { positions: sample.length, of: spots.length, compared, agree,
   overclaim, underclaim: underclaim.length, underclaimRows: underclaim, nulls, rows,
+  cap: CAP, nodes, fallbackSilent,
   seconds: (Date.now() - t0) / 1000 };
 if (JSONOUT) writeFileSync(JSONOUT, JSON.stringify(out, null, 1));
 console.log(`sampled ${sample.length} of ${spots.length} drill positions, ${compared} wrong moves compared in ${out.seconds.toFixed(0)}s`);
 console.log(`  agree: ${agree}`);
 console.log(`  app claims a refutation the reference denies (OVERCLAIM): ${overclaim.length}`);
 console.log(`  app stays silent where the reference refutes (underclaim, conservative): ${underclaim.length}`);
-console.log(`  no verdict (node budget): ${nulls}`);
+console.log(`  no verdict (node budget ${CAP}): ${nulls}`);
+console.log(`  silent on the main-thread fallback (over ${MAT_CAP} nodes): ${fallbackSilent.length}`);
+const sorted = nodes.slice().sort((a, b) => a - b), pc = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+if (sorted.length) console.log(`  nodes per verdict: mean ${(sorted.reduce((a, b) => a + b, 0) / sorted.length).toFixed(0)}, p95 ${pc(0.95)}, p99 ${pc(0.99)}, max ${sorted[sorted.length - 1]}`);
+for (const u of underclaim.slice(0, 20)) console.log("    under: " + u);
 for (const o of overclaim.slice(0, 20)) console.log("    " + o);
 process.exit(overclaim.length ? 1 : 0);
