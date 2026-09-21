@@ -42,11 +42,20 @@
 // position), syn-london:21 and ohanlon:28. Mean nodes per verdict rose from
 // 14,390 to 16,377 (p99 38,374 to 47,582). The budget was left alone on purpose:
 // with it lifted, ohanlon:28 g4 claims a swing of 1 against the reference's 0.
-// That one is delta pruning in matQuiesce, which skips a capture that cannot
-// reach alpha on the victim alone and so misses a capture that gives check, where
-// the opponent has no stand-pat to fall back on - exempting checking captures
-// fixes it in a scratch copy at about twice the nodes. Today the budget turns it
-// into silence, which is safe; raise MAT_CAP only after fixing that.
+// That one was delta pruning in matQuiesce, which skipped a capture that cannot
+// reach alpha on the victim alone and so missed a capture that gives check, where
+// the opponent has no stand-pat to fall back on.
+//
+// Checking captures are now exempt from delta pruning and MAT_CAP went from
+// 60,000 to 110,000. Full run, 516 positions x 8 moves = 4,110 verdicts, before ->
+// after: compared 4,069 -> 4,094; OVERCLAIM 0 -> 0; underclaim 3 -> 2 (cz:16 e4
+// and cz-tab:16 e4 remain; def-ohanlon:27 dxc3, a mate the app missed, is found);
+// budget misses 41 -> 16 (syn-hipc5:25 and ohanlon:28, 8 each; ohanlon:28 g4 needs
+// 219,450 nodes and, with the budget lifted, returns 0, as the reference does).
+// The swing in pawns also agrees more often: the app gave a larger swing than the
+// reference on 5 rows (ohanlon:32 x3 6 v 5, ohanlon:34 Qf3 2 v 1, syn-clamp:24
+// Ra2 6 v 3) and now on none; exact agreement 4,043 -> 4,082 rows. Mean nodes per
+// verdict 16,698 -> 18,063 (p95 35,721 -> 38,012). A budget miss is silence.
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

@@ -9,10 +9,8 @@
 // SHAPE: CHO[keyFen] = [[games reaching the position, per band], [uci, san, games per
 // band...], ...]. A move ships when, in at least one band, 30+ games reached the
 // position and it was chosen 10+ times and in 5%+ of them. Every
-// shipped move has a score in EVL (m or x) except 25, all at positions whose forced
-// search is already fixed by drilled or hand-named moves; the app prices none of those
-// and says so. Frequency is not quality: nothing here says a move is good or bad; the
-// app asks gradeMove().
+// shipped move has a score in EVL (m or x). Frequency is not quality: nothing here
+// says a move is good or bad; the app asks gradeMove().
 // 63 positions, 285 moves.
 const CHO_BANDS=["under 1500","1500–1899","1900 and over"];
 const CHO_FLOOR={"parent":30,"games":10,"share":0.05};

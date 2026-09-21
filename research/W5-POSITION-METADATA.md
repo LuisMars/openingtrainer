@@ -65,22 +65,35 @@ ones to mention; it never grades.
 - Forced searches added: 68 moves at 31 positions (depth 20, the table's
   settings). Every drilled move's score and every existing `x` entry is
   byte-identical to the previous table; only new `x` entries were added.
-- 25 shipped choices stay **unscored**: their positions already carry a forced
-  search for drilled or hand-named moves, and `build-evals` searches all forced
-  moves at a position in one `searchmoves` job, so adding moves there moved the
-  drilled moves' own scores by up to 10 cp in a trial run (14 entries changed).
-  They are skipped on purpose (`lockedKeys` in the tool); the app names none of
-  them and says how many it cannot price. Fixing it means one job per forced
-  move in `tools/build-evals.mjs`, which would itself re-derive every existing
-  `x` score.
-- Priced as a concession or worse: 35 choices over the whole table; in the
-  selected band 21 (under 1500), 24 (1500–1899), 10 (1900 and over). Of the 24
-  at the default band, 22 are concessions (31 to 55 cp) and 2 inferior (`h-3e5`
-  ply 5: ...e6, 81 cp, 25% of 662 games; ...b6, 106 cp, 10%).
+- The other 25 shipped choices sit at 12 positions whose shared forced search
+  is fixed by drilled or hand-named moves: widening that one `searchmoves` job
+  moved the drilled moves' own scores by up to 10 cp in a trial (14 entries).
+  `--tsv` now marks them `alone` (third column), and `build-evals` searches each
+  in a job of its own (the one move, MultiPV 1, hash cleared, depth 20, cached
+  under its own key) and appends it to `x` after the shared job's entries. `x`
+  keeps one meaning, a searchmoves score for a move outside the ranked five;
+  `research/named-moves.tsv` records which entries came from a lone search.
+  Regenerating from cache before the change was byte-identical to the committed
+  table; after it, all 310 rows and every existing field (`m`, `x`, `pv`, `p`,
+  `xp`, `t`, the probes) are byte-identical once the 25 new `x`/`xp` entries are
+  stripped, and a second run reproduces the file exactly. All 285 shipped
+  choices are now priced; `--emit` and `test/verify.mjs` fail on any unscored.
+  The 25: 12 equal, 11 concessions, 2 inferior (1.Nf3 ...e5, -112 against -21;
+  1.d4 e6 2.e4 ...Qh4, -109 against -24; both over the floor only under 1500).
+- Priced as a concession or worse: 48 choices over the whole table (35 before
+  the 25 were priced); in the selected band 30 (under 1500), 30 (1500–1899), 14
+  (1900 and over), up from 21 / 24 / 10. Of the 30 at the default band, 28 are
+  concessions and 2 inferior (`h-3e5` ply 5: ...e6, 81 cp, 25% of 662 games;
+  ...b6, 106 cp, 10%). Positions with at least one to name: 20 / 23 / 9 (was
+  13 / 17 / 5). No position now tells the user a common choice has no stored
+  score.
 - Side effect on grading, none on drilled moves: all 516 drilled verdicts are
   unchanged. Two formation moves at Hippo plies that were unanalysed now carry a
   score inside the band, so the setup gate credits them (wall-move tally in
-  test/w2b-grading.mjs: in-band 72 to 74, unanalysed 37 to 35).
+  test/w2b-grading.mjs: in-band 72 to 74, unanalysed 37 to 35). Pricing the 25
+  lone searches left all 516 drilled verdicts unchanged again; six more
+  formation moves gained a score (tally in-band 84 to 87, out-of-band 5 to 8,
+  unanalysed 42 to 36): three now sit inside the band, three outside it.
 
 ## Gaps closed (2026-09-21)
 

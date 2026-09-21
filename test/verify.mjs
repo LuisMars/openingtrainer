@@ -430,9 +430,9 @@ if (!fail) console.log(`✓ page's stated counts match the data (${LINES.length}
       const m = findMove(pos, uci);
       if (!m) { bad(`CHO ${key}: ${uci} is not legal`); continue; }
       if (san(pos, m) !== s) bad(`CHO ${key}: ${uci} labelled ${s}, engine says ${san(pos, m)}`);
-      // Unscored is allowed only where the row already carries a forced search
-      // (row.x), which count-choices must not widen: see lockedKeys there.
-      if (!scored.has(uci)) { unscored++; if (!row.x) bad(`CHO ${key}: ${s} has no score in EVL and nothing stops it getting one`); }
+      // Every shipped choice is priced: where a shared forced search is fixed,
+      // count-choices marks the choice "alone" and it gets a search of its own.
+      if (!scored.has(uci)) { unscored++; bad(`CHO ${key}: ${s} has no score in EVL; rerun count-choices --tsv and build-evals --force`); }
       if (g.length !== parent.length || g.some((x, b) => !Number.isInteger(x) || x < 0 || x > parent[b]))
         bad(`CHO ${key}: ${s} counts ${JSON.stringify(g)} do not fit parent ${JSON.stringify(parent)}`);
       if (!g.some((x, b) => parent[b] >= CHO_FLOOR.parent && x >= CHO_FLOOR.games && x / parent[b] >= CHO_FLOOR.share))
@@ -441,7 +441,7 @@ if (!fail) console.log(`✓ page's stated counts match the data (${LINES.length}
     }
   }
   if (!nPos) bad("CHO is empty: run tools/count-choices.mjs --emit");
-  if (fail === before) console.log(`\u2713 counted choices: ${nPos} positions, ${nMoves} moves, all legal; ${unscored} unscored at locked rows; ${mistakes} priced as a concession or worse`);
+  if (fail === before) console.log(`\u2713 counted choices: ${nPos} positions, ${nMoves} moves, all legal and scored; ${mistakes} priced as a concession or worse`);
 }
 
 if (fail) { console.error(`\n${fail} problem(s). Do not ship.`); process.exit(1); }

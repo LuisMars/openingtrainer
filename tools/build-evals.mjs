@@ -320,22 +320,32 @@ const forcedJobs = new Map(); // job -> [uci…] in the order asked
 // lesson without the repertoire ever playing them - a line's note may name a
 // counter as the answer to a threat. Those need a number too, or the note is
 // asserting something the shipped table cannot support.
+//
+// An optional third column "alone" searches each listed move in its OWN job
+// (searchmoves with that one move, MultiPV 1, hash cleared, same depth), never
+// merged into the position's shared job. The shared job's scores depend on the
+// set of moves searched together, so widening it moves numbers already shipped;
+// a job of one move is a key of its own and touches nothing else. Its entry is
+// appended to x after the shared job's entries.
 const named = new Map();
+const alone = new Map(); // keyFen -> [uci…] each searched by itself
 {
   const i = process.argv.indexOf("--force");
   if (i > 0 && process.argv[i + 1]) {
     for (const raw of readFileSync(process.argv[i + 1], "utf8").split("\n")) {
       const line = raw.trim();
       if (!line || line.startsWith("#")) continue;
-      const [f, list] = line.split("\t");
+      const [f, list, mode] = line.split("\t");
       if (!list) throw new Error(`--force line has no move list: ${line}`);
+      if (mode !== undefined && mode !== "alone") throw new Error(`--force third column must be "alone": ${line}`);
       const re = keyFen(fenPos(f));
       if (re !== f) throw new Error(`--force key is not keyFen output:\n  got  ${f}\n  want ${re}`);
       if (!wanted.has(f)) throw new Error(`--force key is not an analysed position: ${f}`);
       const pos = fenPos(f);
       for (const u of list.split(" ")) if (!findMove(pos, u))
         throw new Error(`--force move ${u} is not legal in ${f}`);
-      named.set(f, (named.get(f) || []).concat(list.split(" ")));
+      const into = mode === "alone" ? alone : named;
+      into.set(f, (into.get(f) || []).concat(list.split(" ")));
     }
     console.log(`--force: named moves at ${named.size} positions from ${process.argv[i + 1]}`);
   }
@@ -362,6 +372,20 @@ for (const [fen, ucis] of named) {
   forcedJobs.set(fen + "\t" + all.join(" "), all);
 }
 await runJobs([...forcedJobs.keys()], "repertoire moves outside the top five");
+
+// "alone" moves: one job each, skipping any the top five or the shared job
+// already scores (a duplicate would put one move in x twice).
+const aloneJobs = new Map(); // keyFen -> [job…] in the order asked
+for (const [fen, ucis] of alone) {
+  const pvs = results.get(fen);
+  if (!pvs) continue;
+  const inTop = new Set(pvs.map((pv) => pv.moves[0]));
+  const shared = [...forcedJobs.keys()].find((j) => j.startsWith(fen + "\t"));
+  const joint = new Set(shared ? forcedJobs.get(shared) : []);
+  const jobs = [...new Set(ucis)].filter((u) => !inTop.has(u) && !joint.has(u)).map((u) => fen + "\t" + u);
+  if (jobs.length) aloneJobs.set(fen, jobs);
+}
+await runJobs([...aloneJobs.values()].flat(), "moves searched alone");
 
 // --- check the probes --------------------------------------------------------
 const best = (fen) => results.get(fen)[0];
@@ -534,6 +558,9 @@ const header =
   "// searchmoves. x is not a ranking and not a sixth-best claim; it exists because\n" +
   "// 76 of the 442 stored drill moves are outside the five, the Hippopotamus's own\n" +
   "// 1...g6 among them, and an unranked move must not be read as a bad one.\n" +
+  "// Most x entries at a position come from one searchmoves job over all of\n" +
+  "// them; entries named \"alone\" in research/named-moves.tsv follow, each from\n" +
+  "// its own one-move job, so adding one never moves a number already stored.\n" +
   "// p:[[san,...],...] is aligned with m and xp with x: a short SAN line for every\n" +
   "// stored move from the search that scored it (p[0] equals pv), so each candidate\n" +
   "// has its own resulting position. t:[uci,san,cp,mate,[san,...]] is the THREAT:\n" +
@@ -564,6 +591,13 @@ for (const [pvPlies, maxMoves] of [[PV_PLIES, 5], [4, 5], [2, 5], [6, 3], [4, 3]
       // carries the same short SAN line for these moves.
       const xr = buildRow(fen, results.get(job), PV_PLIES, forcedJobs.get(job).length);
       if (xr.row.m.length) { EVL[fen].x = xr.row.m; EVL[fen].xp = xr.lines; }
+    }
+    // Moves searched alone go after the shared job's entries, so the entries
+    // already there keep their places and their bytes.
+    for (const j of aloneJobs.get(fen) || []) {
+      const ar = buildRow(fen, results.get(j), PV_PLIES, 1);
+      (EVL[fen].x ||= []).push(ar.row.m[0]);
+      (EVL[fen].xp ||= []).push(ar.lines[0]);
     }
     // t: the threat - the opponent's best move were it their turn, from the
     // flipped search: [uci, san, cp, mate, [san pv…]], scores from the

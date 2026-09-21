@@ -52,15 +52,18 @@ const out = arg("out", "research/choices-player.json");
 // contract's 30-game floor), and at least MIN_GAMES times. Below that it can never
 // be shown, so searching it would only grow the table.
 const MIN_PARENT = 30, MIN_SHARE = 0.05, MIN_GAMES = 10;
-// build-evals searches every forced move at one position in ONE searchmoves job,
-// and the scores depend on the set searched together. A position that already has
-// such a job - a drilled move outside the five, or a hand-named move - must not get
-// more moves added to it, or the drilled moves' own scores shift by a few
-// centipawns and grading changes under the repertoire. Those positions are left
-// out here; their unscored choices ship unpriced and the app says so.
+// build-evals searches the forced moves at one position in ONE shared searchmoves
+// job, and the scores depend on the set searched together. A position that already
+// has such a job - a drilled move outside the five, or a hand-named move - is
+// "locked": widening its shared job would shift the drilled moves' own scores by a
+// few centipawns and change grading under the repertoire. Choices there are listed
+// with the third column "alone", which build-evals searches one move per job and
+// appends to x, leaving the shared job and every number it produced untouched.
 const TSV_MARK = "# Counted player choices";
+// keyFen -> Set(uci in the locked position's shared job)
 function lockedKeys() {
-  const locked = new Set();
+  const locked = new Map();
+  const add = (k, u) => { if (!locked.has(k)) locked.set(k, new Set()); locked.get(k).add(u); };
   const drilled = new Map();
   for (const l of LINES) {
     let p = l.start === START ? startPos() : fenPos(l.start.indexOf(" ") > 0 ? l.start : l.start + " w - -");
@@ -75,13 +78,15 @@ function lockedKeys() {
   }
   for (const [k, us] of drilled) {
     const row = EVL[k];
-    if (row && [...us].some((u) => !row.m.some((e) => e[0] === u))) locked.add(k);
+    if (row) for (const u of us) if (!row.m.some((e) => e[0] === u)) add(k, u);
   }
   const named = readFileSync(join(root, "research/named-moves.tsv"), "utf8");
   const hand = named.includes(TSV_MARK) ? named.slice(0, named.indexOf(TSV_MARK)) : named;
   for (const raw of hand.split("\n")) {
     const t = raw.trim();
-    if (t && !t.startsWith("#")) locked.add(t.split("\t")[0]);
+    if (!t || t.startsWith("#")) continue;
+    const [k, list] = t.split("\t");
+    for (const u of list.split(" ")) add(k, u);
   }
   return locked;
 }
@@ -89,23 +94,26 @@ if (process.argv.includes("--tsv")) {
   const doc = JSON.parse(readFileSync(join(root, out), "utf8"));
   const locked = lockedKeys();
   const lines = [];
-  let n = 0, skipped = 0;
+  let n = 0, nPos = 0, na = 0, naPos = 0;
   for (const p of doc.positions) {
     const row = EVL[p.key];
     if (!row) continue;
     const scored = new Set(row.m.map((e) => e[0]));
-    const want = p.moves.filter((mv) => !scored.has(mv.uci) && mv.games.some((g, b) =>
-      p.parent[b] >= MIN_PARENT && g >= MIN_GAMES && g / p.parent[b] >= MIN_SHARE)).map((mv) => mv.uci);
+    const shared = locked.get(p.key);
+    const want = p.moves.filter((mv) => !scored.has(mv.uci) && !(shared && shared.has(mv.uci)) &&
+      mv.games.some((g, b) => p.parent[b] >= MIN_PARENT && g >= MIN_GAMES && g / p.parent[b] >= MIN_SHARE))
+      .map((mv) => mv.uci);
     if (!want.length) continue;
-    if (locked.has(p.key)) { skipped += want.filter((u) => !(row.x || []).some((e) => e[0] === u)).length; continue; }
-    lines.push(p.key + "\t" + want.join(" ")); n += want.length;
+    if (shared) { lines.push(p.key + "\t" + want.join(" ") + "\talone"); na += want.length; naPos++; }
+    else { lines.push(p.key + "\t" + want.join(" ")); n += want.length; nPos++; }
   }
   console.log(TSV_MARK + " the ranked five do not contain (tools/count-choices.mjs");
   console.log(`# --tsv, from ${out}). Each was chosen in at least ${MIN_SHARE * 100}% of at least ${MIN_PARENT}`);
   console.log(`# games reaching the position in one rating band, and at least ${MIN_GAMES} times, so`);
   console.log("# the app may name it as a common choice; it needs a score before it may be");
-  console.log(`# priced. ${n} moves at ${lines.length} positions. ${skipped} more sit at positions that already`);
-  console.log("# have a forced search, which this section must not change; they stay unscored.");
+  console.log(`# priced. ${n} moves at ${nPos} positions share one search per position. ${na} more, at`);
+  console.log(`# ${naPos} positions whose shared search is fixed by drilled or hand-named moves, are`);
+  console.log("# marked alone: each gets a search of its own, so no stored score moves.");
   console.log("# Keep this section last. Regenerate it, do not edit it.");
   for (const l of lines) console.log(l);
   process.exit(0);
@@ -115,9 +123,8 @@ if (process.argv.includes("--tsv")) {
 // Every drilled position with at least one choice over the floor in some band.
 // All such choices ship, good and bad alike: which of them is a mistake is the
 // grader's call in the app, read from EVL, never this file's. Every one must have
-// a score by now (the --tsv section, through build-evals --force) unless its
-// position is locked (see lockedKeys); anything else fails here rather than ship a
-// choice the app could name and not price.
+// a score by now (the --tsv section, through build-evals --force); anything else
+// fails here rather than ship a choice the app could name and not price.
 if (process.argv.includes("--emit")) {
   const doc = JSON.parse(readFileSync(join(root, out), "utf8"));
   const CHO = {};
@@ -138,12 +145,9 @@ if (process.argv.includes("--emit")) {
     CHO[p.key] = [p.parent, ...keep.map((mv) => [mv.uci, mv.san, ...mv.games])];
     nMoves += keep.length;
   }
-  // Unscored is allowed only where --tsv deliberately left the position alone.
-  const locked = lockedKeys();
-  const stray = unscored.filter((j) => !locked.has(j.split("\t")[0]));
-  if (stray.length) throw new Error(`${stray.length} counted choices have no score; ` +
+  if (unscored.length) throw new Error(`${unscored.length} counted choices have no score; ` +
     "replace the section of research/named-moves.tsv from `node tools/count-choices.mjs --tsv` " +
-    "and rerun tools/build-evals.mjs --force research/named-moves.tsv first:\n  " + stray.join("\n  "));
+    "and rerun tools/build-evals.mjs --force research/named-moves.tsv first:\n  " + unscored.join("\n  "));
   const f = doc.filters;
   const body = `// Generated by tools/count-choices.mjs --emit - do not edit. What players of the
 // trained colour actually chose at the positions the trainer drills, counted, never
@@ -156,10 +160,8 @@ if (process.argv.includes("--emit")) {
 // SHAPE: CHO[keyFen] = [[games reaching the position, per band], [uci, san, games per
 // band...], ...]. A move ships when, in at least one band, ${MIN_PARENT}+ games reached the
 // position and it was chosen ${MIN_GAMES}+ times and in ${MIN_SHARE * 100}%+ of them. Every
-// shipped move has a score in EVL (m or x) except ${unscored.length}, all at positions whose forced
-// search is already fixed by drilled or hand-named moves; the app prices none of those
-// and says so. Frequency is not quality: nothing here says a move is good or bad; the
-// app asks gradeMove().
+// shipped move has a score in EVL (m or x). Frequency is not quality: nothing here
+// says a move is good or bad; the app asks gradeMove().
 // ${Object.keys(CHO).length} positions, ${nMoves} moves.
 const CHO_BANDS=${JSON.stringify(f.bands.map((b) => b.label))};
 const CHO_FLOOR=${JSON.stringify({ parent: MIN_PARENT, games: MIN_GAMES, share: MIN_SHARE })};

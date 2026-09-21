@@ -1187,3 +1187,19 @@ commit and push.
    The message now appears at once and the verdict follows; a stale result
    cannot land on a later move. check-matsearch: 0 overclaims.
 `npm test`: exit 0, 121 checks.
+
+## Follow-ups 4-5 — 2026-09-21
+
+4. Delta pruning no longer skips a capture that gives check; MAT_CAP
+   60,000 -> 110,000. Full check (4,110 verdicts): 0 overclaims,
+   underclaims 3 -> 2, silent cap hits 41 -> 16 (syn-hipc5:25, ohanlon:28),
+   app swing larger than the reference 5 rows -> 0. Worst case about 0.35 s
+   in desktop Node; the verdict is already off the answer path.
+   ohanlon:28 g4 stays silent at the cap and returns the correct 0 with the
+   cap lifted (pinned in w1b 7b, which fails on the old engine).
+5. The 25 unpriced common choices are priced, each move searched on its own
+   (`alone` in named-moves.tsv) so no stored score moved. Checked
+   independently: 310 rows, 0 mismatches, 25 entries appended, probes
+   identical. 12 equal, 11 concessions, 2 inferior. Mistakes priced 35 -> 48;
+   every shipped choice is now scored.
+`npm test`: exit 0, 122 checks.

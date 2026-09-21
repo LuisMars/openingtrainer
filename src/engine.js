@@ -206,7 +206,14 @@ function perft(p,d){
    folded into the same scale as MATE minus plies from the root, so a nearer mate
    outranks a farther one and any score beyond MATE-64 can only mean a forced mate
    inside the search depth - which is the one evaluation claim this search licenses. */
-const MATE=1000,MAT_CAP=60000,MAT_STOP={};
+// MAT_CAP, measured over every drill position x 8 wrong moves (4,110 verdicts):
+// mean 18,063 nodes, p95 38,012, p99 72,477; 16 verdicts (two positions,
+// syn-hipc5:25 and ohanlon:28) need 141,000-219,000 and stay silent. A verdict at
+// the cap takes about 0.35 s in desktop Node; finishing the last two positions
+// would need 225,000 and about 0.7 s, twice the worst-case stall on a phone for 16
+// verdicts. 60,000 left 41 verdicts silent (73 once checking captures were no
+// longer delta-pruned).
+const MATE=1000,MAT_CAP=110000,MAT_STOP={};
 // matTests counts legality tests (legalMove calls, from anywhere), reset with
 // matNodes per verdict: tests per node is the per-node cost the regression check
 // in test/w1b-engine.mjs holds down, because wall time on a loaded box cannot.
@@ -261,10 +268,13 @@ function matOrder(p,ms){
    comparisons, five of which reached the user as a false sentence. Dropping it
    costs about a fifth more nodes on average and turns 25 of 3,880 sampled
    verdicts into budget misses (was 1); a budget miss is silence, not a claim.
-   Delta pruning is still not exact: a capture that gives check denies the
-   opponent a stand-pat, so it can win more than its victim. One sampled verdict
-   (ohanlon:28 g4) would overclaim for that reason if MAT_CAP were raised enough
-   to finish it; at the current budget it is silent. See tools/check-matsearch.mjs.
+   Delta pruning spares a capture that gives check: the side in check has no
+   stand-pat, so such a capture can win far more than its victim. Pruning it made
+   ohanlon:28 g4 claim a swing of 1 against the exact reference's 0 once the budget
+   was high enough to finish the search, and understated real swings elsewhere
+   (ohanlon:30 by four pawns; four mates at def-ohanlon:27 went unseen). The check
+   test is paid only on a capture that would otherwise be pruned: it is made, and
+   skipped only if the opponent's king is not attacked.
    In check there is no stand-pat at all. A side in check cannot decline to move,
    so the static score is not a lower bound on what it can hold, and a cutoff taken
    on it is a bound the node cannot claim - measured, on R6k/1R6/8/8/8/8/q7/6K1 b
@@ -305,8 +315,12 @@ function matQuiesce(p,alpha,beta,ply){
   }
   matOrder(p,ms);
   for(const m of ms){
-    if(!chk&&stand+matGain(p,m)<alpha)continue;
-    const s=-matQuiesce(make(p,m),-beta,-alpha,ply+1);
+    let q=null;
+    if(!chk&&stand+matGain(p,m)<alpha){
+      q=make(p,m);
+      if(!attacked(q.b,kingIdx(q.b,q.w),!q.w))continue;
+    }
+    const s=-matQuiesce(q||make(p,m),-beta,-alpha,ply+1);
     if(s>=beta)return s;
     if(s>alpha)alpha=s;
   }

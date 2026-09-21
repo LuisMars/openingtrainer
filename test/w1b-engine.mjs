@@ -203,13 +203,36 @@ const replay = (sans) => {
   if (!fail) console.log("✓ quiescence sees captures that win material back, not only recaptures");
 }
 
+// 7b. Delta pruning in quiescence spares a capture that gives check: the side in
+//     check has no stand-pat, so such a capture can win far more than its victim.
+//     Pruning it made ohanlon:28 g4 claim a swing of 1 against the exact
+//     reference's 0 once the node budget was lifted enough to finish it. The
+//     verdict needs about 219,000 nodes, past MAT_CAP, so as shipped it must be
+//     silent; with the budget lifted in a copy of the bundle it must claim nothing.
+{
+  const fen = "r1bq3r/pp1n1pp1/3bp1k1/6N1/3p3P/2P5/PP3PP1/R1BQR1K1 w - - 0 1";
+  const p = fenPos(fen), m = findMove(p, "g2g4");
+  const v = matVerdict(p, m);
+  if (v && v.swing >= 1) bad(`ohanlon:28 g4 claims a swing of ${v.swing} (reference: 0), reply ${v.san}`);
+  const big = {};
+  const lifted = bundle.replace(/MAT_CAP=\d+/, "MAT_CAP=1000000");
+  if (lifted === bundle) bad("MAT_CAP not found in the bundle");
+  new Function("ctx", lifted + "\nObject.assign(ctx,{fenPos,findMove,matVerdict});")(big);
+  const q = big.fenPos(fen), w = big.matVerdict(q, big.findMove(q, "g2g4"));
+  if (!w) bad("ohanlon:28 g4 ran out of a 1,000,000-node budget");
+  else if (w.swing >= 1) bad(`ohanlon:28 g4 with the budget lifted claims a swing of ${w.swing} (reference: 0), reply ${w.san}`);
+  if (!fail) console.log(`✓ a checking capture is not delta-pruned: ohanlon:28 g4 ${v ? "swing " + v.swing : "silent at MAT_CAP"}, swing ${w.swing} with the budget lifted`);
+}
+
 // 8. The search stays cheap enough to run on the page. matVerdict runs on the main
 //    thread (deferred, so the move's message paints first) and wall time on a loaded
 //    CI box proves nothing, so this counts work instead - both numbers are exact and
 //    machine-independent. Over every 25th drill position x 3 wrong moves (63
-//    verdicts): mean search nodes, measured 17,782, which catches an ordering or
+//    verdicts): mean search nodes, measured 18,650 (17,782 before checking
+//    captures were exempted from delta pruning), which catches an ordering or
 //    pruning change that blows the tree up; and legality tests per node, measured
-//    4.95, which catches per-node cost creeping back. Quiescence used to run the
+//    5.51 (was 4.95), which catches per-node cost creeping back. Both ceilings sit
+//    about a tenth and a quarter above the measurement. Quiescence used to run the
 //    full legal() at every node, 14.3 tests per node on the same sample and about
 //    five times the wall time; it now tests only the moves it will search.
 {
@@ -233,8 +256,8 @@ const replay = (sans) => {
     }
   });
   const mean = nodes / n, per = tests / nodes;
-  if (mean > 19500) bad(`material search mean ${mean.toFixed(0)} nodes per verdict, ceiling 19,500 (was 17,782)`);
-  if (per > 7) bad(`material search does ${per.toFixed(2)} legality tests per node, ceiling 7 (was 4.95)`);
+  if (mean > 20500) bad(`material search mean ${mean.toFixed(0)} nodes per verdict, ceiling 20,500 (was 18,650)`);
+  if (per > 7) bad(`material search does ${per.toFixed(2)} legality tests per node, ceiling 7 (was 5.51)`);
   if (!fail) console.log(`✓ material search cost held: ${n} verdicts, ${mean.toFixed(0)} nodes mean, ${per.toFixed(2)} legality tests per node`);
 }
 
