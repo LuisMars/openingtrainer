@@ -1,7 +1,9 @@
 # Implementation waves and lanes
 
-Status: Waves 0-4 complete with their gates met; Wave 5 complete for lanes A, B
-and E, outstanding for C and D. Per-task status, artifacts and validation
+Status: Waves 0-5 complete with their gates met, and every item in
+REPERTOIRE-PLAN.md ticked (2026-09-21). Content gaps that remain are recorded,
+not closed: the coverage matrix lists 235 replies with no line, among them rare
+forcing ones such as 3...Bb4+ (see research/METHOD.md). Per-task status, artifacts and validation
 evidence are in [TASK-LEDGER.md](TASK-LEDGER.md); the original plan's checklist
 is reconciled at the end of [REPERTOIRE-PLAN.md](REPERTOIRE-PLAN.md).
 Scope: [REPERTOIRE-PLAN.md](REPERTOIRE-PLAN.md).

@@ -1162,3 +1162,13 @@ commit and push.
   Shuffle served another board. Now it gives the count and cost only; the new
   check fails on the old code and passes on the fix.
 - `npm test`: exit 0, 115 checks. All REPERTOIRE-PLAN.md items ticked.
+- W5-C/W5-D re-run over the content written since `324f3ed`:
+  - Coverage matrix regenerated: only the lists of lines credited changed
+    (h-g4b5, def-ohanlon, def-kolt added); covered 88, transposes 14,
+    missing 235.
+  - Absolute claims in new text checked against both tables. "The only move
+    that keeps the balance" at def-ohanlon ...Qf6 holds: the next move is
+    123 cp behind at depth 20 and 140 at depth 28. "After h4 the file must be
+    shut with ...h5" did not: ...h6 is 11 cp behind and grades equal. Both
+    storm plans now give the numbers instead.
+  - `IMPLEMENTATION-WAVES.md` status updated.
