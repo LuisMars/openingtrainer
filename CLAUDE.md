@@ -212,6 +212,30 @@ so the line gets its opening name, and `npm test`.
 - User-facing prose is British-flavoured, direct, no exclamation marks, and never
   promises more than the code does.
 
+## Tickets and features
+
+`TICKETS.md` is the single list of open work. `FEATURES.md` is the other half
+of that pair: `TICKETS.md` is what is not built, `FEATURES.md` is what is.
+
+- A ticket exists once. Search before you add one.
+- **When work ships, delete its ticket** in the same change. Do not tick it,
+  strike it or move it to a "done" section. Git history is the record.
+- **When a feature ships, write it into `FEATURES.md`** in the same change.
+  Two lists edited at different moments drift, and the one nobody edits
+  becomes a lie.
+- **If you cannot point at the code that implements a line of `FEATURES.md`,
+  the line does not belong there.** This repo has shipped confidently wrong
+  documentation before; a feature list is the document a reader is least able
+  to check.
+- `FEATURES.md` is written in ASD-STE100: one word per meaning, active voice,
+  simple tenses, one fact per sentence. It is a list, not a manual: keep it to
+  a two-minute read. Numbers that change with every content batch (line
+  counts, position counts) belong in README, which the build checks, not here.
+- A ticket that needs the owner's decision goes under "Needs a decision" and
+  stays there until they answer. Do not guess the answer.
+- `TASK-LEDGER.md` keeps the evidence for past work (measurements, counts,
+  sources). It is a record, not a tracker: nothing open lives there.
+
 ## What is deliberately absent
 
 No engine, no PGN import, no user-added lines, no service worker. Each is a real piece

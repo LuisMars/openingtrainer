@@ -348,6 +348,7 @@ solutions were validated the same way.
 
 ```
 build.mjs                  concatenates src/* into docs/index.html (no bundler, no framework)
+FEATURES.md, TICKETS.md    what the trainer does today; the open work
 research/                  coverage matrix, counted frequency data, contracts, grading policy, audit lists
 src/
   styles.css               all CSS, inlined whole into the shipped <style> block

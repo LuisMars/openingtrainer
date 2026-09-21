@@ -444,5 +444,17 @@ if (!fail) console.log(`✓ page's stated counts match the data (${LINES.length}
   if (fail === before) console.log(`\u2713 counted choices: ${nPos} positions, ${nMoves} moves, all legal and scored; ${mistakes} priced as a concession or worse`);
 }
 
+// TICKETS.md holds open work only: a shipped ticket is deleted, never ticked or
+// moved to a done section (CLAUDE.md, "Tickets and features"). Enforced here so
+// the rule does not depend on memory.
+{
+  const before = fail;
+  let t = "";
+  try { t = readFileSync(join(root, "TICKETS.md"), "utf8"); } catch { bad("TICKETS.md is missing"); }
+  if (/\u2705|\[x\]/i.test(t)) bad("TICKETS.md has a tick mark: delete a shipped ticket instead");
+  if (/^#+\s*(done|shipped|closed)\b/im.test(t)) bad("TICKETS.md has a done section: delete shipped tickets instead");
+  if (fail === before) console.log("\u2713 TICKETS.md holds open work only");
+}
+
 if (fail) { console.error(`\n${fail} problem(s). Do not ship.`); process.exit(1); }
 console.log("\nAll checks passed.");
