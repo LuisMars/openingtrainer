@@ -14,6 +14,12 @@
     --amber:#e0a13c; --moss:#7fb06a; --rust:#cd564b;
     --sqL:#e4dabc; --sqD:#48645f; --pcW:#f6f1e6; --pcB:#12161b; --edgeW:#12161b; --edgeB:#ded5bd;
     --text:#e2e8ef; --dim:#8798aa; --w:min(94vw,430px);
+    /* Board arrows. Every board palette has one light and one dark square colour,
+       so each arrow is drawn over a dark halo: the hue carries against the dark
+       squares, the halo against the light ones, and group opacity keeps the pieces
+       underneath readable. */
+    --arGood:#23a152; --arBad:#e0473b; --arReply:#3d7fe6;
+    --arHint:var(--amber); --arHalo:#0a0e14;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:radial-gradient(1100px 520px at 50% -12%,#1a2431 0%,var(--ink) 62%);
@@ -156,6 +162,23 @@
   .coord.f{right:3px;bottom:1px} .coord.r{left:3px;top:1px}
   .sq.l .coord{color:#7c8571} .sq.d .coord{color:#cfd7c6}
   svg.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
+  .ar{--c:var(--arGood);opacity:.8}
+  .ar line{stroke-linecap:butt}
+  .ar .halo{stroke:var(--arHalo);opacity:.55}
+  .ar .body{stroke:var(--c)}
+  .ar polygon{fill:var(--c);stroke:var(--arHalo);stroke-width:.035;stroke-opacity:.55;stroke-linejoin:round}
+  .ar.alt{opacity:.6}
+  .ar.bad{--c:var(--arBad)}
+  .ar.reply,.ar.ref{--c:var(--arReply);opacity:.78}
+  .ar.reply line,.ar.ref line{stroke-dasharray:.26 .15}
+  .ar.hint{--c:var(--arHint);opacity:.85}
+  .akey{display:flex;flex-wrap:wrap;gap:3px 12px;padding:5px 2px 0;font-size:10.5px;color:var(--dim)}
+  .akey:empty{display:none}
+  .ak{display:inline-flex;align-items:center;gap:5px}
+  .ak i{display:inline-block;width:16px;height:0;border-top:3px solid var(--arGood)}
+  .ak.alt i{border-top-width:2px;opacity:.75}
+  .ak.bad i{border-top-color:var(--arBad)}
+  .ak.reply i,.ak.ref i{border-top:2px dashed var(--arReply)}
   .tray{display:flex;justify-content:space-between;align-items:center;min-height:26px;
     background:var(--sqL);border:1px solid #070a0e;border-top:0;padding:3px 6px;
     font-family:"IBM Plex Mono",monospace;font-size:11px;color:#4a5a52}

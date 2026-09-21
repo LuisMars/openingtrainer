@@ -1375,9 +1375,10 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
 // prices as a concession or worse, printed with its stored count and score.
 {
   const info = await page.evaluate(() => {
-    const out = { live: 0, leaks: [], shuffleName: [], hidden: [], answered: 0, sample: null, offbook: null, shuffleCtx: null, notMistake: [] };
+    const out = { live: 0, leaks: [], shuffleName: [], hidden: [], answered: 0, sample: null, offbook: null, shuffleCtx: null, notMistake: [], arrows: [], planted: 0 };
+    const drawn = () => [...document.querySelectorAll("#arrows g.ar")].map((g) => ({ u: g.dataset.u, c: g.dataset.c }));
     const reset = (mode, li, ply) => {
-      S.screen = "board"; S.mode = mode; S.li = li; S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0;
+      S.screen = "board"; S.mode = mode; S.li = li; S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0; S.ans = null; S.missAt = null; S.arrow = null;
       S.passKeys = new Set(); clearFree(); if (S.pending && S.pending !== 1) clearTimeout(S.pending); S.pending = 0;
     };
     LINES.forEach((l, li) => {
@@ -1389,6 +1390,23 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
           if (el("infoBox").style.display === "none") { out.hidden.push(l.id + ":" + p + ":" + mode); continue; }
           out.live++;
           if (refuteLeaks(txt, want[0], want[1])) out.leaks.push(l.id + ":" + p + ":" + mode + " " + txt.slice(0, 80));
+          // Board arrows: none at all on a live question. Then plant the full answer
+          // set for this very position (first choice, accepted moves, reply, a
+          // refused move) both as an answered set and as a live one: the answered
+          // set must not draw while the question is live, and a live set may draw
+          // only the refused move and its refutation, never the answer.
+          if (drawn().length) out.arrows.push(l.id + ":" + p + ":" + mode + " unprompted " + JSON.stringify(drawn()));
+          const pos0 = posAt(l, p), wrong = legal(pos0).map(uciOf).find((u) => u !== want[0]);
+          S.missAt = { k: keyFen(pos0), u: wrong };
+          const full = answerArrows(pos0, want[0], want[0]);
+          for (const flag of [false, true]) {
+            setArrows(full, flag);
+            for (const a of drawn()) {
+              out.planted++;
+              if (a.c !== "bad") out.arrows.push(l.id + ":" + p + ":" + mode + " planted " + a.c + " " + a.u);
+            }
+          }
+          S.ans = null; S.missAt = null; drawArrows();
           if (mode === "shuffle" && l.name && txt.indexOf(l.name) >= 0) out.shuffleName.push(l.id + ":" + p);
         }
         // every priced mistake is priced, counted and never a move some line plays here
@@ -1423,6 +1441,9 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     stats.pos = {};
     return out;
   });
+  check("no answer arrow is ever drawn on a live question (Drill and Shuffle, every drill ply)",
+    info.live > 0 && info.arrows.length === 0 && info.planted > 0,
+    JSON.stringify({ live: info.live, planted: info.planted, bad: info.arrows.slice(0, 3) }));
   check("details panel never leaks the live answer (Drill and Shuffle, every drill ply)",
     info.live > 0 && info.leaks.length === 0 && info.shuffleName.length === 0 && info.hidden.length === 0,
     JSON.stringify({ live: info.live, leaks: info.leaks.slice(0, 3), shuffleName: info.shuffleName.slice(0, 3), hidden: info.hidden.slice(0, 3) }));
@@ -1497,6 +1518,199 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     th.live + " while live (" + th.liveHidden + " held back until answered); " + th.notes + " move notes");
   console.log("  sample live: " + JSON.stringify(th.sampleLive));
   console.log("  sample answered: " + JSON.stringify(th.sampleAns).slice(0, 1200));
+}
+
+// Arrows on the board. After an answer: the table's first choice, the other
+// accepted moves (capped), the refused move and the expected reply. While live:
+// the refused move and the refutation the note names, and nothing else.
+{
+  const ar = await page.evaluate(() => {
+    const drawn = () => [...document.querySelectorAll("#arrows g.ar")].map((g) => ({ u: g.dataset.u, c: g.dataset.c }));
+    const put = (id, ply, mode) => {
+      S.mode = mode; S.li = LINES.findIndex((l) => l.id === id); S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0;
+      S.passKeys = new Set(); clearFree(); S.missAt = null; S.flip = L().you === "b"; go("board");
+      return posAt(L(), ply);
+    };
+    const play = (pos, s) => {
+      const m = legal(pos).find((x) => san(pos, x).replace(/[+#]/g, "") === s);
+      playMove(pos, sq(m.t), m); return uciOf(m);
+    };
+    const settle = () => { if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll(); };
+    const accepted = (pos) => {
+      const row = evalFor(pos), deep = DEEP[keyFen(pos)];
+      const all = new Set([row, deep].filter(Boolean).flatMap((r) => [...r.m, ...(r.x || [])].map((e) => e[0])));
+      return [...all].filter((u) => GRADE.accept.indexOf(gradeMove(row, pos, u).verdict) >= 0).length;
+    };
+    const out = {};
+    stats.pos = {};
+    // correct answer in Shuffle, at a board with several sound moves
+    let pos = put("ck", 0, "shuffle");
+    const want = L().moves[0];
+    play(pos, want[1].replace(/[+#!?]/g, ""));
+    const a1 = drawn();
+    out.right = { arrows: a1, first: evalFor(pos).m[0][0], ok: accepted(pos), reply: L().moves[1][0].slice(0, 4),
+      key: el("akey").textContent, pending: !!S.pending };
+    skipNext(); settle();
+    out.afterSkip = drawn().length;
+    // a priced wrong move, live: only the red arrow, on the played move's squares
+    pos = put("anti", 6, "shuffle");
+    const wrongU = play(pos, "c3");
+    out.wrong = { arrows: drawn(), u: wrongU.slice(0, 4), tries: S.tries, want: L().moves[6][0] };
+    playMove(pos, "a1", null);
+    out.afterRetry = drawn().length;
+    play(pos, "c3");
+    out.again = drawn().length;
+    hint();
+    out.afterHint = drawn().length;
+    // then the right move: the missed move stays red beside the answer arrows
+    play(pos, L().moves[6][1].replace(/[+#!?]/g, ""));
+    out.wrongThenRight = drawn();
+    settle(); go("menu");
+    out.afterMenu = !!S.ans;
+    // flipped board, Black to move: arrow ends sit on the named squares' centres
+    pos = put("hip-e4", 5, "shuffle");
+    out.flip = S.flip;
+    play(pos, L().moves[5][1].replace(/[+#!?]/g, ""));
+    const br = el("board").getBoundingClientRect(), geo = [];
+    for (const g of document.querySelectorAll("#arrows g.ar")) {
+      const ln = g.querySelector("line.body"), tip = g.querySelector("polygon").getAttribute("points").split(" ")[0].split(",").map(Number);
+      const at = (s, x, y) => {
+        const r = document.querySelector('[data-sq="' + s + '"]').getBoundingClientRect();
+        return Math.abs(br.left + x / 8 * br.width - (r.left + r.width / 2)) < 1.5 && Math.abs(br.top + y / 8 * br.height - (r.top + r.height / 2)) < 1.5;
+      };
+      geo.push({ u: g.dataset.u, from: at(g.dataset.u.slice(0, 2), +ln.getAttribute("x1"), +ln.getAttribute("y1")), to: at(g.dataset.u.slice(2, 4), tip[0], tip[1]) });
+    }
+    out.geo = geo;
+    const w = parseFloat(getComputedStyle(document.querySelector("#arrows g.ar.best line.body") || document.body).strokeWidth);
+    out.scale = { svg: el("arrows").getBoundingClientRect().width, board: br.width, w };
+    settle(); skipNext(); settle();
+    stats.pos = {};
+    return out;
+  });
+  const r = ar.right, alts = r.arrows.filter((a) => a.c === "alt");
+  check("after a correct answer: one first-choice arrow, the accepted moves (capped) and the expected reply",
+    r.arrows.filter((a) => a.c === "best").length === 1 && r.arrows.find((a) => a.c === "best").u === r.first.slice(0, 4) &&
+      alts.length === Math.min(2, r.ok - 1) && alts.every((a) => a.u !== r.first.slice(0, 4)) &&
+      r.arrows.some((a) => a.c === "reply" && a.u === r.reply) && r.pending && /first choice/.test(r.key),
+    JSON.stringify(r));
+  check("arrows clear when the drill moves on", ar.afterSkip === 0 && ar.afterMenu === false, JSON.stringify({ skip: ar.afterSkip, menu: ar.afterMenu }));
+  check("a wrong move draws one red arrow on its own squares while the question is live",
+    ar.wrong.arrows.length === 1 && ar.wrong.arrows[0].c === "bad" && ar.wrong.arrows[0].u === ar.wrong.u && ar.wrong.tries === 1,
+    JSON.stringify(ar.wrong));
+  check("the refused move's arrow goes on the next attempt and on a hint",
+    ar.afterRetry === 0 && ar.again === 1 && ar.afterHint === 0, JSON.stringify({ retry: ar.afterRetry, again: ar.again, hint: ar.afterHint }));
+  check("after a miss, the answered board keeps the missed move red beside the table's choice",
+    ar.wrongThenRight.some((a) => a.c === "bad" && a.u === ar.wrong.u) && ar.wrongThenRight.some((a) => a.c === "best"),
+    JSON.stringify(ar.wrongThenRight));
+  check("flipped board: every arrow runs from its origin square's centre to its destination's",
+    ar.flip === true && ar.geo.length > 1 && ar.geo.every((g) => g.from && g.to), JSON.stringify(ar.geo));
+  check("arrows are drawn in board units, so they scale with the board",
+    Math.abs(ar.scale.svg - ar.scale.board) < 1 && ar.scale.w > 0 && ar.scale.w < 1, JSON.stringify(ar.scale));
+
+  // A refutation arrow, on the real (deferred) search path: nothing while the search
+  // runs, then the red arrow and the reply the note names when the verdict lands, and
+  // never on a board the learner has left.
+  const refPath = await page.evaluate(async () => {
+    const drawn = () => [...document.querySelectorAll("#arrows g.ar")].map((g) => ({ u: g.dataset.u, c: g.dataset.c }));
+    const put = () => {
+      S.mode = "shuffle"; S.li = LINES.findIndex((l) => l.id === "ck"); S.ply = 2; S.sel = null; S.tries = 0; S.hint = 0;
+      S.passKeys = new Set(); clearFree(); S.missAt = null; S.flip = false; go("board");
+      return posAt(L(), 2);
+    };
+    const wait = async (fn) => { for (let i = 0; i < 200 && !fn(); i++) await new Promise((r) => setTimeout(r, 50)); };
+    stats.pos = {};
+    let pos = put();
+    let m = legal(pos).find((x) => san(pos, x) === "Bh6");
+    playMove(pos, sq(m.t), m);
+    const before = drawn();
+    await wait(() => !/Checking/.test(el("nMsg").textContent));
+    const out = { before, after: drawn(), msg: el("nMsg").textContent, via: matVia, want: L().moves[2][0] };
+    // stale: skip before the verdict arrives
+    pos = put();
+    playMove(pos, sq(m.t), m);
+    S.li = LINES.findIndex((l) => l.id === "ck"); shuffle(false);
+    await new Promise((r) => setTimeout(r, 1500));
+    out.stale = drawn();
+    stopAll(); stats.pos = {};
+    return out;
+  });
+  const ref = refPath.after.find((a) => a.c === "ref");
+  check("a refuted wrong move gets the red arrow and the named reply's arrow once the search answers (" + refPath.via + ")",
+    refPath.before.length === 0 && refPath.after.some((a) => a.c === "bad" && a.u === "c1h6") && !!ref && ref.u === "g8h6" && /Nxh6/.test(refPath.msg) &&
+      ![refPath.want.slice(0, 2), refPath.want.slice(2, 4)].some((s) => ref.u.indexOf(s) >= 0),
+    JSON.stringify(refPath));
+  check("a verdict for a board already left draws nothing", refPath.stale.length === 0, JSON.stringify(refPath.stale));
+
+  // Every refutation the note names, over the repertoire: its arrow touches neither
+  // of the answer's squares, and it is drawn only where the words name it.
+  const refScan = await page.evaluate(() => {
+    const out = { cases: 0, drawn: 0, bad: [] }, t0 = Date.now();
+    for (let li = 0; li < LINES.length && Date.now() - t0 < 20000; li++) {
+      const l = LINES[li];
+      for (const p of drillPlies(l)) {
+        const pos = posAt(l, p), row = evalFor(pos), want = l.moves[p][0];
+        const m = legal(pos).find((x) => uciOf(x) !== want && gradeMove(row, pos, x).analysis !== "checked" && "nbq".indexOf(pos.b[x.f].toLowerCase()) >= 0);
+        if (!m) continue;
+        const v = matVerdict(pos, m);
+        if (!v || v.swing < 1) continue;
+        S.screen = "board"; S.mode = "shuffle"; S.li = li; S.ply = p; S.tries = 0; S.hint = 0; S.sel = null; clearFree(); S.pending = 0; S.ans = null;
+        S.flip = l.you === "b"; render(false);
+        offBook(sq(m.t), san(pos, m), v, gradeMove(row, pos, m), null, uciOf(m));
+        out.cases++;
+        const got = [...document.querySelectorAll("#arrows g.ar")].map((g) => ({ u: g.dataset.u, c: g.dataset.c }));
+        const r = got.find((a) => a.c === "ref"), named = el("nMsg").textContent.indexOf(v.san.replace(/[+#]/g, "")) >= 0;
+        if (got.some((a) => a.c !== "bad" && a.c !== "ref")) out.bad.push(l.id + ":" + p + " " + JSON.stringify(got));
+        if (r) {
+          out.drawn++;
+          if (!named || r.u !== v.uci.slice(0, 4)) out.bad.push(l.id + ":" + p + " unnamed " + r.u);
+          if (r.u.indexOf(want.slice(0, 2)) >= 0 || r.u.indexOf(want.slice(2, 4)) >= 0) out.bad.push(l.id + ":" + p + " touches the answer " + r.u + " " + want);
+        }
+        if (!got.some((a) => a.c === "bad" && a.u === uciOf(m).slice(0, 4))) out.bad.push(l.id + ":" + p + " no red arrow");
+      }
+    }
+    S.ans = null; S.tries = 0; stats.pos = {}; S.run = 0;
+    return out;
+  });
+  check("a refutation arrow is drawn only where the note names it and never touches the answer's squares",
+    refScan.cases > 20 && refScan.drawn > 0 && refScan.bad.length === 0, JSON.stringify({ cases: refScan.cases, drawn: refScan.drawn, bad: refScan.bad.slice(0, 3) }));
+
+  // The setting: on by default, off hides the arrows, stored, kept by a reset,
+  // exported, and a backup without it imports with it on.
+  const arOpt = await page.evaluate(() => {
+    const saved = JSON.stringify(stats);
+    const put = () => {
+      S.mode = "shuffle"; S.li = LINES.findIndex((l) => l.id === "ck"); S.ply = 0; S.sel = null; S.tries = 0; S.hint = 0;
+      S.passKeys = new Set(); clearFree(); go("board");
+      const pos = posAt(L(), 0), m = findMove(pos, L().moves[0][0]); playMove(pos, sq(m.t), m);
+    };
+    const n = () => document.querySelectorAll("#arrows g.ar").length;
+    const def = S.arrowsOn;
+    el("oArrows").click();
+    const off = { live: S.arrowsOn, stored: stats.arrows, label: el("oArrowsS").textContent, pressed: el("oArrows").getAttribute("aria-pressed") };
+    put(); off.drawn = n(); off.key = el("akey").textContent;
+    if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll(); S.pending = 0;
+    el("pReset").click(); el("pReset").click();
+    const afterReset = { live: S.arrowsOn, stored: stats.arrows };
+    el("pExport").click();
+    const exported = JSON.parse(el("pData").value).arrows;
+    el("pData").value = JSON.stringify({ v: 6, pos: {}, pz: {} }); el("pImport").click();
+    const absent = { live: S.arrowsOn, stored: stats.arrows, label: el("oArrowsS").textContent };
+    el("pData").value = JSON.stringify({ v: 6, pos: {}, pz: {}, arrows: false }); el("pImport").click();
+    const explicit = S.arrowsOn;
+    el("pData").value = saved; el("pImport").click();
+    S.arrowsOn = true; stats.arrows = true; save(); syncOpts();
+    put(); const on = n();
+    if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll(); S.pending = 0; go("menu");
+    stats.pos = {};
+    return { def, off, afterReset, exported, absent, explicit, on };
+  });
+  check("arrows on the board is a setting, on by default, that hides them when off",
+    arOpt.def === true && arOpt.off.live === false && arOpt.off.stored === false && arOpt.off.label === "off" &&
+      arOpt.off.pressed === "false" && arOpt.off.drawn === 0 && arOpt.off.key === "" && arOpt.on > 0, JSON.stringify(arOpt));
+  check("the arrows setting survives a reset, travels in an export, and defaults on for older backups",
+    arOpt.afterReset.live === false && arOpt.afterReset.stored === false && arOpt.exported === false &&
+      arOpt.absent.live === true && arOpt.absent.stored === true && arOpt.absent.label === "on" && arOpt.explicit === false,
+    JSON.stringify(arOpt));
 }
 
 check("app never calls fetch", fetches.length === 0, fetches.join(" | "));

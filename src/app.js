@@ -2,7 +2,7 @@
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
   run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,freqW:true,band:FRQ_DEF,recog:true,lvW:true,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
-  arrow:null,passKeys:null,evNote:null,infoAt:null,epoch:0};
+  arrow:null,passKeys:null,evNote:null,infoAt:null,epoch:0,arrowsOn:true,ans:null,missAt:null};
 let stats={pos:{},pz:{},day:"",today:0,theme:0};
 // True when neither window.storage nor localStorage would take a write, so the
 // session lives in memory only. Declared here rather than beside STORE so crash()
@@ -65,7 +65,7 @@ function makePz(i){
 function startPuzzle(i){
   stopAll();
   S.mode="puzzle";S.pz=((i%PZ.length)+PZ.length)%PZ.length;makePz(S.pz);
-  S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;clearFree();
+  S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.ans=null;S.missAt=null;clearFree();
   S.flip=PZLINE.you==="b";syncOpts();
   el("nMsg").textContent="";go("board");armClock();
 }
@@ -317,7 +317,7 @@ function totals(){
 function go(scr){
   // stopAll, not stop: leaving a screen must cancel the auto-advance and the
   // auto-reply too, not only the study autoplay interval.
-  S.screen=scr;stopAll();
+  S.screen=scr;stopAll();S.ans=null;
   for(const id of ["scMenu","scLines","scBoard","scProgress"])el(id).classList.remove("on");
   el({menu:"scMenu",lines:"scLines",board:"scBoard",progress:"scProgress"}[scr]).classList.add("on");
   el("navBack").style.visibility=scr==="menu"?"hidden":"visible";
@@ -337,7 +337,7 @@ el("navBack").onclick=()=>{
   if(S.screen==="board")go(S.mode==="shuffle"||S.mode==="puzzle"?"menu":"lines");
   else go("menu");
 };
-el("cShuffle").onclick=()=>{S.mode="shuffle";S.arrow=null;shuffle(true);go("board");};
+el("cShuffle").onclick=()=>{S.mode="shuffle";S.arrow=null;S.ans=null;shuffle(true);go("board");};
 el("cStudy").onclick=()=>{S.mode="study";go("lines");};
 el("cDrill").onclick=()=>{S.mode="line";go("lines");};
 el("cProgress").onclick=()=>go("progress");
@@ -396,7 +396,7 @@ function renderLines(){
   });
 }
 function startLine(){
-  S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();S.evNote=null;clearFree();
+  S.ans=null;S.missAt=null;S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.ans=null;S.passKeys=new Set();S.evNote=null;clearFree();
   S.flip=L().you==="b";syncOpts();
   el("nMsg").textContent="";go("board");armClock();
   if(S.mode==="line"&&!yourTurn())later(autoReply,300);
@@ -627,7 +627,9 @@ function cleanStats(d){
     band:bandIdx(d.band),
     recog:d.recog===undefined?true:!!d.recog,
     // Same rule: a backup made before levels existed favours the current level.
-    lvW:d.lvW===undefined?true:!!d.lvW};
+    lvW:d.lvW===undefined?true:!!d.lvW,
+    // Arrows on the board: a display setting, on unless a backup says otherwise.
+    arrows:d.arrows===undefined?true:!!d.arrows};
 }
 // Sanitise a record's miss log at the import trust boundary: keep only string->
 // positive-number entries, re-bound to the same limits grade() enforces on write
@@ -675,7 +677,7 @@ el("pImport").onclick=()=>{
     return;
   }
   stats=cleanStats(d);
-  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;S.lvW=stats.lvW;
+  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;S.lvW=stats.lvW;S.arrowsOn=stats.arrows;
   SAVE_HELD=false; // the user has chosen what to keep; writing is theirs to allow again
   applyTheme();syncOpts(); // apply immediately; do not make the user reload to see it
   save();renderProgress();el("pData").value="Imported.";
@@ -686,7 +688,7 @@ el("pReset").onclick=function(){
   // bookOnly is a setting, not progress: leaving it out of the rebuilt object wiped
   // it from storage while S.bookOnly still showed it on in the options sheet.
   stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set,bookOnly:S.bookOnly,
-    freqW:S.freqW,band:S.band,recog:S.recog,lvW:S.lvW};S.run=0;
+    freqW:S.freqW,band:S.band,recog:S.recog,lvW:S.lvW,arrows:S.arrowsOn};S.run=0;
   SAVE_HELD=false; // "erase everything" is explicit consent to write over whatever is there
   save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
 };
@@ -736,7 +738,7 @@ function render(anim){
     bd.appendChild(d);
   }
   if(anim&&last)slide(last);
-  drawArrow(S.arrow);
+  drawArrows();
   renderTray(b,l);
   renderOff();
   renderCtl();
@@ -886,13 +888,14 @@ function armNext(ms){
   bar.style.transition="none";bar.style.width="100%";
   void bar.offsetWidth;
   bar.style.transition="width "+ms+"ms linear";bar.style.width="0%";
-  S.pending=later(()=>{S.pending=0;S.arrow=null;shuffle(false);},ms);
+  S.pending=later(()=>{S.pending=0;S.arrow=null;S.ans=null;shuffle(false);},ms);
   // good() calls render(true) BEFORE arming the wait, so renderCtl() built the
   // Hint/Skip buttons while S.pending was still falsy - refresh them now that it
   // is set, or they stay live (targeting the opponent's ply) for the whole wait
   // (finding 6). renderPlan() has the same dependence on S.pending: the plan
   // panel only exists in Shuffle's post-answer window, which starts here.
   if(S.mode==="shuffle"){renderCtl();renderPlan();renderInfo();}
+  drawArrows();
 }
 // shuffle(false) is the Shuffle-mode advance and picks a fresh line/ply out of LINES.
 // In puzzle mode S.pending is armed by armPz() and L() still returns PZLINE, so doing
@@ -901,7 +904,7 @@ function armNext(ms){
 // past the last puzzle, so S.pz+1 is safe at the end of the set.
 function skipNext(){
   if(!S.pending)return false;
-  stopAll();S.arrow=null;
+  stopAll();S.arrow=null;S.ans=null;
   if(S.mode==="puzzle")startPuzzle(S.pz+1);else shuffle(false);
   return true;
 }
@@ -922,6 +925,7 @@ function armWait(){
   // still on screen unless rebuilt here. renderPlan() likewise: the plan panel's
   // Shuffle visibility is S.pending, which was still falsy during that render.
   if(S.mode==="shuffle"){renderCtl();renderPlan();renderInfo();}
+  drawArrows();
 }
 function mark(c){const m=document.createElement("span");m.className="mk "+c;return m;}
 function slide(u){
@@ -932,18 +936,97 @@ function slide(u){
   p.style.transform="translate("+dx+"px,"+dy+"px)";
   requestAnimationFrame(()=>{p.classList.add("slide");p.style.transform="";});
 }
-function drawArrow(u){
-  const svg=el("arrows");
-  [...svg.querySelectorAll("line")].forEach(n=>n.remove());
-  if(!u)return;
+/* ---------- arrows on the board ----------
+   Two kinds of arrow share the #arrows overlay. The Show me hint (S.arrow) is a
+   reveal the learner asked for. The rest (S.ans) say on the board what the note
+   already says in words, so the overlay is aria-hidden and the text carries the
+   meaning. While a question is live only the learner's own refused move ("bad")
+   and the reply the note names against it ("ref") may be drawn: never the answer,
+   an accepted move, the table's first choice or the threat. Once the position is
+   answered: the first choice, up to AR_ALT other accepted moves, the refused move
+   of that position if there was one, and the reply the note names. S.ans remembers the line, ply, mode, puzzle and
+   free-move count it was drawn for, so any change of position hides it without a
+   lifecycle hook having to remember to clear it. Study draws none: nothing there
+   is a question, and the line's own next move is one tap away. */
+const AR_ALT=2;
+const AR_ORDER=["alt","best","reply","ref","bad","hint"];
+const AR_W={best:.22,alt:.12,bad:.17,reply:.13,ref:.14,hint:.15};
+const AR_KEY={best:"table's first choice",alt:"also accepted",bad:"your move, not accepted",
+  reply:"expected reply",ref:"the reply that punishes it"};
+function liveQ(){
+  if(S.mode==="study"||S.pending||S.free.length)return false;
+  return S.ply<L().moves.length&&yourTurn();
+}
+function ansHere(){
+  const a=S.ans;
+  return !!a&&a.li===S.li&&a.ply===S.ply&&a.mode===S.mode&&a.fl===S.free.length&&a.pz===S.pz;
+}
+function setArrows(list,live){
+  S.ans={li:S.li,ply:S.ply,mode:S.mode,fl:S.free.length,pz:S.pz,live:!!live,list:list.filter(x=>x&&x.u)};
+  drawArrows();
+}
+// The arrows for an answered position: pos is the position answered, played the
+// move credited there, reply the opponent's answer the note names (uci or null).
+function answerArrows(pos,played,reply){
+  const row=evalFor(pos),k=keyFen(pos),out=[];
+  if(S.missAt&&S.missAt.k===k&&S.missAt.u!==played)out.push({u:S.missAt.u,c:"bad"});
+  if(row&&row.m&&row.m.length){
+    const first=row.m[0][0],deep=typeof DEEP!=="undefined"?DEEP[k]:null,seen=new Set([first]),alt=[];
+    // The move played leads, so a sound alternative the learner found is drawn
+    // before the table's other choices; the rest in stored order.
+    const cands=[played].concat([row,deep].filter(Boolean).flatMap(r=>[...r.m,...(r.x||[])].map(e=>e[0])));
+    for(const u of cands){
+      if(seen.has(u))continue;seen.add(u);
+      if(GRADE.accept.indexOf(gradeMove(row,pos,u).verdict)>=0)alt.push(u);
+    }
+    out.push({u:first,c:"best"});
+    for(const u of alt.slice(0,AR_ALT))out.push({u:u,c:"alt"});
+  }
+  if(reply)out.push({u:reply,c:"reply"});
+  return out;
+}
+// A SAN reply in the position after the move, as uci; null when it is not legal there.
+function uciIn(pos,sanTxt){
+  if(!sanTxt)return null;
+  const bare=sanTxt.replace(/[+#!?]/g,""),m=legal(pos).find(x=>san(pos,x).replace(/[+#]/g,"")===bare);
+  return m?uciOf(m):null;
+}
+function arrowEl(u,c){
+  const NS="http://www.w3.org/2000/svg";
   const pt=s=>{let f=F.indexOf(s[0]),r=8-parseInt(s[1],10);if(S.flip){f=7-f;r=7-r;}return[f+.5,r+.5];};
-  const a=pt(u.slice(0,2)),c=pt(u.slice(2,4));
-  const ln=document.createElementNS("http://www.w3.org/2000/svg","line");
-  ln.setAttribute("x1",a[0]);ln.setAttribute("y1",a[1]);
-  ln.setAttribute("x2",c[0]);ln.setAttribute("y2",c[1]);
-  ln.setAttribute("stroke","rgba(224,161,60,.8)");ln.setAttribute("stroke-width",".14");
-  ln.setAttribute("marker-end","url(#ah)");
-  svg.appendChild(ln);
+  const a=pt(u.slice(0,2)),b=pt(u.slice(2,4)),w=AR_W[c]||.14;
+  const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+  const hl=Math.min(len*.5,.2+w*1.3),hw=.12+w*.85,bx=b[0]-ux*hl,by=b[1]-uy*hl;
+  const g=document.createElementNS(NS,"g");
+  g.setAttribute("class","ar "+c);g.dataset.u=u.slice(0,4);g.dataset.c=c;
+  const r3=n=>Math.round(n*1000)/1000;
+  for(const part of ["halo","body"]){
+    const ln=document.createElementNS(NS,"line");
+    ln.setAttribute("class",part);
+    ln.setAttribute("x1",r3(a[0]));ln.setAttribute("y1",r3(a[1]));
+    ln.setAttribute("x2",r3(b[0]-ux*hl*.7));ln.setAttribute("y2",r3(b[1]-uy*hl*.7));
+    ln.setAttribute("stroke-width",r3(part==="halo"?w+.07:w));
+    g.appendChild(ln);
+  }
+  const hd=document.createElementNS(NS,"polygon");
+  hd.setAttribute("points",[[b[0],b[1]],[bx-uy*hw,by+ux*hw],[bx+uy*hw,by-ux*hw]].map(p=>r3(p[0])+","+r3(p[1])).join(" "));
+  g.appendChild(hd);
+  return g;
+}
+function drawArrows(){
+  const svg=el("arrows");if(!svg)return;
+  [...svg.querySelectorAll("g.ar")].forEach(n=>n.remove());
+  const list=[];
+  if(S.arrow)list.push({u:S.arrow,c:"hint"});
+  const a=S.ans,live=liveQ();
+  if(S.arrowsOn&&S.screen==="board"&&ansHere()&&a.live===live)for(const x of a.list){
+    if(live&&x.c!=="bad"&&x.c!=="ref")continue;
+    list.push(x);
+  }
+  list.sort((p,q)=>AR_ORDER.indexOf(p.c)-AR_ORDER.indexOf(q.c));
+  for(const x of list)svg.appendChild(arrowEl(x.u,x.c));
+  const k=el("akey"),kinds=AR_ORDER.filter(c=>AR_KEY[c]&&list.some(x=>x.c===c));
+  if(k)k.innerHTML=kinds.map(c=>'<span class="ak '+c+'"><i></i>'+AR_KEY[c]+"</span>").join("");
 }
 function renderTray(b,l){
   const st=fenBoard(l.start),cnt={};
@@ -981,10 +1064,10 @@ function renderCtl(){
     // Back one intentionally does NOT reset S.passKeys: replaying forward from here
     // through positions already graded this pass must fall back to touch() (finding 12),
     // not grade again. S.arrow is cleared because the position on screen is changing.
-    add("Back one",()=>{S.ply=Math.max(0,S.ply-2);S.sel=null;S.tries=0;S.hint=0;S.arrow=null;render(false);},"wide",S.ply===0);
+    add("Back one",()=>{S.ply=Math.max(0,S.ply-2);S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.ans=null;render(false);},"wide",S.ply===0);
     if(done&&S.mode==="line")add("Next line &#8594;",()=>{S.li=(S.li+1)%LINES.length;startLine();},"wide");
     else if(!done)add(hintLabel(),hint,"wide",false);
-    add("Restart",()=>{stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);if(!yourTurn())later(autoReply,250);},"wide");
+    add("Restart",()=>{stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.ans=null;S.passKeys=new Set();render(false);if(!yourTurn())later(autoReply,250);},"wide");
     if(done&&S.mode==="puzzle")add("Next puzzle &#8594;",()=>startPuzzle(S.pz+1),"wide");
   }else if(S.pending){
     // Waiting for a tap after a correct answer: S.ply already points past your
@@ -993,7 +1076,7 @@ function renderCtl(){
     add("Continue",()=>{skipNext();},"wide");
   }else{
     add(hintLabel(),hint,"wide",false);
-    add("Skip &#8594;",()=>{S.arrow=null;shuffle(false);},"wide");
+    add("Skip &#8594;",()=>{S.arrow=null;S.ans=null;shuffle(false);},"wide");
   }
 }
 function toggleplay(){
@@ -1318,6 +1401,7 @@ function matAsk(pos,m,live,cb){
 }
 function playMove(pos,name,m){
   matTok++;
+  S.ans=null; // a new attempt: the last attempt's arrows are answered by this one
   const study=S.mode==="study";
   const wanted=S.ply<L().moves.length?L().moves[S.ply][0]:null;
   if(!m){
@@ -1346,7 +1430,9 @@ function playMove(pos,name,m){
     const row=evalFor(pos),g=gradeMove(row,pos,m),game=rep.kind==="game";
     g.reply=replyAfter(pos,m,row,g);
     if(played===wanted){
+      if(S.tries===0)S.missAt={k:keyFen(pos),u:played};
       S.sel=null;S.tries++;render(false);flash(name,"bad");
+      setArrows([{u:played,c:"bad"}],true);
       el("nMsg").innerHTML='<span class="no">'+(game?"That is the game move; find a better one first.":"That is the move the line is about.")+
         '</span> <span class="neutral">'+esc(gradeLine(g))+"</span>";
       el("nText").textContent=rep.why;
@@ -1360,6 +1446,9 @@ function playMove(pos,name,m){
       el("nText").textContent=game
         ?"The game went "+own+" instead, and the line follows it so the defence that comes later can be drilled. Tap to see it."
         :"The line plays "+own+" instead, which is the habit it exists to show. Tap to see it.";
+      // Drawn on the board as it stands, before the move: no reply arrow, since the
+      // move it would answer is not on the board.
+      setArrows(answerArrows(pos,played,null),false);
       armWait();
       return;
     }
@@ -1403,7 +1492,7 @@ function playMove(pos,name,m){
   const g=pz?null:(gate.grade||gradeMove(row,pos,m));
   if(g)g.reply=replyAfter(pos,m,row,g);
   if(gate.credit){
-    if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,g,row));return;}
+    if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,g,row),g);return;}
     // Drill: mirror the book-alternative branch above exactly - acknowledge, grade
     // nothing either way, leave the streak alone, and do not advance, because the
     // stored continuation would diverge from the board. The user retries.
@@ -1425,7 +1514,7 @@ function playMove(pos,name,m){
   // the drill a way round the point.
   if(g&&g.analysis==="checked"&&GRADE.accept.indexOf(g.verdict)>=0&&
      (gate.reason==="not-target"||gate.reason==="no-targets")&&!NO_SHUFFLE.has(L().id)){
-    if(S.mode==="shuffle"){setupGood(pos,m,t,goodLead(t,g,row));return;}
+    if(S.mode==="shuffle"){setupGood(pos,m,t,goodLead(t,g,row),g);return;}
     noteWay(key(L(),S.ply),t);
     S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">'+goodLead(t,g,row)+" This line plays "+L().moves[S.ply][1]+" here.</span>";
@@ -1435,7 +1524,7 @@ function playMove(pos,name,m){
   // so skip it whenever the row has an answer - including "demanding", where the
   // gate has ruled and a material brake must not reopen what it shut.
   if(g&&(g.analysis==="checked"||gate.reason==="demanding")){
-    offBook(name,t,null,g,gate.reason==="demanding"?demandLead():null);
+    offBook(name,t,null,g,gate.reason==="demanding"?demandLead():null,played);
     return;
   }
   // Only here is the search still the best evidence available: the table does not
@@ -1456,7 +1545,7 @@ function playMove(pos,name,m){
       el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. This line's order plays "+L().moves[S.ply][1]+" here.</span>";
       return;
     }
-    offBook(name,t,v,g,null);
+    offBook(name,t,v,g,null,played);
   });
 }
 function touch(k,ms){
@@ -1530,7 +1619,7 @@ function fmtMs(m){return m>=10000?Math.round(m/1000)+"s":(m/1000).toFixed(1)+"s"
 function good(){
   const clean=S.hint===0&&S.tries===0,hadMiss=S.tries>0;
   const ms=elapsed();S.lastMs=ms;
-  S.arrow=null; // the position is being answered now, so any reveal arrow is done
+  S.arrow=null;S.ans=null; // the position is being answered now, so any reveal arrow is done
   // The stored eval is keyed by the position the move was played FROM, so read it
   // before S.ply moves on. Shown only after a miss: a clean book answer is not
   // relitigated with numbers (commit b40bcaa exists for that reason).
@@ -1546,12 +1635,16 @@ function good(){
     bumpToday();
   }
   const san=L().moves[S.ply][1];
-  const to=L().moves[S.ply][0].slice(2,4);
+  const played=L().moves[S.ply][0],to=played.slice(2,4);
   const evTxt=ev?evalNote(ev,san):null;
   // The position just answered, for the details panel and the common-mistake line.
   const asked=nowPos();S.infoAt={id:L().id,ply:S.ply};
   S.sel=null;S.ply++;S.tries=0;S.hint=0;
   render(true);flash(to,"good");
+  // Arrows where the answer stays on screen: Shuffle's post-answer window and a
+  // finished drill line. Mid-line the reply lands in 260ms and the next question is live.
+  if(S.mode==="shuffle"||(S.mode==="line"&&S.ply>=L().moves.length))
+    setArrows(answerArrows(asked,played,S.mode==="shuffle"&&S.ply<L().moves.length?L().moves[S.ply][0]:null),false);
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+san+(clean?"":" (with help)")+(ms?",":".")+"</span>"+
     (ms?' <span class="neutral">'+fmtMs(ms)+(clean&&ms>SLOW?", slow: it will come back sooner":"")+".</span>":"")+
     (short?' <span class="neutral">The table accepts another move here too; find it and this board counts as solid.</span>':"");
@@ -1991,7 +2084,7 @@ function refutation(v){
    Nothing here names the table's first choice or its pv. The position is live for
    a retry and the first choice is usually the repertoire move, so the numbers may
    be stated and the move behind them may not. */
-function offBook(name,t,v,g,extra){
+function offBook(name,t,v,g,extra,u){
   const pz=S.mode==="puzzle";
   const checked=!!(g&&g.analysis==="checked");
   // concession is refused with its price named rather than passed off as equal:
@@ -2003,6 +2096,7 @@ function offBook(name,t,v,g,extra){
   if(pz&&S.tries===0){const r=pzRec();if(r){r.no++;save();}}
   if(blame&&S.tries===0){S.run=0;bumpToday();}
   const first=S.tries===0;
+  if(blame&&first&&u)S.missAt={k:keyFen(nowPos()),u:u};
   if(blame)S.tries++;
   S.sel=null;
   // Say something about the move that is wanted instead of repeating the same
@@ -2040,6 +2134,13 @@ function offBook(name,t,v,g,extra){
     (common&&first?' <span class="neutral">'+esc(common)+"</span>":"")+
     (none?' <span class="neutral">'+none+"</span>":"")+
     (why?' <span class="neutral">'+why+"</span>":"");
+  // The move just refused, and the reply the note names against it - only when the
+  // note names it (refutation() has already run its leak filter), and only when
+  // neither end of that reply sits on the wanted move's squares, which an arrow
+  // would show where the words do not.
+  const w=S.ply<L().moves.length?L().moves[S.ply][0]:"",ws=[w.slice(0,2),w.slice(2,4)];
+  const ref=punish&&v&&v.uci&&ws.indexOf(v.uci.slice(0,2))<0&&ws.indexOf(v.uci.slice(2,4))<0?v.uci:null;
+  if(u)setArrows([{u:u,c:"bad"},{u:ref,c:"ref"}],true);
 }
 /* A setup line's targets say where the formation wants each piece; grading against
    one fixed move order marks correct chess wrong - the Hippo's wall goes up in
@@ -2071,10 +2172,10 @@ function setupMove(pos,m,v,gate){
    S.lastKey needs no update, unlike the book-alternative branch in tap(): the key
    graded is the very one shuffle() served, so the same board is already barred
    from coming straight back. skipNext -> shuffle(false) -> clearFree() cleans up. */
-function setupGood(pos,m,t,lead){
+function setupGood(pos,m,t,lead,g){
   const clean=S.hint===0&&S.tries===0;
   const ms=elapsed();S.lastMs=ms;
-  S.arrow=null;
+  S.arrow=null;S.ans=null;
   if(clean)grade(key(L(),S.ply),true,ms,null,t);
   else if(S.hint<3)touch(key(L(),S.ply),ms);
   if(clean)S.run++;else S.run=0;
@@ -2083,6 +2184,9 @@ function setupGood(pos,m,t,lead){
   S.infoAt={id:L().id,ply:S.ply};
   S.sel=null;S.tries=0;S.hint=0;
   render(true);flash(sq(m.t),"good");
+  // The reply arrow is the one the lead names (gradeLine's "The table answers"),
+  // so a setup credited by the material check alone, which names none, draws none.
+  setArrows(answerArrows(pos,uciOf(m),g&&g.reply?uciIn(S.fpos,g.reply):null),false);
   const l=L(),want=l.moves[S.ply][1];
   el("nText").innerHTML='<span class="neutral">'+[l.name,l.src].filter(Boolean).join(" · ")+
     (KIND[l.id]?' <span class="kind '+KIND[l.id]+'">'+KIND[l.id]+"</span>":"")+"</span>"+
@@ -2196,6 +2300,7 @@ function hint(){
   // opponent's reply, so a hint here would leak or grade the wrong ply (finding 6).
   if(S.pending)return;
   if(S.ply>=L().moves.length)return;
+  S.ans=null; // a hint tier moves the question on; the last attempt's arrows go
   const u=L().moves[S.ply][0],from=u.slice(0,2);
   const piece=posAt(L(),S.ply).b[ix(from)].toLowerCase();
   if(S.hint===0){
@@ -2325,7 +2430,7 @@ function shuffle(first){
   const sum=pool.reduce((a,x)=>a+x[3],0);
   let t=Math.random()*sum,pick=pool[0];
   for(const x of pool){t-=x[3];if(t<=0){pick=x;break;}}
-  S.li=pick[0];S.ply=pick[1];S.lastKey=pick[2];clearFree();
+  S.li=pick[0];S.ply=pick[1];S.lastKey=pick[2];clearFree();S.ans=null;S.missAt=null;
   S.sel=null;S.tries=0;S.hint=0;S.flip=LINES[pick[0]].you==="b";
   syncOpts();
   if(!first)render(false);
@@ -2360,6 +2465,8 @@ function syncOpts(){
   el("oRecog").setAttribute("aria-pressed",S.recog);
   el("oLevelS").textContent=S.lvW?"on":"off";
   el("oLevel").setAttribute("aria-pressed",S.lvW);
+  el("oArrowsS").textContent=S.arrowsOn?"on":"off";
+  el("oArrows").setAttribute("aria-pressed",S.arrowsOn);
   el("oRestart").style.display=S.mode==="shuffle"?"none":"";
 }
 el("oFlip").onclick=()=>{S.flip=!S.flip;syncOpts();render(false);};
@@ -2375,7 +2482,8 @@ el("oBand").onclick=()=>{setBand((S.band+1)%FRQBS.length);stats.band=S.band;save
 // it back on reads them again.
 el("oRecog").onclick=()=>{S.recog=!S.recog;stats.recog=S.recog;save();syncOpts();if(S.screen==="menu")renderMenu();};
 el("oLevel").onclick=()=>{S.lvW=!S.lvW;stats.lvW=S.lvW;save();syncOpts();};
-el("oRestart").onclick=()=>{openOpts(false);stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);
+el("oArrows").onclick=()=>{S.arrowsOn=!S.arrowsOn;stats.arrows=S.arrowsOn;save();syncOpts();drawArrows();};
+el("oRestart").onclick=()=>{openOpts(false);stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.ans=null;S.passKeys=new Set();render(false);
   if(S.mode==="line"&&!yourTurn())later(autoReply,250);};
 el("oMenu").onclick=()=>{openOpts(false);go("menu");};
 addEventListener("visibilitychange",()=>{if(!document.hidden&&S.screen==="board"&&S.mode!=="study")armClock();});
@@ -2506,7 +2614,7 @@ async function load(){
     try{d=JSON.parse(raw);}catch(e){d=null;}
     if(d&&typeof d==="object"&&d.pos&&typeof d.pos==="object"&&!Array.isArray(d.pos)){
       stats=cleanStats(d);
-      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;S.lvW=stats.lvW;
+      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;S.lvW=stats.lvW;S.arrowsOn=stats.arrows;
       if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
       if(fromOld)save();
     }else{

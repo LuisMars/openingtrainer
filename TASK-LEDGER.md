@@ -1248,3 +1248,20 @@ Fifteen `synthetic` lines: `c-englund`, `c-bb4`, `c-2c6`, `c-1c6`, `c-1d6`,
 - The due-first scheduling check is now seeded. Unseeded, it failed once:
   the level weighting brought the expected margin down to about 2:1.
 - `npm test`: exit 0, 133 checks, three consecutive runs.
+
+## Board arrows — 2026-09-21
+
+- After an answer: first choice (thick green), up to 2 other accepted moves
+  (thin green), the missed move (red), the expected reply (dashed blue).
+- While a question is live: only the refused move (red) and its refutation
+  (dashed), the refutation only when the text names it and never on the
+  answer's squares. A leak scan over 1,210 live positions finds no arrow
+  that gives the answer away.
+- "Arrows on the board" toggle, on by default, stored as an optional
+  setting (no key bump). Flip-correct, scales with the board.
+- Known cosmetic issue: two accepted moves from the same square overlap
+  (e.g. ...d6 and ...d5).
+- Known timing issue: under load average 20+, the worker can miss its 8 s
+  start-up and fall back to the main thread (the safe path). One UI check
+  depends on the worker and can fail then.
+`npm test`: exit 0, 146 checks.

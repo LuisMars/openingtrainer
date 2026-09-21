@@ -26,6 +26,11 @@ Moves can be **dragged or tapped**. Selecting a piece shows its legal destinatio
 Options (⋮ menu): flip board, target-square ghosts, board colours (Brown, Blue, Green, Slate),
 piece set (Cburnett standard, or a custom engraved set), and **drill book lines only**.
 
+**Arrows on the board** (on by default, in the same menu) draw on the board what the note says in
+words. Once a position is answered: the stored table's first choice (solid), up to two other moves
+it accepts (thinner), your missed move in red, and the reply the note names (dashed). While a question is live the only arrows are your refused move and, when the
+note names one, the reply that punishes it; nothing that points at the answer. Study draws none.
+
 ---
 
 ## The 79 lines and where each came from
