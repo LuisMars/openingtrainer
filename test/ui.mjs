@@ -684,10 +684,127 @@ const reset = await page.evaluate(() => {
 check("resetting progress keeps the book-lines-only setting",
   reset.stored === true && reset.live === true, JSON.stringify(reset));
 
-// v4 -> v5 storage: a v4 blob is adopted verbatim (its records are valid v5
-// records without the "w" miss log) and rewritten under the v5 key. Skipped when
-// this Chromium denies localStorage on file:// - the in-page STORE then runs
-// memory-only and there is nothing to migrate.
+// Item 43: exercises are weighted by how often the position is actually reached,
+// with a floor for the rare forcing ones, and with due reviews still first.
+const fq = await page.evaluate(() => {
+  const fenOf = (k) => k.slice(0, k.lastIndexOf(":"));
+  const bucket = (k) => FRQB[fhash(fenOf(k))];
+  const keys = Object.values(KEYCACHE), byBucket = {};
+  for (const k of keys) { const b = bucket(k); if (b !== undefined && !byBucket[b]) byBucket[b] = k; }
+  const have = Object.keys(byBucket).map(Number).sort((a, b) => a - b);
+  const sharp = keys.find((k) => FRQS.has(fhash(fenOf(k))) && bucket(k) < 3);
+  return {
+    counted: keys.filter((k) => bucket(k) !== undefined).length,
+    spread: have,
+    top: freqFactor(byBucket[have[have.length - 1]]),
+    bottom: freqFactor(byBucket[have[0]]),
+    uncounted: freqFactor(keys.find((k) => bucket(k) === undefined)),
+    offTable: freqFactor("8/8/8/8/8/8/8/8 w - - 0 1:e2e4"),
+    puzzle: freqFactor("pz:0000a:3"),
+    sharp: sharp ? freqFactor(sharp) : null,
+    sharpBucket: sharp ? bucket(sharp) : null,
+  };
+});
+check("a position that is reached often is weighted above one that is not",
+  fq.counted > 40 && fq.spread.length > 2 && fq.top > 1 && fq.bottom < 1 && fq.top > fq.bottom,
+  JSON.stringify(fq));
+check("a position with no frequency data is not penalised",
+  fq.uncounted === 1 && fq.offTable === 1 && fq.puzzle === 1, JSON.stringify(fq));
+check("a rare but forcing position keeps its floor at neutral",
+  fq.sharp === 1 && fq.sharpBucket < 3, JSON.stringify(fq));
+
+const fqOpt = await page.evaluate(() => {
+  el("oFreq").click();
+  const off = { live: S.freqW, stored: stats.freqW, label: el("oFreqS").textContent };
+  el("oFreq").click();
+  return { off, on: S.freqW };
+});
+check("occurrence weighting is a toggle in the options sheet",
+  fqOpt.off.live === false && fqOpt.off.stored === false && fqOpt.off.label === "off" && fqOpt.on === true,
+  JSON.stringify(fqOpt));
+
+// Due first, with the weighting pulling the other way as hard as the table allows:
+// the due key is the rarest one Shuffle will serve, the key it competes with is the
+// most common one, and that one is also slow and has missed three times.
+const duefirst = await page.evaluate(() => {
+  const fenOf = (k) => k.slice(0, k.lastIndexOf(":"));
+  const bucket = (k) => FRQB[fhash(fenOf(k))];
+  stats.pos = {}; S.freqW = true; S.recog = true; S.mode = "shuffle";
+  const seen = new Map();
+  for (let i = 0; i < 60; i++) { shuffle(true); const b = bucket(S.lastKey); if (b !== undefined) seen.set(S.lastKey, b); }
+  const sorted = [...seen.entries()].sort((a, b) => a[1] - b[1]);
+  if (sorted.length < 2) return { skipped: true };
+  const rare = sorted[0][0], common = sorted[sorted.length - 1][0];
+  stats.pos[rare] = { ok: 1, no: 0, streak: 1, last: 0, ms: 500 };            // due
+  // streak 1, just answered: LADDER[0] is 0 hours, so a streak-0 record is due the
+  // moment it is written and would not be the not-due competitor this check needs.
+  stats.pos[common] = { ok: 1, no: 3, streak: 1, last: Date.now(), ms: 9000 }; // hot, slow, common
+  const counts = {};
+  for (let i = 0; i < 220; i++) { shuffle(true); counts[S.lastKey] = (counts[S.lastKey] || 0) + 1; }
+  return { rare: counts[rare] || 0, common: counts[common] || 0,
+    rareBucket: bucket(rare), commonBucket: bucket(common),
+    state: state(rare), commonState: state(common), factor: freqFactor(rare) };
+});
+check("a due review outranks a commoner position that is not due",
+  duefirst.skipped || (duefirst.state === "due" && duefirst.commonState !== "due" &&
+    duefirst.factor < 1 && duefirst.rare > duefirst.common),
+  JSON.stringify(duefirst));
+
+// Rare counters still come up: weighting reorders, it never silences. Seeded draws
+// over a fresh record set, so the count is repeatable rather than a coin flip.
+const rareSeen = await page.evaluate(() => {
+  const fenOf = (k) => k.slice(0, k.lastIndexOf(":"));
+  const bucket = (k) => FRQB[fhash(fenOf(k))];
+  stats.pos = {}; S.freqW = true; S.recog = true; S.mode = "shuffle"; S.lastKey = null;
+  const rnd = Math.random; let seed = 12345;
+  Math.random = () => ((seed = Math.imul(seed ^ (seed >>> 15), 2246822507) + 0x9e3779b9 | 0) >>> 0) / 4294967296;
+  let rare = 0, n = 600;
+  try { for (let i = 0; i < n; i++) { shuffle(true); if (bucket(S.lastKey) === 0) rare++; } }
+  finally { Math.random = rnd; }
+  return { rare, n, minWeight: Math.min(...FRQW) };
+});
+check("rare positions are still served with occurrence weighting on",
+  rareSeen.rare > 0 && rareSeen.minWeight > 0, JSON.stringify(rareSeen));
+
+// Item 44: where the table accepts more than one move, one answer is not mastery.
+const ways = await page.evaluate(() => {
+  const fenOf = (k) => k.slice(0, k.lastIndexOf(":"));
+  const keys = Object.values(KEYCACHE);
+  const many = keys.find((k) => waysAt(fenOf(k)) >= 2), one = keys.find((k) => waysAt(fenOf(k)) === 1);
+  const base = () => ({ ok: 2, no: 0, streak: 2, last: Date.now(), ms: 500 });
+  const at = (k, a) => { stats.pos[k] = a ? Object.assign(base(), { a: a }) : base(); return state(k); };
+  stats.pos = {}; S.recog = true;
+  const out = { ways: [waysAt(fenOf(many)), waysAt(fenOf(one))] };
+  out.noLog = at(many, null);
+  out.oneWay = at(many, ["Nf3"]);
+  out.twoWays = at(many, ["Nf3", "c4"]);
+  out.single = at(one, ["Nf3"]);
+  S.recog = false; out.off = at(many, ["Nf3"]); S.recog = true;
+  return out;
+});
+check("one answer is not mastery where the table accepts more than one",
+  ways.oneWay === "learning" && ways.twoWays === "solid" && ways.single === "solid",
+  JSON.stringify(ways));
+check("a record with no answer log keeps the status it earned",
+  ways.noLog === "solid" && ways.off === "solid", JSON.stringify(ways));
+
+await page.evaluate(() => { stats.pos = {}; S.recog = true; go("menu"); });
+await page.click("#cShuffle");
+await page.waitForTimeout(400);
+const pre = await page.evaluate(() => ({ k: key(L(), S.ply), u: L().moves[S.ply][0], san: L().moves[S.ply][1] }));
+await drag(pre.u.slice(0, 2), pre.u.slice(2, 4));
+await page.waitForTimeout(350);
+const logged = await page.evaluate((k) => (stats.pos[k] || {}).a || null, pre.k);
+check("a correct answer records which accepted move was found",
+  Array.isArray(logged) && logged.length === 1 && logged[0] === pre.san,
+  JSON.stringify({ logged, expected: pre.san }));
+await page.evaluate(() => { stats.pos = {}; save(); go("menu"); });
+
+// v4/v5 -> v6 storage: an older blob is adopted verbatim (a v4 record is a valid
+// v6 record without the "w" miss log and the "a" answer log, a v5 record is one
+// without "a") and rewritten under the v6 key. Skipped when this Chromium denies
+// localStorage on file:// - the in-page STORE then runs memory-only and there is
+// nothing to migrate.
 const canStore = await page.evaluate(() => {
   try { localStorage.setItem("t", "1"); localStorage.removeItem("t"); return true; } catch { return false; }
 });
@@ -698,24 +815,46 @@ if (canStore) {
       pz: {}, day: "", today: 0, theme: 1,
     }));
     localStorage.removeItem("colle-hippo:v5");
+    localStorage.removeItem("colle-hippo:v6");
   });
   await page.reload();
   await page.waitForTimeout(700);
   const mig = await page.evaluate(() => ({
     rec: stats.pos["8/8/8/8/8/8/8/8 w - - 0 1:e2e4"],
-    v5: !!localStorage.getItem("colle-hippo:v5"),
-    theme: S.theme,
+    v6: !!localStorage.getItem("colle-hippo:v6"),
+    theme: S.theme, freqW: S.freqW, recog: S.recog,
   }));
-  check("v4 progress is adopted verbatim and rewritten as v5",
-    !!mig.rec && mig.rec.ok === 2 && mig.rec.no === 1 && mig.v5 && mig.theme === 1,
+  check("v4 progress is adopted verbatim and rewritten as v6",
+    !!mig.rec && mig.rec.ok === 2 && mig.rec.no === 1 && mig.v6 && mig.theme === 1 &&
+    mig.freqW === true && mig.recog === true,
     JSON.stringify(mig));
-  await page.evaluate(() => { localStorage.removeItem("colle-hippo:v4"); localStorage.removeItem("colle-hippo:v5"); });
+  await page.evaluate(() => { localStorage.removeItem("colle-hippo:v4"); localStorage.removeItem("colle-hippo:v6"); });
+
+  // The same for a v5 blob, whose records may carry a "w" miss log but no answer
+  // log. Both old keys are read in turn, so neither generation is stranded.
+  await page.evaluate(() => {
+    localStorage.setItem("colle-hippo:v5", JSON.stringify({
+      v: 5, pos: { "8/8/8/8/8/8/8/8 w - - 0 1:e2e4": { ok: 3, no: 1, streak: 2, last: 1, ms: 900, w: { Bd3: 2 } } },
+      pz: {}, day: "", today: 0, theme: 0,
+    }));
+    localStorage.removeItem("colle-hippo:v6");
+  });
+  await page.reload();
+  await page.waitForTimeout(700);
+  const mig5 = await page.evaluate(() => ({
+    rec: stats.pos["8/8/8/8/8/8/8/8 w - - 0 1:e2e4"],
+    v6: !!localStorage.getItem("colle-hippo:v6"),
+  }));
+  check("v5 progress keeps its miss log and is rewritten as v6",
+    !!mig5.rec && mig5.rec.ok === 3 && mig5.rec.w && mig5.rec.w.Bd3 === 2 &&
+    mig5.rec.a === undefined && mig5.v6, JSON.stringify(mig5));
+  await page.evaluate(() => { localStorage.removeItem("colle-hippo:v5"); localStorage.removeItem("colle-hippo:v6"); });
 
   // load() used to assign straight from JSON.parse, and applyTheme() ran outside its
   // try/catch: a stored theme index from a newer build threw before go("menu") and
   // left a blank page with no way back. Startup must reach the menu regardless.
   await page.evaluate(() => {
-    localStorage.setItem("colle-hippo:v5", JSON.stringify({
+    localStorage.setItem("colle-hippo:v6", JSON.stringify({
       pos: { "8/8/8/8/8/8/8/8 w - - 0 1:e2e4": { ok: 1, no: 0, streak: 1, last: 1, ms: 500 } },
       pz: {}, day: "", today: 0, theme: 99, set: 42, bookOnly: true,
     }));
@@ -730,7 +869,7 @@ if (canStore) {
   check("an out-of-range stored theme does not brick startup",
     boot.menu && boot.screen === "menu" && boot.theme === 0 && boot.set === 0 && boot.book === true && boot.kept,
     JSON.stringify(boot));
-  await page.evaluate(() => localStorage.removeItem("colle-hippo:v5"));
+  await page.evaluate(() => localStorage.removeItem("colle-hippo:v6"));
 
   // Loading must be lenient per record. A single bad field (a negative ms, which a
   // backwards clock step between armClock() and the answer really does produce) used
@@ -739,7 +878,7 @@ if (canStore) {
   const goodKey = "8/8/8/8/8/8/8/8 w - - 0 1:e2e4";
   const badKey = "8/8/8/8/8/8/8/8 b - - 0 1:e7e5";
   await page.evaluate(([g, b]) => {
-    localStorage.setItem("colle-hippo:v5", JSON.stringify({
+    localStorage.setItem("colle-hippo:v6", JSON.stringify({
       pos: { [g]: { ok: 4, no: 1, streak: 2, last: 1, ms: 900 },
         [b]: { ok: 1, no: 0, streak: 1, last: 1, ms: -40 },
         broken: "not a record" },
@@ -752,7 +891,7 @@ if (canStore) {
     const before = { n: Object.keys(stats.pos).length, good: stats.pos[g], bad: stats.pos[b], theme: S.theme };
     bumpToday();
     await new Promise((r) => setTimeout(r, 120));
-    const stored = JSON.parse(localStorage.getItem("colle-hippo:v5"));
+    const stored = JSON.parse(localStorage.getItem("colle-hippo:v6"));
     return { before, storedKeys: Object.keys(stored.pos).length, storedGood: stored.pos[g] };
   }, [goodKey, badKey]);
   check("one bad record does not cost the user the rest of a stored blob",
@@ -762,26 +901,26 @@ if (canStore) {
 
   // An unreadable blob is the one thing refused outright, and then nothing is
   // written over it: overwriting is the only irreversible thing here.
-  await page.evaluate(() => localStorage.setItem("colle-hippo:v5", "{ not json"));
+  await page.evaluate(() => localStorage.setItem("colle-hippo:v6", "{ not json"));
   await page.reload();
   await page.waitForTimeout(700);
   const held = await page.evaluate(async () => {
     const out = { held: SAVE_HELD, note: el("mStore").textContent };
     bumpToday();
     await new Promise((r) => setTimeout(r, 120));
-    out.untouched = localStorage.getItem("colle-hippo:v5") === "{ not json";
+    out.untouched = localStorage.getItem("colle-hippo:v6") === "{ not json";
     el("pReset").click(); el("pReset").click();     // Reset is explicit consent to write
     await new Promise((r) => setTimeout(r, 120));
     out.afterReset = SAVE_HELD;
-    out.written = localStorage.getItem("colle-hippo:v5") !== "{ not json";
+    out.written = localStorage.getItem("colle-hippo:v6") !== "{ not json";
     return out;
   });
   check("an unreadable stored blob is left alone until the user says otherwise",
     held.held && held.note.includes("could not be read") && held.untouched &&
     held.afterReset === false && held.written, JSON.stringify(held));
-  await page.evaluate(() => localStorage.removeItem("colle-hippo:v5"));
+  await page.evaluate(() => localStorage.removeItem("colle-hippo:v6"));
 } else {
-  console.log("- v4 -> v5 migration and startup-resilience not checkable here (localStorage denied on file://)");
+  console.log("- v4/v5 -> v6 migration and startup-resilience not checkable here (localStorage denied on file://)");
 }
 
 // Enforce the offline promise: nothing in the whole run above may have called fetch,
@@ -794,7 +933,7 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
   const r = await page.evaluate(async () => {
     localStorage.setItem("colle-hippo:lichess-token", "lip_thisIsNotARealToken00");
     const key = Object.keys(KEYCACHE)[0] || Object.keys(EVL)[0];
-    stats.pos[key] = { ok: 3, no: 1, streak: 2, last: 1700000000000, ms: 1234, w: { Bd3: 2 } };
+    stats.pos[key] = { ok: 3, no: 1, streak: 2, last: 1700000000000, ms: 1234, w: { Bd3: 2 }, a: ["Nf3", "c4"] };
     stats.theme = 1; stats.set = 1; stats.bookOnly = true; stats.today = 4; stats.day = "2026-09-20";
     await save();
     go("progress"); el("pExport").onclick();
@@ -815,7 +954,7 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
   check("a backup round-trips without carrying the lichess token",
     r.hasToken === false && r.said === "Imported." &&
     r.rec && r.rec.ok === 3 && r.rec.no === 1 && r.rec.streak === 2 && r.rec.ms === 1234 &&
-    r.rec.w && r.rec.w.Bd3 === 2 &&
+    r.rec.w && r.rec.w.Bd3 === 2 && r.rec.a && r.rec.a.join() === "Nf3,c4" &&
     r.theme === 1 && r.set === 1 && r.bookOnly === true && r.today === 4 &&
     r.tokenKept === "lip_thisIsNotARealToken00",
     JSON.stringify({ token: r.hasToken, rec: r.rec, theme: r.theme, bookOnly: r.bookOnly, tokenSurvived: !!r.tokenKept }));

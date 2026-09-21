@@ -7,7 +7,7 @@ exception and it is opt-in: paste a lichess API token in Settings and the Study 
 statistics panel, which fetches from `explorer.lichess.org` each time you open it. Without a stored
 token, nothing leaves the page.
 
-**61 lines · 478 trainable positions · 80 tactics puzzles.**
+**62 lines · 485 trainable positions · 80 tactics puzzles.**
 
 ---
 
@@ -28,7 +28,7 @@ piece set (Cburnett standard, or a custom engraved set), and **drill book lines 
 
 ---
 
-## The 61 lines and where each came from
+## The 62 lines and where each came from
 
 Every line carries a visible tag. The tag is the claim being made.
 
@@ -83,7 +83,7 @@ Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
 1...e6, the move order that waits (added after the coverage count showed it was
 the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 24)
+### `model` and `synthetic` — written for this trainer (3 + 25)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
 Zukertort against a Queen's Indian · locking the centre then ...f5 · ...h5 against the pawn storm ·
@@ -97,7 +97,10 @@ the King's Indian shell completed · 3.e5 before it is prepared · 4.Bg5 against
 Be3 tabiya. The last nine
 were built from the coverage count: each answers a reply the repertoire measurably
 met and had no line for, and every move in them was graded before a word was
-written about it.
+written about it. One more, the queenside answer to g4 out of the same
+tabiya, was built from the stored analysis itself: against g4 the engine
+prefers ...b5, which it rates a clear concession against h4, so the two
+storms are drilled side by side.
 
 Nobody played these and no book prints them. They are legal, thematic sequences built to teach a
 structural rule, and they are tagged so you can exclude them: **drill book lines only** drops `game`,

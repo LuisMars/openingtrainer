@@ -1,7 +1,7 @@
 /* ================= state ================= */
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
-  run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
+  run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,freqW:true,recog:true,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
   arrow:null,passKeys:null,evNote:null,epoch:0};
 let stats={pos:{},pz:{},day:"",today:0,theme:0};
 // True when neither window.storage nor localStorage would take a write, so the
@@ -125,6 +125,32 @@ function keyFen(pos){
   return legal(pos).some(m=>m.ep)?fenOf(pos):fenOf({b:pos.b,w:pos.w,cr:pos.cr,ep:-1});
 }
 function bookExcluded(l){return S.bookOnly&&(KIND[l.id]==="game"||KIND[l.id]==="model"||KIND[l.id]==="synthetic");}
+/* ---------- practical occurrence (src/data/freq.js) ---------- */
+/* FRQ buckets how often a position is reached in the counted player pool; keys are
+   hashed because 88 full fens do not fit the page budget. No entry means neutral,
+   never demoted: the counting stops at twenty ply, so "not counted" and "rare" are
+   different things and only one is known. FRQS floors the rare forcing positions at
+   neutral - a chess judgement recorded in research/, not a number. The spread is
+   narrow on purpose: this reorders Shuffle, it silences nothing. */
+const FRQB=Object.create(null),FRQS=new Set(),FRQW=[.55,.7,.85,1,1.2,1.5];
+(function(){
+  const g=FRQ.split(",");
+  for(let b=0;b<g.length;b++)for(let i=0;i<g[b].length;i+=5)FRQB[g[b].slice(i,i+5)]=b;
+  for(let i=0;i<FRQ_SHARP.length;i+=5)FRQS.add(FRQ_SHARP.slice(i,i+5));
+})();
+function fhash(s){
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(36).padStart(7,"0").slice(-5);
+}
+// k is a stats key, fen+":"+expected uci; a puzzle key hashes to nothing and comes
+// back neutral, which is right.
+function freqFactor(k){
+  const i=k.lastIndexOf(":");
+  if(i<0)return 1;
+  const h=fhash(k.slice(0,i)),b=FRQB[h],w=b===undefined?1:FRQW[b];
+  return FRQS.has(h)?Math.max(w,1):w;
+}
 const KEYCACHE={},ALT={};
 (function(){
   LINES.forEach((l,li)=>{
@@ -142,13 +168,40 @@ function key(l,p){return l.id.indexOf("pz:")===0?l.id+":"+p:(KEYCACHE[l.id+":"+p
 function rec(k){return stats.pos[k];}
 const SLOW=7000;
 function quick(r){return r&&r.ms&&r.ms<SLOW;}
+/* ---------- one answer is not the whole position ---------- */
+/* The grader accepts several moves, so answering a board once says the user found
+   one of them, not that they read the board. waysAt counts what the table accepts
+   here - inside GRADE.equal of the best, or a mate as fast as the best - and where
+   that is two or more, a record carries two distinct accepted answers before it
+   reads as solid. Where one move is accepted, one answer is the whole story. A
+   record with no "a" predates the field and is left alone. */
+const WAYS={};
+function waysAt(fen){
+  if(WAYS[fen]!==undefined)return WAYS[fen];
+  const row=EVL[fen];let n=0;
+  if(row&&row.m&&row.m.length){
+    const b=row.m[0];
+    for(const e of row.m){
+      if(b[3]!==null&&b[3]!==undefined){if(e[3]===b[3])n++;}
+      else if((e[3]===null||e[3]===undefined)&&e[2]!==null&&b[2]-e[2]<=GRADE.equal)n++;
+    }
+  }
+  return WAYS[fen]=n;
+}
+// Two at most: the point is deciding twice, not reciting a list.
+function needWays(k){
+  if(!S.recog)return 1;
+  const i=k.lastIndexOf(":");
+  return (i>0&&waysAt(k.slice(0,i))>=2)?2:1;
+}
+function waysOk(k,r){return r.a===undefined||r.a.length>=needWays(k);}
 function state(k){
   const r=rec(k);
   if(!r||r.ok+r.no===0)return "new";
   const step=Math.min(r.streak,LADDER.length-1);
   const hrs=LADDER[step]*(quick(r)?1:.4);
   if(Date.now()>=r.last+hrs*HOUR)return "due";
-  return (r.streak>=2&&quick(r))?"solid":"learning";
+  return (r.streak>=2&&quick(r)&&waysOk(k,r))?"solid":"learning";
 }
 function lineScore(l){
   const ps=drillPlies(l);
@@ -375,13 +428,13 @@ function renderWeak(){
   }
 }
 el("pExport").onclick=()=>{
-  // v:5 stamps the payload with the stats shape it was written in. Storage keys are
-  // versioned so a later format change can be told apart from the current one. v5 is
-  // v4 plus an optional per-record "w" miss log; keys kept their fen shape, so
-  // validateImport() below accepts a v4 backup unchanged, and backups made before the
-  // stamp existed carry no "v" at all but are still v4-shaped (fen-keyed) data, so
-  // those import too rather than rejecting every backup a user already has.
-  el("pData").value=JSON.stringify(Object.assign({v:5},stats));
+  // v:6 stamps the payload with the stats shape it was written in. v5 is v4 plus an
+  // optional per-record "w" miss log, v6 is v5 plus an optional per-record "a" answer
+  // log; keys kept their fen shape through both, so validateImport() below accepts a
+  // v4 or v5 backup unchanged, and backups made before the stamp existed carry no "v"
+  // but are still v4-shaped (fen-keyed) data, so those import too rather than
+  // rejecting every backup a user already has.
+  el("pData").value=JSON.stringify(Object.assign({v:6},stats));
   el("pData").select();
 };
 // A v4 key is either "pz:<id>:<ply>" or a fenOf()-derived string, which always
@@ -403,7 +456,7 @@ function okNum(v,opt){
 function validateImport(d){
   if(!d||typeof d!=="object"||Array.isArray(d)||!d.pos||typeof d.pos!=="object"||Array.isArray(d.pos))return "shape";
   const keys=Object.keys(d.pos);
-  if(d.v!==undefined&&d.v!==4&&d.v!==5)return "version";
+  if(d.v!==undefined&&d.v!==4&&d.v!==5&&d.v!==6)return "version";
   if(d.v===undefined&&keys.length&&!keys.every(looksV4Key))return "version";
   for(const k of keys){
     const r=d.pos[k];
@@ -432,6 +485,8 @@ function sanRec(r){
     last:num(r.last,Date.now()+DAY),ms:num(r.ms,DAY)};
   const w=sanW(r.w);
   if(w)out.w=w;
+  const a=sanA(r.a);
+  if(a)out.a=a;
   return out;
 }
 function sanPz(o){
@@ -457,7 +512,11 @@ function cleanStats(d){
     today:num(d.today,1e6),
     theme:idx(d.theme,THEMES.length),
     set:idx(d.set,SETS.length),
-    bookOnly:!!d.bookOnly};
+    bookOnly:!!d.bookOnly,
+    // On when absent: a v4/v5 backup and a first run both look like that, and a
+    // setting nobody has an opinion about is not "off".
+    freqW:d.freqW===undefined?true:!!d.freqW,
+    recog:d.recog===undefined?true:!!d.recog};
 }
 // Sanitise a record's miss log at the import trust boundary: keep only string->
 // positive-number entries, re-bound to the same limits grade() enforces on write
@@ -480,6 +539,16 @@ function sanW(w){
   for(const s of pairs.slice(0,5))out[s]=Math.min(99,Math.round(w[s]));
   return out;
 }
+// The answer log at the import boundary, same rules as sanW: plausible SANs only,
+// deduped, bounded to the three grade() keeps. Null when nothing valid is left, and
+// the caller drops just this field - a mangled log must not cost the record, and
+// losing it costs only the second-way credit, re-earned by answering again.
+function sanA(a){
+  if(!Array.isArray(a))return null;
+  const out=[];
+  for(const s of a.slice(0,16))if(typeof s==="string"&&SAN_RE.test(s)&&out.indexOf(s)<0)out.push(s);
+  return out.length?out.slice(0,3):null;
+}
 el("pImport").onclick=()=>{
   let d=null;
   try{d=JSON.parse(el("pData").value);}catch(e){d=null;}
@@ -495,7 +564,7 @@ el("pImport").onclick=()=>{
     return;
   }
   stats=cleanStats(d);
-  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;
+  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;S.recog=stats.recog;
   SAVE_HELD=false; // the user has chosen what to keep; writing is theirs to allow again
   applyTheme();syncOpts(); // apply immediately; do not make the user reload to see it
   save();renderProgress();el("pData").value="Imported.";
@@ -505,7 +574,8 @@ el("pReset").onclick=function(){
   if(!resetArmed){resetArmed=true;this.textContent="Tap again to erase everything";return;}
   // bookOnly is a setting, not progress: leaving it out of the rebuilt object wiped
   // it from storage while S.bookOnly still showed it on in the options sheet.
-  stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set,bookOnly:S.bookOnly};S.run=0;
+  stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set,bookOnly:S.bookOnly,
+    freqW:S.freqW,recog:S.recog};S.run=0;
   SAVE_HELD=false; // "erase everything" is explicit consent to write over whatever is there
   save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
 };
@@ -1112,6 +1182,7 @@ function playMove(pos,name,m){
       good();return;
     }
     const t=san(pos,m);
+    noteWay(key(L(),S.ply),t); // another line's move here is another way to read this board
     S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">'+t+" is book too — "+LINES[alt[0]].name+
       " plays it here. This line wants "+L().moves[S.ply][1]+".</span>";
@@ -1134,6 +1205,7 @@ function playMove(pos,name,m){
     // Drill: mirror the book-alternative branch above exactly - acknowledge, grade
     // nothing either way, leave the streak alone, and do not advance, because the
     // stored continuation would diverge from the board. The user retries.
+    noteWay(key(L(),S.ply),t);
     S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. "+
       gradeLine(g)+pvTxt(g,row)+" This line's order plays "+L().moves[S.ply][1]+" here.</span>";
@@ -1152,6 +1224,7 @@ function playMove(pos,name,m){
   if(g&&g.analysis==="checked"&&GRADE.accept.indexOf(g.verdict)>=0&&
      (gate.reason==="not-target"||gate.reason==="no-targets")&&!NO_SHUFFLE.has(L().id)){
     if(S.mode==="shuffle"){setupGood(pos,m,t,goodLead(t,g,row));return;}
+    noteWay(key(L(),S.ply),t);
     S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">'+goodLead(t,g,row)+" This line plays "+L().moves[S.ply][1]+" here.</span>";
     return;
@@ -1168,6 +1241,7 @@ function playMove(pos,name,m){
   const v=matVerdict(pos,m);
   if(!pz&&setupMove(pos,m,v,gate)){
     if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,null,null));return;}
+    noteWay(key(L(),S.ply),t);
     S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. This line's order plays "+L().moves[S.ply][1]+" here.</span>";
     return;
@@ -1187,10 +1261,27 @@ function bumpToday(){
 }
 function pzRec(){const p=L().pz;if(!p)return null;stats.pz=stats.pz||{};
   return stats.pz[p.id]=stats.pz[p.id]||{ok:0,no:0,ms:0};}
-function grade(k,right,ms,wrongSan){
+/* The answer log: accepted moves the user has produced here, at most three, oldest
+   dropped; waysOk reads it. Written on a credited answer and on an accepted
+   alternative in Drill - which still earns no streak, because the line wants its own
+   move - so a user who never opens Shuffle can still show a second way. */
+function addWay(r,s){
+  if(!s)return;
+  const a=r.a=r.a||[];
+  if(a.indexOf(s)>=0)return;
+  a.push(s);
+  if(a.length>3)a.shift();
+}
+function noteWay(k,s){
+  if(k.indexOf("pz:")===0)return;
+  const r=stats.pos[k];
+  if(!r)return; // no record yet: nothing has been answered here, so nothing to add to
+  addWay(r,s);save();
+}
+function grade(k,right,ms,wrongSan,rightSan){
   if(k.indexOf("pz:")===0)return;
   const r=stats.pos[k]||{ok:0,no:0,streak:0,last:0,ms:0};
-  if(right){r.ok++;r.streak++;}else{r.no++;r.streak=0;}
+  if(right){r.ok++;r.streak++;addWay(r,rightSan);}else{r.no++;r.streak=0;}
   // The miss log: which wrong move was actually played, so Progress can name a
   // habit instead of only a percentage. Bounded on write - at most 5 distinct
   // SANs per record, counts capped at 99, lowest count evicted when a 6th
@@ -1214,13 +1305,13 @@ function grade(k,right,ms,wrongSan){
 // keys onto it. S.passKeys tracks what has already been graded since the line
 // was (re)started; a repeat within the same pass falls back to touch(), which
 // still keeps the timing average honest without moving streak/last.
-function gradeOncePerPass(k,right,ms,wrongSan){
+function gradeOncePerPass(k,right,ms,wrongSan,rightSan){
   if(S.mode==="line"){
     S.passKeys=S.passKeys||new Set();
     if(S.passKeys.has(k)){touch(k,ms);return;}
     S.passKeys.add(k);
   }
-  grade(k,right,ms,wrongSan);
+  grade(k,right,ms,wrongSan,rightSan);
 }
 function elapsed(){return S.t0?Date.now()-S.t0:0;}
 function armClock(){S.t0=Date.now();}
@@ -1233,8 +1324,12 @@ function good(){
   // before S.ply moves on. Shown only after a miss: a clean book answer is not
   // relitigated with numbers (commit b40bcaa exists for that reason).
   const ev=(S.mode!=="puzzle"&&hadMiss)?evalFor(nowPos()):null;
-  if(clean)gradeOncePerPass(key(L(),S.ply),true,ms);
-  else if(S.hint<3)touch(key(L(),S.ply),ms);
+  const gk=key(L(),S.ply);
+  if(clean)gradeOncePerPass(gk,true,ms,null,L().moves[S.ply][1]);
+  else if(S.hint<3)touch(gk,ms);
+  // Said only where the stored table really does accept another move here.
+  const short=clean&&S.mode!=="study"&&S.recog&&needWays(gk)>1&&
+    (rec(gk)||{}).a&&rec(gk).a.length<2;
   if(S.mode!=="study"){
     if(clean)S.run++;else S.run=0;
     bumpToday();
@@ -1245,7 +1340,8 @@ function good(){
   S.sel=null;S.ply++;S.tries=0;S.hint=0;
   render(true);flash(to,"good");
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+san+(clean?"":" (with help)")+(ms?",":".")+"</span>"+
-    (ms?' <span class="neutral">'+fmtMs(ms)+(clean&&ms>SLOW?", slow: it will come back sooner":"")+".</span>":"");
+    (ms?' <span class="neutral">'+fmtMs(ms)+(clean&&ms>SLOW?", slow: it will come back sooner":"")+".</span>":"")+
+    (short?' <span class="neutral">The table accepts another move here too; find it and this board counts as solid.</span>':"");
   if(S.mode==="line"||S.mode==="puzzle"){
     if(S.ply>=L().moves.length){
       if(S.mode==="puzzle"){
@@ -1548,7 +1644,7 @@ function setupGood(pos,m,t,lead){
   const clean=S.hint===0&&S.tries===0;
   const ms=elapsed();S.lastMs=ms;
   S.arrow=null;
-  if(clean)grade(key(L(),S.ply),true,ms);
+  if(clean)grade(key(L(),S.ply),true,ms,null,t);
   else if(S.hint<3)touch(key(L(),S.ply),ms);
   if(clean)S.run++;else S.run=0;
   bumpToday();
@@ -1778,6 +1874,11 @@ function shuffle(first){
     // which is wanted - new material is the last thing a backlog needs - and the cut is
     // uniform, so the floor above still ranks new above solid. anyDue is read off the
     // same list, so at least one undamped candidate always remains.
+    // Practical occurrence, on everything except due keys: a position met in one
+    // game in three should come up more than one met in one in three thousand, never
+    // at the cost of a due review, and skipping due keys is what keeps that true.
+    // Uncounted positions are neutral, rare forcing ones have a floor.
+    if(S.freqW&&x.st!=="due")wt*=freqFactor(x.k);
     if(anyDue&&x.st!=="due")wt*=.1;
     if(x.k===S.lastKey)wt=0;
     pool.push([x.i,x.p,x.k,wt]);
@@ -1813,6 +1914,10 @@ function syncOpts(){
   el("oSetS").textContent=(SETS[S.set]||SETS[0])[0];
   el("oBookS").textContent=S.bookOnly?"on":"off";
   el("oBook").setAttribute("aria-pressed",S.bookOnly);
+  el("oFreqS").textContent=S.freqW?"on":"off";
+  el("oFreq").setAttribute("aria-pressed",S.freqW);
+  el("oRecogS").textContent=S.recog?"on":"off";
+  el("oRecog").setAttribute("aria-pressed",S.recog);
   el("oRestart").style.display=S.mode==="shuffle"?"none":"";
 }
 el("oFlip").onclick=()=>{S.flip=!S.flip;syncOpts();render(false);};
@@ -1822,6 +1927,10 @@ el("oSet").onclick=()=>{S.set=(S.set+1)%SETS.length;stats.set=S.set;save();syncO
   document.querySelectorAll(".ico[data-pc]").forEach(n=>{n.innerHTML="";n.appendChild(pieceEl2(n.dataset.pc,""));});
   if(S.screen==="board")render(false);};
 el("oBook").onclick=()=>{S.bookOnly=!S.bookOnly;stats.bookOnly=S.bookOnly;save();syncOpts();};
+el("oFreq").onclick=()=>{S.freqW=!S.freqW;stats.freqW=S.freqW;save();syncOpts();};
+// Turning this off does not rewrite any record: the answer logs stay, and turning
+// it back on reads them again.
+el("oRecog").onclick=()=>{S.recog=!S.recog;stats.recog=S.recog;save();syncOpts();if(S.screen==="menu")renderMenu();};
 el("oRestart").onclick=()=>{openOpts(false);stopAll();S.ply=0;S.sel=null;S.tries=0;S.hint=0;S.arrow=null;S.passKeys=new Set();render(false);
   if(S.mode==="line"&&!yourTurn())later(autoReply,250);};
 el("oMenu").onclick=()=>{openOpts(false);go("menu");};
@@ -1871,11 +1980,11 @@ const STORE=(()=>{
 // claiming progress is being kept, rather than swallowing it silently.
 async function save(){
   if(SAVE_HELD)return;
-  try{await STORE.set("colle-hippo:v5",JSON.stringify(stats));}catch(e){MEMONLY=true;}
+  try{await STORE.set("colle-hippo:v6",JSON.stringify(stats));}catch(e){MEMONLY=true;}
 }
 
 /* ================= lichess token (menu settings) ================= */
-/* The token deliberately lives under its own key, outside the colle-hippo:v5
+/* The token deliberately lives under its own key, outside the colle-hippo:v6
    stats blob: it is a credential, not progress, so it must not travel in an
    export/import backup and must survive "Reset all progress". Same three-tier
    STORE as everything else. Saving is gated on a live self-test: lichess's
@@ -1923,14 +2032,19 @@ el("tokClear").onclick=async()=>{
   tokSay("neutral","Token cleared. The trainer is fully offline again.");
 };
 async function load(){
-  // v5 first; else adopt a v4 blob verbatim - a v4 record is a valid v5 record
-  // without the optional "w" miss log (keys did not change shape), so the v4->v5
-  // migration is adoption plus an immediate rewrite under the v5 key. No data
-  // is dropped and nothing is remapped.
-  let raw=null,fromV4=false;
+  // v6 first; else adopt a v5 or v4 blob verbatim - a v5 record is a valid v6 record
+  // without the optional "a" answer log, a v4 record is one without either log, and
+  // keys never changed shape - so both migrations are adoption plus an immediate
+  // rewrite under the v6 key. Nothing is dropped and nothing is remapped. Settings an
+  // old blob lacks default to on in cleanStats(), not off, so omission disables
+  // nothing.
+  let raw=null,fromOld=false;
   try{
-    let r=await STORE.get("colle-hippo:v5");
-    if(!(r&&r.value)){r=await STORE.get("colle-hippo:v4");fromV4=!!(r&&r.value);}
+    let r=await STORE.get("colle-hippo:v6");
+    for(const old of ["colle-hippo:v5","colle-hippo:v4"]){
+      if(r&&r.value)break;
+      r=await STORE.get(old);fromOld=!!(r&&r.value);
+    }
     if(r&&r.value)raw=r.value;
   }catch(e){}
   if(raw!==null){
@@ -1948,9 +2062,9 @@ async function load(){
     try{d=JSON.parse(raw);}catch(e){d=null;}
     if(d&&typeof d==="object"&&d.pos&&typeof d.pos==="object"&&!Array.isArray(d.pos)){
       stats=cleanStats(d);
-      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;
+      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;S.recog=stats.recog;
       if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
-      if(fromV4)save();
+      if(fromOld)save();
     }else{
       // Something is stored and it cannot be read. Overwriting it is the one
       // irreversible thing this app can do, so it holds off until the user says
