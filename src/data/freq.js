@@ -2,20 +2,25 @@
 // reached in real games, as a bucket, never as a claimed probability.
 // SOURCE: the player pool only - the lichess 2014-01 dump counted into
 // research/freq-*-player-<band>.json by tools/count-replies.mjs, once per rating
-// band (average of the two players' ratings, lichess 2014 scale). It is the one
-// pool not selected by opening, so the only one that can say how often a reply is
-// met (METHOD.md).
+// band (average of the two players' ratings, lichess 2014 scale), gaps filled
+// from research/choices-player.json (tools/count-choices.mjs, same dump, same
+// bands) where a pool file predates a line and so never counted it. It is the
+// one pool not selected by opening, so the only one that can say how often a
+// reply is met (METHOD.md).
 //   [under 1500] freq-colle-player-u1500.json: 49063 of 202157 games, avg Elo any to 1499.5, maxPly 20, speeds all, 2026-09-21
 //   [under 1500] freq-hippo-player-u1500.json: 202157 of 202157 games, avg Elo any to 1499.5, maxPly 20, speeds all, 2026-09-21
+//   [under 1500] research/choices-player.json gap fill: 3 positions their own pool file missed, parent games >= 20, 2026-09-21
 //   [1500–1899] freq-colle-player-1500-1899.json: 119433 of 437890 games, avg Elo 1500 to 1899.5, maxPly 20, speeds all, 2026-09-21
 //   [1500–1899] freq-hippo-player-1500-1899.json: 437890 of 437890 games, avg Elo 1500 to 1899.5, maxPly 20, speeds all, 2026-09-21
+//   [1500–1899] research/choices-player.json gap fill: 3 positions their own pool file missed, parent games >= 20, 2026-09-21
 //   [1900 and over] freq-colle-player-1900.json: 18243 of 57211 games, avg Elo 1900 to any, maxPly 20, speeds all, 2026-09-21
 //   [1900 and over] freq-hippo-player-1900.json: 57211 of 57211 games, avg Elo 1900 to any, maxPly 20, speeds all, 2026-09-21
+//   [1900 and over] research/choices-player.json gap fill: 3 positions their own pool file missed, parent games >= 20, 2026-09-21
 // SHAPE: FRQ holds one string per band, in FRQ_BANDS order. Each is six
 // comma-separated groups, bucket 0 first; each group is the low 5 base-36 digits of
 // the FNV-1a hash of keyFen, run together. Bucket 5 is a share of 0.1 or more
 // of that band's probe tree, then 0.03, 0.01, 0.003, 0.001. Of 310 drilled
-// positions, under 1500: 71, 1500–1899: 93, 1900 and over: 73 were reached;
+// positions, under 1500: 74, 1500–1899: 96, 1900 and over: 76 were reached;
 // the rest ship nothing and are neutral, never rare.
 // FRQ_DEF is the band used until the user picks one: the middle band, where most
 // of the dump's games are. It is not a guess at the user's rating.
@@ -23,5 +28,5 @@
 // judgement, not a data result, and the same in every band.
 const FRQ_BANDS=["under 1500","1500–1899","1900 and over"];
 const FRQ_DEF=1;
-const FRQ=["fu8va3az78mfmyfacii00xlr8kpmlyo8j3ct73z3h2ywsd7tzm3hl5aohsoj0hbniiq7rnm5y0hzi6l6i9vqzn2n3pvf0n2p28n8g2rwp1jsjhf18utzvildf6gm0g3j5y34pyic6vy9gcu7feudy0vy0y8suyujiv058zaw9ov4s4gesgl6mvnanxbjhdgs9negiybi,y19r7ufz6d75u95ro6yydzx1eo5ik6ehpdubaqdz,jj2jiw9hn6p1sc4j8sdytvhb7l9zpkessi5q1vhw,t01jvtqpwm870df0axohhh1xksatk4fljep0f0mnys8sx,xh4i5bm8jr,8lim8vghhlvzlk6o7pqn","t73z3n2n3pbaqdzd7tzm3hl5aohsojiq7rnkpmlyh2ywso8j3czvildi9vqzg2rwpf18utp28n8suyujvf0n234pyizi6l6g3j5yzaw9oeudy0f6gm0c6vy90hbni1jsjh2fo6fwdwpgvy0y8mvnanwu38xiv0586ntpbpb0sxm5prif3g9ll7xv0xbjhdgcu7f5uzixgs9neeazugv4s4gfa9ue6dwf57dda2min8jesgl60mb3uvse53giybifo5tqs70na6u3dcc8wjj4bk2ooc6c4,o5ik63az78mfmyfehpdudzx1em5y0hacii00xlr8,p1sc475u95tvhb7essi5ro6yyl9zpky19r7jj2jiq1vhwufz6dfu8va,hh1xk0axoh0f0mnt01jvtqpwmsatk4w9hn6ys8sxfljepj8sdy,bm8jr870df,8lim8vghhlvzlk6xh4i5o7pqn","zi6l6zvildc6vy9o8j3csuyujzaw9om5prii9vqzf18utl7xv0h2ywsmvnanv4s4gbaqdzdzx1evf0n2fa9uevy0y8xbjhd34pyikpmly0mb3us70naf6gm0eudy0gcu7fgs9ner2iew,mfmyfm5y0hn2n3pd7tzmjj2ji3az78acii0g3j5yohsojg2rwp1jsjhiq7rnt73z3iv058,y19r7o5ik6ehpduro6yyfu8vafljepufz6d0xlr83hl5aq1vhwl9zpk,0axoh75u95t01jvp1sc4ys8sxtvhb7essi5j8sdyw9hn6,o7pqnsatk4870dfhh1xkbm8jrtqpwm0f0mn,8lim8vzlk6vghhlxh4i5"];
+const FRQ=["fu8va3az78mfmyfe9l28acii00xlr8kpmlyo8j3ct73z3h2ywsd7tzm3hl5aohsoj0hbniiq7rnm5y0hzi6l6i9vqzn2n3pvf0n2p28n8g2rwp1jsjhf18utzvildf6gm0g3j5y34pyic6vy9gcu7feudy0vy0y8suyujiv058zaw9ov4s4gesgl6mvnanxbjhdgs9negiybi,y19r7ufz6d75u95ro6yydzx1eo5ik6ehpdubaqdz,jj2jiw9hn6p1sc4j8sdytvhb7l9zpkessi5q1vhw,t01jvtqpwm870df0axohhh1xksatk4fljeph5a440f0mnys8sx,xh4i5bm8jr,2scof8lim8vghhlvzlk6o7pqn","t73z3n2n3pbaqdzd7tzm3hl5aohsojiq7rnkpmlyh2ywso8j3czvildi9vqzg2rwpf18utp28n8suyujvf0n234pyizi6l6g3j5yzaw9oeudy0f6gm0c6vy90hbni1jsjh2fo6fwdwpgvy0y8mvnanwu38xiv0586ntpbpb0sxm5prif3g9ll7xv0xbjhdgcu7f5uzixgs9neeazugv4s4gfa9ue6dwf57dda2min8jesgl60mb3uvse53giybifo5tqs70na6u3dcc8wjj4bk2ooc6c4,o5ik63az78mfmyfehpdudzx1em5y0hacii0e9l280xlr8,p1sc475u95tvhb7essi5ro6yyl9zpky19r7jj2jiq1vhwufz6dfu8va,hh1xk0axoh0f0mnt01jvtqpwmh5a44satk4w9hn6ys8sxfljepj8sdy,bm8jr870df,2scof8lim8vghhlvzlk6xh4i5o7pqn","zi6l6zvildc6vy9o8j3csuyujzaw9om5prii9vqzf18utl7xv0h2ywsmvnanv4s4gbaqdzdzx1evf0n2fa9uevy0y8xbjhd34pyikpmly0mb3us70naf6gm0eudy0gcu7fgs9ner2iew,mfmyfm5y0hn2n3pd7tzmjj2ji3az78acii0e9l28g3j5yohsojg2rwp1jsjhiq7rnt73z3iv058,y19r7o5ik6ehpduro6yyfu8vafljepufz6d0xlr83hl5aq1vhwl9zpk,0axoh75u95t01jvp1sc4h5a44ys8sxtvhb7essi5j8sdyw9hn6,o7pqnsatk4870dfhh1xkbm8jrtqpwm0f0mn,2scof8lim8vzlk6vghhlxh4i5"];
 const FRQ_SHARP="t01jvr2iewhgsusdzx1e";

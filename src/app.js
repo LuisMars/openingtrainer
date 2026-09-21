@@ -1491,9 +1491,22 @@ function endNote(){
 function replyAfter(pos,m,row,g){
   const aft=evalFor(make(pos,m));
   if(aft&&aft.m&&aft.m.length)return aft.m[0][1];
-  if(row&&row.pv&&row.pv.length>1&&g&&g.san&&
-     row.pv[0].replace(/[+#!?]/g,"")===g.san.replace(/[+#!?]/g,""))return row.pv[1];
-  return null;
+  const ln=g&&g.san?lineOf(row,g.san):null;
+  return ln&&ln.length>1?ln[1]:null;
+}
+/* The stored SAN line that starts with this move: p is aligned with the ranked
+   moves and xp with the separately searched ones, each from the same search that
+   scored the move (tools/build-evals.mjs), so every stored candidate has its own
+   resulting position. pv, the best move's line, is the fallback for a table built
+   before p existed. Null when the move has no stored line. */
+function lineOf(row,sanTxt){
+  if(!row)return null;
+  const bare=x=>x.replace(/[+#!?]/g,""),want=bare(sanTxt);
+  for(const [lk,mk] of [["p","m"],["xp","x"]])if(row[lk]&&row[mk]){
+    const i=row[mk].findIndex(e=>bare(e[1])===want);
+    if(i>=0&&row[lk][i])return row[lk][i];
+  }
+  return row.pv&&row.pv.length&&bare(row.pv[0])===want?row.pv:null;
 }
 // The opponent's move, written the way the move list writes it.
 function theirs(sanTxt){return (L().you==="w"?"…":"")+sanTxt;}
@@ -1538,8 +1551,12 @@ function mistakeTxt(c){
   return c.san+(c.grade.verdict==="concession"?" (a concession)":"")+", chosen in "+countTxt(c)+
     ". Stockfish 16, depth "+c.grade.why.depth+": "+fmtScore(c.grade)+lossTxt(c.grade)+".";
 }
+// Shown after a correct answer, so it carries the count and the cost but not the
+// engine readout: a clean answer is not relitigated with an engine block, and the
+// full priced line is in the Position details panel.
 function mistakeLead(c){return "A common "+(c.grade.verdict==="concession"?"concession":"mistake")+" here at "+
-  FRQ_BANDS[S.band]+" ("+CHO_SRC+"): "+mistakeTxt(c).replace(" (a concession)","");}
+  FRQ_BANDS[S.band]+" ("+CHO_SRC+"): "+c.san+", chosen in "+countTxt(c)+
+  (c.grade.lossCp?", "+c.grade.lossCp+" centipawn"+(c.grade.lossCp===1?"":"s")+" behind the table's first choice":"")+".";}
 /* ---------- position details ----------
    One place for what the stored data can say about the position being asked, and
    nothing it cannot: occurrence (FRQ, CHO), the table's depth and the gap behind its
@@ -1547,8 +1564,53 @@ function mistakeLead(c){return "A common "+(c.grade.verdict==="concession"?"conc
    plan, the table's first choice with the reply it expects, and the common mistakes.
    While a question is live only the first group is shown, and every row is run
    through refuteLeaks against the expected move, so nothing here can hand over the
-   answer (invariant 4). No per-position goal or threat exists in the data, so the
-   panel shows the line's plan and the table's expected reply, labelled as those. */
+   answer (invariant 4). The threat comes from a build-time null-move search
+   (threatAt); the goal is the threat, the line's plan and the line's own note on
+   the move, each labelled as what it is - nothing is written per position here. */
+/* ---------- threats (EVL[key].t) ----------
+   t is a null-move search computed at build time: the same board with the move
+   handed to the opponent, searched by the same engine at the same depth, scored
+   from the THREATENING side's view. Its gain is what that free move is worth to
+   them over the position as it stands, where the table's first choice scores
+   row.m[0] for the mover: gain = t + best (both in centipawns). A tempo alone is
+   worth something in any opening position, so a threat is shown only when the
+   free move gains at least THREAT_CP, or mates; the threshold and its calibration
+   are in research/W5-POSITION-METADATA.md. Never shown for a position whose mover
+   is already mating or already being mated: no centipawn gain is defined there. */
+const THREAT_CP=150;
+function threatAt(row){
+  if(!row||!row.t||!row.m||!row.m.length)return null;
+  const t=row.t,b=row.m[0];
+  if(b[3]!==null)return null;
+  if(t[3]!==null)return t[3]>0?{t:t,gain:null}:null;
+  const gain=t[2]+b[2];
+  return gain>=THREAT_CP?{t:t,gain:gain}:null;
+}
+function threatTxt(l,th,depth){
+  const them=l.you==="w"?"Black":"White",t=th.t,dots=l.you==="w"?"\u2026":"";
+  let s="If it were "+them+"'s move: "+dots+t[1]+", "+(t[3]!==null?"and "+them+" mates in "+t[3]:
+    fmtScore({cp:t[2],mate:null})+" for "+them+", "+th.gain+" centipawns more than the position gives "+them+" as it stands")+
+    " (Stockfish 16, depth "+depth+", searched with the move handed over).";
+  if(t[4]&&t[4].length>1)s+=" Its line: "+dots+t[4].join(" ")+".";
+  return s;
+}
+/* A threat stays hidden while the question is live when it points at the answer:
+   the text names the answer's move or squares (refuteLeaks), or the threat move
+   itself starts or lands on a square the answer starts or lands on - the answer
+   parrying it by capturing, blocking or moving the target away. After answering
+   it is always shown. */
+function threatLeaks(txt,th,want){
+  const a=[want[0].slice(0,2),want[0].slice(2,4)],u=th.t[0];
+  return refuteLeaks(txt,want[0],want[1])||a.indexOf(u.slice(0,2))>=0||a.indexOf(u.slice(2,4))>=0;
+}
+// The line's plan before answering: refuteLeaks plus the piece name, and castling
+// in any spelling when the answer castles - the same tests moveClue() applies.
+function planLeaks(txt,pos,want){
+  const m=findMove(pos,want[0]);if(!m)return true;
+  const low=txt.toLowerCase();
+  return refuteLeaks(txt,want[0],want[1])||low.indexOf(NAME[pos.b[m.f].toLowerCase()])>=0||
+    (!!m.c&&(low.indexOf("castl")>=0||low.indexOf("o-o")>=0));
+}
 const OCC=["under 0.1%","at least 0.1%","at least 0.3%","at least 1%","at least 3%","at least 10%"];
 function infoAt(){
   const l=L();
@@ -1569,7 +1631,9 @@ function infoRows(l,ply,answered){
   let occ=b===undefined
     ?"No occurrence bucket for this board at "+band+", so Shuffle weights it neutral."
     :"Reached in "+OCC[b]+" of the counted "+band+" games in this repertoire's tree.";
-  if(cho&&cho[0][S.band])occ+=" "+cho[0][S.band]+" counted game"+(cho[0][S.band]===1?"":"s")+" reached this exact board.";
+  if(cho&&cho[0][S.band])occ+=b===undefined
+    ?" "+cho[0][S.band]+" counted game"+(cho[0][S.band]===1?"":"s")+" reached this exact board, too few to bucket."
+    :" "+cho[0][S.band]+" counted game"+(cho[0][S.band]===1?"":"s")+" reached this exact board.";
   if(FRQS.has(h))occ+=" A rare forcing position, so it keeps full weight.";
   rows.push(["Occurrence",occ]);
   if(row){
@@ -1593,12 +1657,25 @@ function infoRows(l,ply,answered){
     rows.push(["Source",[l.name,l.src].filter(Boolean).join(" · ")+(KIND[l.id]?" ("+KIND[l.id]+")":"")+
       (others?"; "+others+" other line"+(others===1?"":"s")+" reach this board.":".")]);
   }
+  // Goal, in three honest parts and no new prose: the threat (a stored search),
+  // the line's own plan (per line, labelled as the line's) and, once answered, the
+  // line's own note on the drilled move. Before answering the plan is shown only
+  // in Drill (in Shuffle it would name the line) and only when it names neither
+  // the answer, its squares, its piece nor castling for a castling answer.
+  const th=threatAt(row);
+  let thTxt=th?threatTxt(l,th,row.d):null;
+  if(thTxt&&!answered&&threatLeaks(thTxt,th,want))thTxt=null;
+  if(thTxt)rows.push(["Threat",thTxt]);
+  else if(row&&row.t&&answered)rows.push(["Threat","Nothing concrete: handed the move, "+(l.you==="w"?"Black":"White")+
+    " gains less than "+THREAT_CP+" centipawns over the position as it stands (Stockfish 16, depth "+row.d+")."]);
+  const p=(l.plan||"").split(". ")[0].replace(/\.$/,"");
+  if(p&&(answered||(S.mode!=="shuffle"&&!planLeaks(p,pos,want))))rows.push(["Plan","This line's aim: "+p+"."]);
   if(answered){
-    const p=(l.plan||"").split(". ")[0].replace(/\.$/,"");
-    if(p)rows.push(["Plan","This line's aim: "+p+"."]);
+    const note=(want[2]||"").trim();
+    if(note)rows.push(["Move note","The line's note on "+want[1]+": "+note]);
     if(row){
       let e="First choice "+row.m[0][1]+" "+fmtScore({cp:row.m[0][2],mate:row.m[0][3]});
-      if(row.pv&&row.pv.length>1)e+="; the reply the table expects after it is "+theirs(row.pv[1])+". Not a threat analysis: the table stores replies, not threats.";
+      if(row.pv&&row.pv.length>1)e+="; the reply the table expects after it is "+theirs(row.pv[1])+".";
       else e+=".";
       rows.push(["Engine",e]);
     }
@@ -1658,12 +1735,11 @@ function gradeLine(g){
   if(g.reply)s+=" The table answers "+theirs(g.reply)+".";
   return s;
 }
-// The stored continuation, shown only where the move played is the one the pv
-// starts with - the pv after any other move is a line that was never played.
+// The stored continuation of the move actually played, from that move's own line
+// (lineOf) - never another move's line, which would be a game that was not played.
 function pvTxt(g,row){
-  if(!row||!row.pv||row.pv.length<3||!g||!g.san)return "";
-  if(row.pv[0].replace(/[+#!?]/g,"")!==g.san.replace(/[+#!?]/g,""))return "";
-  return " Its line from here: "+row.pv.join(" ")+".";
+  const ln=g&&g.san?lineOf(row,g.san):null;
+  return ln&&ln.length>=3?" Its line from here: "+ln.join(" ")+".":"";
 }
 // A move the table puts first or inside its noise band, played where the line
 // wants another. Named as sound, with the number, and nothing stronger.

@@ -247,11 +247,14 @@ centipawns behind in one position and far more in another, and a separately scor
   concessions of 30 to 55 centipawns, a few are inferior.
 - **Position details** (a panel under the board) gathers what the data can say about the position:
   how often it is reached, how many games reached it, the table's depth and how far its first choice
-  stands clear of the second, and the line it comes from. While the question is live nothing there can
-  name the answer — every row is checked against the move, and Shuffle hides the line. Once answered it
-  adds the line's plan, the table's first choice with the reply it expects (a stored reply, not a
-  threat analysis), and the common mistakes. There is no per-position goal or threat in the data, so
-  none is shown; `research/W5-POSITION-METADATA.md` records those as gaps.
+  stands clear of the second, the line it comes from, and the opponent's threat where there is one: the
+  same board searched at build time with the move handed to the opponent, shown only when that free move
+  gains at least 150 centipawns over the position as it stands (44 of 516 drill plies). While the
+  question is live nothing there can name the answer — every row is checked against the move, a threat
+  that touches the answer's squares waits until it is answered, and Shuffle hides the line and its plan.
+  Once answered it adds the line's plan, the line's own note on the move, the table's first choice with
+  the reply it expects, and the common mistakes. No per-position prose is written; the goal is those
+  three sources, each labelled. `research/W5-POSITION-METADATA.md` has the calibration.
 - **Mates and lost positions are settled before the centipawn bands.** A move that allows mate is losing
   whatever its rank; a position that was already lost stays lost, so naming the best defence never implies
   a rescue; a move that throws away a winning position is called that instead of being priced in pawns.

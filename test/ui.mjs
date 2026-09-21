@@ -1197,6 +1197,65 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
   check("Shuffle's answer names the common mistake",
     !!info.shuffleCtx && /A common (mistake|concession) here/.test(info.shuffleCtx) && info.shuffleCtx.indexOf(s.mistake) >= 0,
     (info.shuffleCtx || "").slice(-200));
+  // The unconditional check near the top depends on which board Shuffle serves;
+  // this one is at a board with a counted mistake, so the note is always present.
+  check("a common-mistake note after a clean answer carries no engine readout",
+    !!info.shuffleCtx && info.shuffleCtx.indexOf("Stockfish") < 0, (info.shuffleCtx || "").slice(-120));
+}
+
+// Threats and goals in the details panel (research/W5-POSITION-METADATA.md). A
+// threat is shown only where the stored null-move search gains THREAT_CP or mates,
+// with the stored numbers; while a question is live it never names the answer's
+// move or squares and the threat move never touches the answer's squares; once
+// answered it is always shown, with the line's own note on the move.
+{
+  const th = await page.evaluate(() => {
+    const out = { plies: 0, live: 0, answered: 0, liveHidden: 0, bad: [], sampleLive: null, sampleAns: null, notes: 0, noteMissing: [], placeholder: 0 };
+    const reset = (li, ply) => {
+      S.screen = "board"; S.mode = "line"; S.li = li; S.ply = ply; S.sel = null; S.tries = 0; S.hint = 0;
+      S.passKeys = new Set(); clearFree(); if (S.pending && S.pending !== 1) clearTimeout(S.pending); S.pending = 0;
+    };
+    const rowOf = (txt, label) => { const r = txt.find((x) => x[0] === label); return r ? r[1] : null; };
+    LINES.forEach((l, li) => {
+      for (const p of drillPlies(l)) {
+        out.plies++;
+        const pos = posAt(l, p), row = evalFor(pos), want = l.moves[p], t = threatAt(row);
+        reset(li, p); render(false);
+        const live = infoRows(l, p, false), ans = infoRows(l, p, true);
+        const lt = rowOf(live, "Threat"), at = rowOf(ans, "Threat");
+        if (live.concat(ans).some((r) => /Not a threat analysis/.test(r[1]))) out.placeholder++;
+        if (t) {
+          // the numbers printed are the stored ones
+          const gain = t.gain === null ? null : row.t[2] + row.m[0][2];
+          if (!at || at.indexOf(row.t[1]) < 0 || (gain !== null && at.indexOf(gain + " centipawns") < 0) ||
+              (row.t[3] !== null && at.indexOf("mates in " + row.t[3]) < 0))
+            out.bad.push(l.id + ":" + p + " answered threat row wrong: " + at);
+          out.answered++;
+          if (lt) {
+            out.live++;
+            if (refuteLeaks(lt, want[0], want[1]) || [row.t[0].slice(0, 2), row.t[0].slice(2, 4)].some((q) => want[0].indexOf(q) >= 0))
+              out.bad.push(l.id + ":" + p + " live threat points at the answer: " + lt);
+            if (!out.sampleLive) out.sampleLive = { id: l.id, ply: p, live: lt };
+          } else out.liveHidden++;
+          if (!out.sampleAns && lt) out.sampleAns = { id: l.id, ply: p, ans: ans.map((r) => r[0] + ": " + r[1]).join(" | ") };
+        } else if (lt || (at && !/^Nothing concrete/.test(at))) out.bad.push(l.id + ":" + p + " threat shown under the threshold");
+        const note = (want[2] || "").trim(), mn = rowOf(ans, "Move note");
+        if (note) { if (mn && mn.indexOf(note) >= 0) out.notes++; else out.noteMissing.push(l.id + ":" + p); }
+        if (rowOf(live, "Move note")) out.bad.push(l.id + ":" + p + " move note shown before answering");
+      }
+    });
+    reset(0, 0); render(false);
+    return out;
+  });
+  check("threats: shown only over the threshold, with the stored numbers, never pointing at a live answer",
+    th.answered > 0 && th.live > 0 && th.bad.length === 0 && th.placeholder === 0,
+    JSON.stringify({ answered: th.answered, live: th.live, bad: th.bad.slice(0, 3), placeholder: th.placeholder }));
+  check("goals: the line's own note on the drilled move appears once answered, never before",
+    th.notes > 0 && th.noteMissing.length === 0, JSON.stringify({ notes: th.notes, missing: th.noteMissing.slice(0, 3) }));
+  console.log("  threat panel: " + th.answered + " of " + th.plies + " drill plies show a threat once answered, " +
+    th.live + " while live (" + th.liveHidden + " held back until answered); " + th.notes + " move notes");
+  console.log("  sample live: " + JSON.stringify(th.sampleLive));
+  console.log("  sample answered: " + JSON.stringify(th.sampleAns).slice(0, 1200));
 }
 
 check("app never calls fetch", fetches.length === 0, fetches.join(" | "));

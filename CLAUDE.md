@@ -132,7 +132,10 @@ Regenerating puzzles is **not reproducible**. The lichess dump is a live snapsho
 
 `node tools/build-evals.mjs` computes Stockfish evaluations for every position the
 trainer asks the user to move in — one row per unique `keyFen` position, top moves
-with SAN, score and depth, a short SAN principal variation for the best move — with a
+with SAN, score and depth, a short SAN line for every candidate (`p`, aligned with `m`;
+`pv` is kept and equals `p[0]`), and a threat row `t` (the same board searched with the
+move handed to the opponent, scored from the threatening side's view; `EVL_TPROBE` pins
+that sign) — with a
 **local engine**: `sf16-7` from the `lila-stockfish-web` npm devDependency (lichess's
 in-browser build of Stockfish 16, linrock's small-net branch; pinned to an exact
 version), a 433 KB wasm plus one 6.5 MB NNUE network that `tools/fetch-assets.sh`

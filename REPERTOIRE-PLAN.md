@@ -159,9 +159,9 @@ Examples: scores +0.4/+0.3/+0.2/+0.1/0.0 permit five answers;
 
 - [x] Reuse existing evaluations where applicable; generate deeper checks for
   tactical, unstable, or disputed decisions and record engine/settings metadata.
-- [ ] Store accepted candidates, concessions, common mistakes, representative
+- [x] Store accepted candidates, concessions, common mistakes, representative
   strong replies, and resulting positions rather than a single preferred path.
-- [ ] Attach lesson goals, opponent threats, plans, sources, confidence, and
+- [x] Attach lesson goals, opponent threats, plans, sources, confidence, and
   practical-frequency metadata to each position.
 - [x] Track perspective, mate scores, full promotion UCI, transpositions, and
   position identity consistently across analysis, grading, and progress.

@@ -143,8 +143,8 @@ const core = readFileSync(join(root, "src/core.js"), "utf8");
 const lines = readFileSync(join(root, "src/data/lines.js"), "utf8");
 const engineSrc = readFileSync(join(root, "src/engine.js"), "utf8");
 new Function("ctx", core + lines + engineSrc +
-  "\nObject.assign(ctx,{LINES,START,startPos,fenPos,findMove,make,san,legal,fenOf});")(ctx);
-const { LINES, START, startPos, fenPos, findMove, make, san, legal, fenOf } = ctx;
+  "\nObject.assign(ctx,{LINES,START,startPos,fenPos,findMove,make,san,legal,fenOf,inCheck});")(ctx);
+const { LINES, START, startPos, fenPos, findMove, make, san, legal, fenOf, inCheck } = ctx;
 
 // --- replicas of src/app.js position identity (keep in sync by hand) --------
 // drillPlies: the plies where the trained side is to move. All lines start
@@ -233,6 +233,28 @@ const PROBES = {
   shilling: keyFen(replay(["e4", "e5", "Nf3", "Nc6", "Bc4", "Nd4", "Nxe5", "Qg5",
     "Nxf7", "Qxg2", "Rf1", "Qxe4+", "Be2"])),
 };
+// Threat probe: 1.e4 e5 2.Bc4 Nc6 3.Qh5 — BLACK to move and not in check, and
+// White threatens Qxf7#. Searched with the side to move flipped, the stored
+// threat must be mate +1 for the THREATENING side, which pins the threat
+// table's convention (score from the threatener's point of view) the way
+// EVL_PROBE pins the main one.
+const TPROBE = keyFen(replay(["e4", "e5", "Bc4", "Nc6", "Qh5"]));
+
+// --- threats: the same position with the side to move flipped ---------------
+// What the opponent would play if it were their move: a null-move search. The
+// flipped FEN keeps the board and castling rights, hands the move to the other
+// side and clears en passant (a capture onto that square belonged to the real
+// mover). Only positions where the real mover is not in check qualify: flipped,
+// the other side could take the king, and no engine answer to that is a threat.
+// Both kings are checked anyway so a malformed position can never be sent.
+function flipFen(fen) {
+  const pos = fenPos(fen);
+  if (inCheck(pos)) return null;
+  const flipped = { b: pos.b, w: !pos.w, cr: pos.cr, ep: -1 };
+  if (inCheck({ ...flipped, w: pos.w })) return null; // the real mover's king attacked: illegal
+  if (!legal(flipped).length) return null;             // no move for the threatening side
+  return fenOf(flipped);
+}
 
 // --- analyse everything through a pool of worker processes -------------------
 const cacheDir = join(root, "data-src/local-eval", `${ENGINE_TAG}-d${DEPTH}`);
@@ -277,6 +299,14 @@ async function runJobs(jobs, label) {
 }
 
 await runJobs([...Object.values(PROBES), ...wanted.keys()], "positions");
+
+// Threat jobs: every drilled position the flip makes sense for, plus the probe.
+// Same worker, same settings (depth 20, one thread, hash cleared, MultiPV 5),
+// same cache directory: the flipped FEN is simply another job string.
+const threatOf = new Map(); // drilled keyFen -> flipped fen
+for (const f of [...drilled.keys(), TPROBE]) { const t = flipFen(f); if (t) threatOf.set(f, t); }
+if (!threatOf.has(TPROBE)) throw new Error("threat probe position does not flip; flipFen is broken");
+await runJobs([...new Set(threatOf.values())], "threats (side to move flipped)");
 
 // --- second pass: the repertoire moves the first pass could not score --------
 // A move outside the stored five gets no number however often the position is
@@ -344,14 +374,28 @@ const best = (fen) => results.get(fen)[0];
     if (g.mate !== 1)
       throw new Error(`${name} probe scored cp:${g.cp} mate:${g.mate}; expected mate 1 for the side to move`);
   }
-  console.log("sign probes pass: engine scores are side-to-move relative");
+  const t = best(threatOf.get(TPROBE));
+  if (t.mate !== 1 || t.moves[0] !== "h5f7")
+    throw new Error(`threat probe scored ${t.moves[0]} cp:${t.cp} mate:${t.mate}; expected Qxf7 mate 1 for the threatening side`);
+  console.log("sign probes pass: engine scores are side-to-move relative, threats threatener-relative");
 }
 
 // --- build the table ---------------------------------------------------------
 const PV_PLIES = 6;
+// A SAN line from pos along the engine's uci pv, replayed for legality.
+function sanLine(pos, moves, plies, fen) {
+  let p = pos; const sans = [];
+  for (const u of moves.slice(0, plies)) {
+    const mm = findMove(p, u);
+    if (!mm) throw new Error(`engine pv ${moves.join(" ")} goes illegal at ${u} from ${fen}`);
+    sans.push(san(p, mm)); p = make(p, mm);
+  }
+  return sans;
+}
 function buildRow(fen, pvs, pvPlies, maxMoves) {
   const pos = fenPos(fen);
   const out = { d: pvs[0].depth, m: [] };
+  const lines = [];
   for (const pv of pvs.slice(0, maxMoves)) {
     const m = findMove(pos, pv.moves[0]);
     if (!m) throw new Error(`engine pv move ${pv.moves[0]} is not legal in ${fen}`);
@@ -359,26 +403,29 @@ function buildRow(fen, pvs, pvPlies, maxMoves) {
       throw new Error(`bad score ${JSON.stringify(pv)} for ${fen}`);
     // exactly one of cp/mate is non-null per entry; scores are stm already
     out.m.push([pv.moves[0], san(pos, m), pv.cp, pv.mate]);
-    if (out.m.length === 1 && pvPlies > 0) {
-      // principal variation for the best move only, as SAN, replayed for legality
-      let p = pos; const sans = [];
-      for (const u of pv.moves.slice(0, pvPlies)) {
-        const mm = findMove(p, u);
-        if (!mm) throw new Error(`engine pv ${pv.moves.join(" ")} goes illegal at ${u} from ${fen}`);
-        sans.push(san(p, mm)); p = make(p, mm);
-      }
-      out.pv = sans;
-    }
+    // principal variation, as SAN: `pv` for the best move (the original field),
+    // and one line per entry in `lines`, which the caller stores as p / xp.
+    if (pvPlies > 0) lines.push(sanLine(pos, pv.moves, pvPlies, fen));
+    if (out.m.length === 1 && pvPlies > 0) out.pv = lines[0];
   }
-  return out;
+  return { row: out, lines };
 }
 
 // --- self-check --------------------------------------------------------------
 // Runs on the exact object about to be shipped, in a FRESH engine context, so a
 // bug above cannot vouch for itself.
-function checkEvals(EVL, EVL_PROBE) {
+function checkEvals(EVL, EVL_PROBE, EVL_TPROBE) {
   const c2 = {};
-  new Function("ctx", core + engineSrc + "\nObject.assign(ctx,{fenPos,findMove,make,san,legal});")(c2);
+  new Function("ctx", core + engineSrc + "\nObject.assign(ctx,{fenPos,findMove,make,san,legal,inCheck,fenOf});")(c2);
+  const replays = (from, sans) => {
+    let p = from;
+    for (const tok of sans) {
+      const mm = c2.legal(p).find((x) => c2.san(p, x) === tok);
+      if (!mm) return false;
+      p = c2.make(p, mm);
+    }
+    return true;
+  };
   const bad = [];
   for (const [fen, row] of Object.entries(EVL)) {
     let pos;
@@ -410,7 +457,35 @@ function checkEvals(EVL, EVL_PROBE) {
         p = c2.make(p, mm);
       }
     }
+    // p / xp: one SAN line per stored move, aligned, each starting with its move
+    for (const [lk, mk] of [["p", "m"], ["xp", "x"]]) {
+      if (row[lk] === undefined) continue;
+      if (!Array.isArray(row[lk]) || row[lk].length !== (row[mk] || []).length)
+        { bad.push(`${fen}: ${lk} is not aligned with ${mk}`); continue; }
+      row[lk].forEach((ln, i) => {
+        if (!Array.isArray(ln) || ln[0] !== row[mk][i][1]) bad.push(`${fen}: ${lk}[${i}] does not start with ${row[mk][i][1]}`);
+        else if (!replays(pos, ln)) bad.push(`${fen}: ${lk}[${i}] does not replay`);
+      });
+    }
+    if (row.p && row.pv && row.p[0].join(" ") !== row.pv.join(" ")) bad.push(`${fen}: p[0] differs from pv`);
+    // t: threat row, legal from the flipped position, only where the mover is not in check
+    if (row.t !== undefined) {
+      if (c2.inCheck(pos)) { bad.push(`${fen}: threat stored for a position in check`); }
+      else {
+        const fp = { b: pos.b, w: !pos.w, cr: pos.cr, ep: -1 };
+        const [u, s, cp, mate, tpv] = row.t;
+        const m = c2.findMove(fp, u);
+        if (!m) bad.push(`${fen}: threat ${u} is not legal with the move flipped`);
+        else if (c2.san(fp, m) !== s) bad.push(`${fen}: threat ${u} labelled ${s}, engine says ${c2.san(fp, m)}`);
+        if ((cp === null) === (mate === null) || mate === 0) bad.push(`${fen}: threat needs exactly one of cp/mate`);
+        if (!Array.isArray(tpv) || tpv[0] !== s || !replays(fp, tpv)) bad.push(`${fen}: threat pv does not replay from ${s}`);
+      }
+    }
   }
+  // Threat sign: 1.e4 e5 2.Bc4 Nc6 3.Qh5, Black to move; flipped, White mates
+  // at once, so the stored threat must be Qxf7 with mate +1 for the threatener.
+  if (EVL_TPROBE.pov !== "threatener" || EVL_TPROBE.uci !== "h5f7" || EVL_TPROBE.mate !== 1 || EVL_TPROBE.cp !== null)
+    bad.push(`threat probe is ${JSON.stringify(EVL_TPROBE)}; expected Qxf7 mate +1 for the threatening side`);
   // Sign-convention assertion. EVL_PROBE is the Damiano position (1.e4 e5
   // 2.Nf3 f6 3.Nxe5 fxe5 4.Qh5+): Black to move and lost, so under the
   // side-to-move convention its stored score MUST be decisively negative. If a
@@ -426,6 +501,8 @@ function checkEvals(EVL, EVL_PROBE) {
 // --- main --------------------------------------------------------------------
 const dBest = best(PROBES.damiano);
 const EVL_PROBE = { pov: "stm", fen: PROBES.damiano, cp: dBest.cp, mate: dBest.mate };
+const tBest = best(threatOf.get(TPROBE));
+const EVL_TPROBE = { pov: "threatener", fen: TPROBE, uci: tBest.moves[0], cp: tBest.cp, mate: tBest.mate };
 
 // Size budget: one file that a browser loads once and then works offline.
 // The number defends load time, not a round figure - GitHub Pages serves the
@@ -456,7 +533,14 @@ const header =
   "// repertoire moves that fall OUTSIDE the top list - searched one at a time with\n" +
   "// searchmoves. x is not a ranking and not a sixth-best claim; it exists because\n" +
   "// 76 of the 442 stored drill moves are outside the five, the Hippopotamus's own\n" +
-  "// 1...g6 among them, and an unranked move must not be read as a bad one. SIGN: every score is from the SIDE TO MOVE's point of\n" +
+  "// 1...g6 among them, and an unranked move must not be read as a bad one.\n" +
+  "// p:[[san,...],...] is aligned with m and xp with x: a short SAN line for every\n" +
+  "// stored move from the search that scored it (p[0] equals pv), so each candidate\n" +
+  "// has its own resulting position. t:[uci,san,cp,mate,[san,...]] is the THREAT:\n" +
+  "// the opponent's best move on the same board with the move handed to them (en\n" +
+  "// passant cleared), same engine, depth and settings, scored from the THREATENING\n" +
+  "// side's view; absent where the mover is in check. EVL_TPROBE pins its sign.\n" +
+  "// SIGN: every other score is from the SIDE TO MOVE's point of\n" +
   "// view - positive cp favours the player to move, mate>0 means the player to\n" +
   "// move mates in n, mate<0 they get mated in n. Never White-relative.\n" +
   "// EVL_PROBE pins the convention: a position where the side to move is\n" +
@@ -465,18 +549,36 @@ let fileStr, plan, first = null;
 for (const [pvPlies, maxMoves] of [[PV_PLIES, 5], [4, 5], [2, 5], [6, 3], [4, 3], [2, 3], [0, 3]]) {
   const EVL = {};
   for (const fen of wanted.keys()) {
-    EVL[fen] = buildRow(fen, results.get(fen), pvPlies, maxMoves);
+    const main = buildRow(fen, results.get(fen), pvPlies, maxMoves);
+    EVL[fen] = main.row;
+    // p: a short SAN line for EVERY ranked move, aligned with m (p[i] starts
+    // with m[i]; p[0] is pv). The resulting position of each candidate, from
+    // the same MultiPV search that scored it - no new search.
+    if (pvPlies > 0) EVL[fen].p = main.lines;
     // x: repertoire moves this position's top list does not contain, each with a
     // score of its own. Not ranked, not a sixth-best claim - just a number for a
     // move the ordinary search never reports.
     const job = [...forcedJobs.keys()].find((j) => j.startsWith(fen + "\t"));
     if (job && results.get(job)) {
-      const x = buildRow(fen, results.get(job), 0, forcedJobs.get(job).length).m;
-      if (x.length) EVL[fen].x = x;
+      // x keeps no pv of its own in the original shape; xp (aligned with x)
+      // carries the same short SAN line for these moves.
+      const xr = buildRow(fen, results.get(job), PV_PLIES, forcedJobs.get(job).length);
+      if (xr.row.m.length) { EVL[fen].x = xr.row.m; EVL[fen].xp = xr.lines; }
+    }
+    // t: the threat - the opponent's best move were it their turn, from the
+    // flipped search: [uci, san, cp, mate, [san pv…]], scores from the
+    // THREATENING side's point of view. Stored for every drilled position the
+    // flip applies to; whether it is worth showing is the app's call
+    // (THREAT_CP in src/app.js), so the raw number stays inspectable.
+    if (threatOf.has(fen)) {
+      const tf = threatOf.get(fen), tr = buildRow(tf, results.get(tf), PV_PLIES, 1);
+      const [u, sn, cp, mate] = tr.row.m[0];
+      EVL[fen].t = [u, sn, cp, mate, tr.lines[0]];
     }
   }
   fileStr = header + "const EVL=" + JSON.stringify(EVL) +
-    ";\nconst EVL_PROBE=" + JSON.stringify(EVL_PROBE) + ";\n";
+    ";\nconst EVL_PROBE=" + JSON.stringify(EVL_PROBE) +
+    ";\nconst EVL_TPROBE=" + JSON.stringify(EVL_TPROBE) + ";\n";
   plan = { pvPlies, maxMoves, EVL, fileStr };
   first ??= plan;
   if (pageNow + fileStr.length <= BUDGET) break;
@@ -491,7 +593,7 @@ if (pageNow + fileStr.length > BUDGET) {
     `trimming evals cannot fix that, keeping the full table`);
   plan = first; fileStr = first.fileStr;
 }
-checkEvals(plan.EVL, EVL_PROBE);
+checkEvals(plan.EVL, EVL_PROBE, EVL_TPROBE);
 writeFileSync(evalsPath, fileStr);
 console.log(`wrote src/data/evals.js: ${Object.keys(plan.EVL).length}/${wanted.size} positions, ` +
   `top ${plan.maxMoves} moves, ${plan.pvPlies}-ply pv, ${(fileStr.length / 1024).toFixed(1)} KB ` +

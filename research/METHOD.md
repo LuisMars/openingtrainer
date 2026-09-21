@@ -107,7 +107,7 @@ no speed filter, retrieved 2026-09-21):
 The average moves in half points, so `1899.5` closes the middle band exactly.
 The three bands sum to 697,258; the other 342 games have a missing Elo or no
 parsable moves. `tools/build-freq.mjs` turns each pair into one table in
-`src/data/freq.js`; of 285 drilled positions, 71 / 93 / 73 are reached in the
+`src/data/freq.js`; of 310 drilled positions, 74 / 96 / 76 are reached in the
 three bands, and the rest are neutral in each.
 
 The **default is 1500–1899** because 63% of the dump's games are in it, not
@@ -122,6 +122,56 @@ the Colle tree), so more of its positions fall below the 20-game floor and ship
 neutral; that is the honest outcome, not something to pad. The older
 `freq-*-player.json` files (average ≥1500, one pool) stay as the record the W1
 research and the coverage matrix were written against.
+
+### The Colle/Hippo split misses a position: gap-filled from choices-player.json
+
+The Colle tree only ever records a *reply into* a position (an opponent move
+leading in), so it can never carry a bucket for the position before either
+side's own first move — there is no reply leading into the start of the game.
+And each `--side` run's own-move set (`OURS`) is built from whichever `LINES`
+existed in the `docs/index.html` build used for that run; `def-ohanlon` and
+`def-kolt` (`src/data/lines.js`, `you:"b"`, the two lines that defend against
+the Colle rather than play it or the Hippo) were added in the same commit as
+the `freq-hippo-player-*.json` files, and the Hippo run used for those files
+did not carry them — so every position past their shared opening two moves
+shipped with no bucket at all, however often it was actually reached.
+
+`research/choices-player.json` (`tools/count-choices.mjs`) does not have
+either limitation: it tallies at the drilled position itself, for every line
+whichever side the learner plays, in one pass. `tools/build-freq.mjs` now
+reads it as a **gap fill**, never a replacement: for a drilled position with no
+bucket from its own pool file, if `choices-player.json` shows a position it
+reached with `parent` games at or above the same 20-game floor the pool files
+use, that count becomes the position's share, divided by
+`choices-player.json`'s own `games_in_tree` for the band (not either pool
+file's — see below). A position a pool file already buckets keeps that file's
+number untouched.
+
+The denominator matters: `choices-player.json`'s `games_in_tree` is a single
+count spanning both sides, but it is numerically identical, band for band, to
+the Hippo (`--side b`) pool's own `games_in_tree` (202,157 / 437,890 / 57,211
+either way) — a Black-to-move node is touched by nearly every game regardless
+of repertoire, so the Hippo pool's denominator was already population-sized.
+The Colle (`--side w`) pool's `games_in_tree` is not: it already presumes
+White's first move matched the repertoire, so it is too small a base for the
+one position that precedes any move at all (the repertoire's own first
+choice) — using it there produced a share past 1. `choices-player.json`'s
+denominator is used for every gap-filled position, both sides, for exactly
+this reason.
+
+Fixed this way (retrieved 2026-09-21): 3 positions per band gained a bucket —
+the Colle repertoire's own opening move (never bucketable from a pool file, at
+any band, for any line) and two positions shared by `def-ohanlon` and
+`def-kolt` (2...Nf6 and 3...c5) reached by 2,638 / 8,159 / 1,146 and
+107 / 469 / 97 counted games respectively. Their deeper, more specific
+defensive positions (from 4...e6 on) fall under the 20-game floor in
+`choices-player.json` too — a rare, specific book continuation genuinely is
+rare among 2014 online games — and stay neutral, correctly.
+
+Where a position still ships with no bucket but `choices-player.json` shows a
+nonzero count under the floor, the Position details panel (`src/app.js`,
+`infoRows`) says so explicitly ("too few to bucket") rather than stating the
+count next to "no occurrence bucket" with nothing tying the two together.
 
 ## Prioritisation: three factors, never one score
 

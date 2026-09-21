@@ -1140,3 +1140,25 @@ commit and push.
 - The evals size ceiling is removed (user: page size is not a constraint);
   the page is 471 KB.
 - `npm test`: exit 0, 111 checks.
+- Items 34/35 closed.
+  - Every candidate now carries its own 6-ply line (`p`, `xp`), taken from
+    the searches already cached; existing fields regenerate byte-identical.
+  - Threats are searched at build time: the same board with the move handed
+    over, depth 20, stored as `t`. 301 of 304 drilled positions have one (the
+    other 3 are in check). `EVL_TPROBE` pins the sign (Qxf7 mate +1).
+  - A threat is shown when it gains 150 cp or more, or is a mate. The
+    threshold is set from the data: the median gain is 44 cp and the tail
+    starts past 100. 44 drill plies show one; 13 of them before the answer,
+    and only where no text or square gives the answer away. Checked:
+    kolt:22 ...Ndxe5 is +147 for Black against Nb3 +73, a gain of 220.
+  - Goals are assembled from threat, plan and move note; no new prose.
+- The defence lines are weighted. The positions were missing from the Hippo
+  pool, and the Colle pool can never bucket a line's first move. Gaps are now
+  filled from `choices-player.json`, whose denominators equal the pool's in
+  all three bands. Buckets 71/93/73 -> 74/96/76.
+- Found in integration: since `8ae3b81`, a clean correct answer at a board
+  with a counted mistake printed an engine readout, which breaks the rule
+  that correct play is not relitigated. The old check missed it whenever
+  Shuffle served another board. Now it gives the count and cost only; the new
+  check fails on the old code and passes on the fix.
+- `npm test`: exit 0, 115 checks. All REPERTOIRE-PLAN.md items ticked.

@@ -5,14 +5,27 @@
 
      node build.mjs && node tools/build-freq.mjs && node build.mjs
 
-   Every number comes from research/freq-*.json and nothing is invented here.
-   The occurrence of a position we must move in is the count of games that
-   played the opponent reply leading into it, divided by that pool's
-   games_in_tree; contributions from different parents (transpositions) are
-   summed within a pool, and the larger of the two pools is kept. This is done
-   once per rating band, each band from its own pair of files. Positions the
-   probe tree never reached ship no entry at all and are neutral in the app -
-   an unmeasured position is not a rare one.
+   Every number comes from research/freq-*.json and research/choices-player.json,
+   and nothing is invented here. The occurrence of a position we must move in is
+   the count of games that played the opponent reply leading into it, divided by
+   that pool's games_in_tree; contributions from different parents (transpositions)
+   are summed within a pool, and the larger of the two pools is kept. This is done
+   once per rating band, each band from its own pair of files.
+
+   Those two files are built by tools/count-replies.mjs, one run per trained side
+   (--side w for the Colle repertoire, --side b for every line where the learner
+   plays Black - the Hippopotamus lines and, since they were added, the two lines
+   that defend against the Colle). A line's `you` decides which run should have
+   found it; a run built before a line existed cannot find it. research/choices-player.json
+   (tools/count-choices.mjs) walks both sides together, straight from the same
+   dump, and needs no separate run per line added - so where a drilled position has
+   no bucket from its own pool file but choices-player.json shows real games
+   reaching it, that count fills the gap: the reply count divided by the matching
+   pool's games_in_tree (the same denominator the pool file would have used), kept
+   only above the same 20-game floor `--minGames 20` applies to the pool files. This
+   is a gap fill, not a second source of truth: a position the pool file already
+   covers keeps that file's number. Positions neither file reached ship no entry at
+   all and are neutral in the app - an unmeasured position is not a rare one.
 
    The sharp list is a chess judgement, not a data result: it is the entries of
    research/W1-C-colle-coverage.md section 3 and research/W1-D-hippo-coverage.md
@@ -51,6 +64,16 @@ const drill = Object.keys(EVL);
 }
 const drillSet = new Set(drill);
 
+// The gap-fill source: every drilled position any line reaches, whichever side
+// plays it, counted once from the same dump (tools/count-choices.mjs). Keyed by
+// the drilled position itself - no parent-plus-reply indirection needed, since
+// that tool already tallies at the position we move in. Loaded once; the floor
+// (MIN_GAMES_FLOOR) matches --minGames 20, the floor the pool files were built
+// with (METHOD.md, "Rating bands").
+const CHO = JSON.parse(readFileSync(join(root, "research/choices-player.json"), "utf8"));
+const choByKey = new Map(CHO.positions.map((p) => [p.key, p]));
+const MIN_GAMES_FLOOR = 20;
+
 // One table per rating band, each counted from the same dump with only the
 // rating filter changed (METHOD.md, "Rating bands"). The app never assumes the
 // user's rating: it ships the middle band as the default, because that is where
@@ -62,7 +85,7 @@ const BANDS = [
 ];
 const DEFAULT_BAND = 1;
 const meta = [];
-function countBand([label, tag]) {
+function countBand([label, tag], bandIdx) {
   const best = new Map();
   for (const file of [`freq-colle-player-${tag}.json`, `freq-hippo-player-${tag}.json`]) {
     const j = JSON.parse(readFileSync(join(root, "research", file), "utf8"));
@@ -86,6 +109,26 @@ function countBand([label, tag]) {
       `${f.minElo === null ? "any" : f.minElo} to ${f.maxElo === null ? "any" : f.maxElo}, maxPly ${f.maxPly}, ` +
       `speeds ${f.speeds === null ? "all" : f.speeds}, ${j.retrieved}`);
   }
+  let filled = 0;
+  for (const k of drill) {
+    if (best.has(k)) continue;
+    const entry = choByKey.get(k);
+    if (!entry) continue;
+    const g = entry.parent[bandIdx];
+    if (g < MIN_GAMES_FLOOR) continue;
+    // CHO's own games_in_tree is the right denominator, not either pool file's: it is
+    // built by the same tool from the same walk as the numerator, so numerator <=
+    // denominator always holds. It happens to equal the hippo (b-side) pool's own
+    // games_in_tree exactly, since a Black-to-move node is touched on nearly every
+    // game regardless of repertoire (confirmed for all three bands); for a White-to-move
+    // gap - the repertoire's first move, the only kind of position the pool file can
+    // structurally never record a parent for - the colle pool's games_in_tree is too
+    // small a base (it already presumes the first move matched), so CHO's is used there too.
+    best.set(k, g / CHO.games_in_tree[bandIdx]);
+    filled++;
+  }
+  if (filled) meta.push(`[${label}] research/choices-player.json gap fill: ${filled} position` +
+    `${filled === 1 ? "" : "s"} their own pool file missed, parent games >= ${MIN_GAMES_FLOOR}, ${CHO.retrieved}`);
   return best;
 }
 
@@ -121,8 +164,8 @@ for (const [pgn, why] of SHARP) {
   console.log("  sharp: " + pgn + " - " + why);
 }
 
-const tables = BANDS.map((b) => {
-  const rows = [...countBand(b).entries()].sort((x, y) => y[1] - x[1]);
+const tables = BANDS.map((b, i) => {
+  const rows = [...countBand(b, i).entries()].sort((x, y) => y[1] - x[1]);
   const groups = [0, 1, 2, 3, 4, 5].map(() => []);
   for (const [k, s] of rows) groups[bucket(s)].push(fhash(k));
   return { n: rows.length, body: groups.map((g) => g.join("")).join(",") };
@@ -131,9 +174,11 @@ const out = `// Generated by tools/build-freq.mjs - do not edit. How often a dri
 // reached in real games, as a bucket, never as a claimed probability.
 // SOURCE: the player pool only - the lichess 2014-01 dump counted into
 // research/freq-*-player-<band>.json by tools/count-replies.mjs, once per rating
-// band (average of the two players' ratings, lichess 2014 scale). It is the one
-// pool not selected by opening, so the only one that can say how often a reply is
-// met (METHOD.md).
+// band (average of the two players' ratings, lichess 2014 scale), gaps filled
+// from research/choices-player.json (tools/count-choices.mjs, same dump, same
+// bands) where a pool file predates a line and so never counted it. It is the
+// one pool not selected by opening, so the only one that can say how often a
+// reply is met (METHOD.md).
 ${meta.map((m) => "//   " + m).join("\n")}
 // SHAPE: FRQ holds one string per band, in FRQ_BANDS order. Each is six
 // comma-separated groups, bucket 0 first; each group is the low 5 base-36 digits of

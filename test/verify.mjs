@@ -13,8 +13,8 @@ const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"
 const upto = js.indexOf("/* ================= state ================= */");
 const bundle = js.slice(0, upto);
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE,DEEP,cmpScore,gradeMove,posKey,CHO,CHO_BANDS,CHO_FLOOR,FRQ_BANDS});")(ctx);
-const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE, DEEP, cmpScore, gradeMove, posKey, CHO, CHO_BANDS, CHO_FLOOR, FRQ_BANDS } = ctx;
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE,DEEP,cmpScore,gradeMove,posKey,CHO,CHO_BANDS,CHO_FLOOR,FRQ_BANDS,EVL_TPROBE,inCheck});")(ctx);
+const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE, DEEP, cmpScore, gradeMove, posKey, CHO, CHO_BANDS, CHO_FLOOR, FRQ_BANDS, EVL_TPROBE, inCheck } = ctx;
 const keyOf = posKey;
 
 let fail = 0;
@@ -186,6 +186,68 @@ console.log(`✓ ${pz}/${PZ.length} puzzles replay legally with matching display
     console.log(`✓ ${Object.keys(EVL).length} stored evaluations: keys parse, ${rows} moves legal with matching SAN` +
       (extra ? ` (${extra} of them repertoire moves outside the ranked list)` : "") +
       `, ${pvs} PVs replay, probe sign holds`);
+}
+
+// 6a. per-candidate lines and threats (research/W5-POSITION-METADATA.md).
+// p is aligned with m and xp with x: one short SAN line per stored move, each
+// starting with that move and replaying legally, p[0] identical to pv. t is the
+// threat: the opponent's best move from the same board with the move handed to
+// them (en passant cleared), [uci, san, cp, mate, pv], scored from the
+// THREATENING side's view. It must exist for every drilled position whose mover
+// is not in check, never for one that is, and EVL_TPROBE pins its sign: after
+// 1.e4 e5 2.Bc4 Nc6 3.Qh5 the flipped search must find Qxf7 mate +1.
+{
+  const before = fail;
+  const replays = (from, sans) => {
+    let q = from;
+    for (const tok of sans) { const m = legal(q).find((x) => san(q, x) === tok); if (!m) return false; q = make(q, m); }
+    return true;
+  };
+  let lines = 0, threats = 0;
+  for (const [k, e] of Object.entries(EVL)) {
+    const p = fenPos(k);
+    for (const [lk, mk] of [["p", "m"], ["xp", "x"]]) {
+      if (!e[mk]) { if (e[lk] !== undefined) bad(`EVL ${k}: ${lk} without ${mk}`); continue; }
+      if (!Array.isArray(e[lk]) || e[lk].length !== e[mk].length) { bad(`EVL ${k}: ${lk} is not aligned with ${mk}`); continue; }
+      e[lk].forEach((ln, i) => {
+        if (!Array.isArray(ln) || ln[0] !== e[mk][i][1]) bad(`EVL ${k}: ${lk}[${i}] does not start with ${e[mk][i][1]}`);
+        else if (!replays(p, ln)) bad(`EVL ${k}: ${lk}[${i}] does not replay`);
+        else lines++;
+      });
+    }
+    if (e.p && e.p[0].join(" ") !== e.pv.join(" ")) bad(`EVL ${k}: p[0] is not pv`);
+    if (e.t === undefined) continue;
+    if (inCheck(p)) { bad(`EVL ${k}: threat stored while the mover is in check`); continue; }
+    const fp = { b: p.b, w: !p.w, cr: p.cr, ep: -1 };
+    const [u, s, cp, mate, tpv] = e.t;
+    const m = findMove(fp, u);
+    if (!m) { bad(`EVL ${k}: threat ${u} is not legal with the move flipped`); continue; }
+    if (san(fp, m) !== s) bad(`EVL ${k}: threat ${u} labelled ${s}, generator says ${san(fp, m)}`);
+    if ((cp === null) === (mate === null) || mate === 0) bad(`EVL ${k}: threat needs exactly one of cp/mate`);
+    if (!Array.isArray(tpv) || tpv[0] !== s || !replays(fp, tpv)) bad(`EVL ${k}: threat pv does not replay`);
+    threats++;
+  }
+  // coverage: every drilled position whose mover is not in check has a threat row
+  let drilled = 0;
+  for (const l of LINES) {
+    let q = l.start === START ? startPos() : fenPos(l.start.indexOf(" ") > 0 ? l.start : l.start + " w - -");
+    l.moves.forEach(([u], i) => {
+      if ((i % 2 === 0 ? "w" : "b") === l.you) {
+        const k = keyOf(q), e = EVL[k];
+        drilled++;
+        if (e && !inCheck(q) && !e.t) bad(`${l.id}:${i}: drilled, not in check, and no threat row`);
+      }
+      q = make(q, findMove(q, u));
+    });
+  }
+  const tp = EVL_TPROBE;
+  if (!(tp && tp.pov === "threatener" && tp.uci === "h5f7" && tp.mate === 1 && tp.cp === null))
+    bad(`EVL_TPROBE is ${JSON.stringify(tp)}: expected Qxf7 mate +1 for the threatening side`);
+  else if (tp.fen !== keyOf([["e2e4"], ["e7e5"], ["f1c4"], ["b8c6"], ["d1h5"]].reduce((q, [u]) => make(q, findMove(q, u)), startPos())))
+    bad("EVL_TPROBE is not the position after 1.e4 e5 2.Bc4 Nc6 3.Qh5");
+  if (fail === before)
+    console.log(`✓ ${lines} per-candidate lines replay; ${threats} threat rows legal with the move flipped, ` +
+      `every drilled position covered (${drilled} drill plies), threat probe is mate +1 for the threatener`);
 }
 
 // 6b. the depth-28 rows (src/data/deep.js): same shape and rules as EVL minus
