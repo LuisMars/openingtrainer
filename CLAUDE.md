@@ -79,8 +79,9 @@ already used anywhere else is a silent build break that only shows at runtime.
    target was an artifact host and wrong once the trainer shipped as a hosted page —
    memory-only persistence makes spaced repetition pointless. Never assume either exists;
    the guard stays.
-7. **Deliberate-mistake lines must keep `targets:[]`.** The three lines that exist to
-   show the user losing (`trap`, `soltis-trap`, `syn-hipdown`) are safe from the
+7. **Deliberate-mistake lines must keep `targets:[]`.** The lines that exist to
+   show the user losing (`trap`, `soltis-trap`, `syn-hipdown`), and `def-ohanlon`, which
+   must pass through the game's concession ...Re8 at its repair ply, are safe from the
    `targets`-based setup acceptance only because their `targets` array is empty. Give
    `syn-hipdown` a `HIPPO_T` and the app would start crediting setup moves inside a line
    whose entire purpose is to show the setup failing.

@@ -40,7 +40,7 @@ build time, with checked positions and explanations shipped in the page.
 - [x] Report failed persistence and memory-only operation accurately; protect
   existing progress and keep credentials out of backups.
 - [x] Check castling SAN check/mate suffixes and repair if still missing.
-- [ ] Audit material-search correctness, especially checked positions and quiet
+- [x] Audit material-search correctness, especially checked positions and quiet
   evasions in quiescence. A short material search is not proof of positional safety.
 - [x] Add targeted regression checks and run the repository's build, verification,
   and browser tests. Recheck runtime availability: the initial review could not
@@ -55,9 +55,9 @@ build time, with checked positions and explanations shipped in the page.
   rating range, time control, and database filters recorded.
 - [x] Keep player-game and master-game frequencies separate. Neither frequency
   nor win rate establishes objective move quality.
-- [ ] Use representative rating/time-control bands initially; make the eventual
+- [x] Use representative rating/time-control bands initially; make the eventual
   weighting configurable rather than assuming an unprovided user rating.
-- [ ] Prioritize by practical frequency, chess importance, and connection to
+- [x] Prioritize by practical frequency, chess importance, and connection to
   recognizable popular openings. Rare forcing threats remain mandatory coverage.
 - [x] Distinguish conditional reply frequency from the probability of reaching
   the position; report sample sizes and avoid conclusions from tiny samples.
@@ -100,13 +100,13 @@ we switch plans or opening structures? Is there an immediate tactical threat?
 - [x] Review every existing line, plan, move note, hint, and quality annotation.
 - [x] Replace unsupported absolutes such as guaranteed breaks, always castling,
   interchangeable move orders, or positions with no weaknesses with conditions.
-- [ ] Treat e5/...d5 and d5/...e5 as candidate structural responses, not automatic
+- [x] Treat e5/...d5 and d5/...e5 as candidate structural responses, not automatic
   rules; explain when captures or other breaks change the decision.
 - [x] Separate historical play, published recommendations, opening classification,
   constructed examples, and deliberate mistakes in both data and presentation.
-- [ ] Keep instructive inferior positions, but ask the learner to defend or repair
+- [x] Keep instructive inferior positions, but ask the learner to defend or repair
   them rather than rewarding reproduction of an illustrative mistake.
-- [ ] Add strong defensive alternatives to attacking model games, particularly
+- [x] Add strong defensive alternatives to attacking model games, particularly
   Colle-O'Hanlon and Greek gift lessons.
 - [x] Verify strategic explanations against specialist annotated sources, game
   occurrence against databases, and tactical claims against engine analysis.
@@ -177,11 +177,11 @@ Examples: scores +0.4/+0.3/+0.2/+0.1/0.0 permit five answers;
 - [x] Keep explicit line rehearsal and narrow-answer calculation as separate modes.
 - [x] Explain tradeoffs briefly: what the move prevents, what it permits, and
   which plan or pawn break follows.
-- [ ] Add paired positions where a small change alters the right decision,
+- [x] Add paired positions where a small change alters the right decision,
   especially sacrifices, central breaks, and king safety.
-- [ ] Weight exercises by practical occurrence with a minimum share for rare
+- [x] Weight exercises by practical occurrence with a minimum share for rare
   dangerous counters; preserve due-review priority.
-- [ ] Measure situation recognition and decision quality without treating one
+- [x] Measure situation recognition and decision quality without treating one
   memorized answer as mastery of every plan from the same board.
 - [x] Design and test progress migration before changing record identities.
 

@@ -87,3 +87,63 @@ regardless of which side that line trains. That marked `1...e6` "covered" in the
 Colle-as-White section on the strength of `eco-rat`, a Hippopotamus line where
 the user plays Black — which gives the White repertoire nothing. Coverage is now
 split by `you`, and the three affected cells read `missing`.
+
+## Rating bands (what the trainer's occurrence weighting reads)
+
+The plan asks for representative rating bands rather than an assumed user
+rating. The one player dump on hand, `data-src/games/lichess_db_standard_rated_2014-01.pgn.zst`
+(697,600 games; Event headers: 260,781 blitz, 245,985 classical, 172,843 bullet,
+2,214 correspondence, the rest tournament-tagged), was split by the **average of
+`WhiteElo` and `BlackElo`** — lichess's 2014 Glicko-2 scale, which is not today's —
+and counted once per band with nothing else changed (`--maxPly 20 --minGames 20`,
+no speed filter, retrieved 2026-09-21):
+
+| band | filter | games read | Colle tree | Hippo tree | files |
+|---|---|---|---|---|---|
+| under 1500 | `--maxElo 1499.5` | 202,157 | 49,063 | 202,157 | `freq-{colle,hippo}-player-u1500.json` |
+| 1500–1899 | `--minElo 1500 --maxElo 1899.5` | 437,890 | 119,433 | 437,890 | `freq-{colle,hippo}-player-1500-1899.json` |
+| 1900 and over | `--minElo 1900` | 57,211 | 18,243 | 57,211 | `freq-{colle,hippo}-player-1900.json` |
+
+The average moves in half points, so `1899.5` closes the middle band exactly.
+The three bands sum to 697,258; the other 342 games have a missing Elo or no
+parsable moves. `tools/build-freq.mjs` turns each pair into one table in
+`src/data/freq.js`; of 285 drilled positions, 71 / 93 / 73 are reached in the
+three bands, and the rest are neutral in each.
+
+The **default is 1500–1899** because 63% of the dump's games are in it, not
+because it is anyone's rating. The options sheet says so ("most games") and lets
+the user cycle bands; the choice is a stored setting (`stats.band`, optional,
+absent or invalid reads as the default, no storage-key bump).
+
+Not done, and why: **time-control bands** are countable from the same headers
+(`--speeds`) but are not shipped — one axis of choice is enough until someone
+asks for the other. **1900 and over** is the thinnest sample (18,243 games in
+the Colle tree), so more of its positions fall below the 20-game floor and ship
+neutral; that is the honest outcome, not something to pad. The older
+`freq-*-player.json` files (average ≥1500, one pool) stay as the record the W1
+research and the coverage matrix were written against.
+
+## Prioritisation: three factors, never one score
+
+The plan's rule — prioritise by practical frequency, chess importance and
+connection to recognisable openings, with rare forcing threats mandatory — is
+already recorded, factor by factor, and nowhere combined into a composite:
+
+- **Research.** `W1-C-colle-coverage.md` §1 gives every branch separate **F**
+  (frequency), **C** (criticality) and **P** (popular-opening connection)
+  columns and states its two-of-three ordering rule openly.
+  `W1-D-hippo-coverage.md` §1 ranks by exposure (§1A), then re-ranks the same
+  evidence by criticality (§1B) and by recognisability (§1C). Both files' §3 lists
+  rare-but-forcing entries as a chess judgement, with counts printed only so they
+  are not mistaken for popular. `W2-E1-pilot.md` requires at least three
+  rare-but-forcing positions in the pilot and forbids frequency entering a grade.
+- **Code.** Only frequency is a weight (`FRQ`, per band). Chess importance
+  enters as a floor, not a weight: `FRQ_SHARP` (from the §3 lists, the entries the
+  trainer drills) holds those positions at neutral whatever their band says, so
+  rarity never demotes them. Recognisability is deliberately **not** a weight: it
+  is served by opening names (`src/data/eco.js`) on the lines, and turning it into
+  a multiplier would be inventing a number for a judgement.
+- **Gap, recorded.** §3 entries the trainer does not drill (for example
+  `3...Bb4+`, `...Bxf3` after `anti-bg4`) have no floor because there is no
+  position to put it on; they remain content gaps in W1-C/W1-D §2, not weighting
+  gaps.

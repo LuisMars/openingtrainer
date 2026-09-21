@@ -11,6 +11,9 @@
 //     --minElo 1600 --maxPly 24 --out research/freq-colle-player.json
 //
 // --side w walks the Colle tree (we are White), --side b the Hippo tree.
+// --minElo/--maxElo bound the average of the two ratings, both inclusive. The
+// average moves in half points, so a band that stops below 1900 is --maxElo 1899.5
+// (the shipped bands are listed in research/METHOD.md).
 // At our own nodes the game must follow a repertoire move or it is dropped;
 // at opponent nodes every move is counted. That keeps the tree the size of
 // the repertoire rather than the size of chess.

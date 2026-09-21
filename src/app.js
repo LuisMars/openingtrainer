@@ -1,7 +1,7 @@
 /* ================= state ================= */
 const S={screen:"menu",mode:"study",li:0,ply:0,flip:false,ghost:false,
   sel:null,timer:null,tries:0,hint:0,lastKey:null,theme:0,
-  run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,freqW:true,recog:true,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
+  run:0,today:0,t0:0,lastMs:0,set:0,bookOnly:false,freqW:true,band:FRQ_DEF,recog:true,free:[],fpos:null,pending:0,drag:null,tapDown:null,pz:0,cursor:null,
   arrow:null,passKeys:null,evNote:null,epoch:0};
 let stats={pos:{},pz:{},day:"",today:0,theme:0};
 // True when neither window.storage nor localStorage would take a write, so the
@@ -106,7 +106,9 @@ function drillPlies(l){const a=[];for(let p=0;p<l.moves.length;p++)if((p%2===0?"
 // Lines that teach a mistake on purpose. Shuffle gives no context for why a losing
 // move would be "correct", so they are kept out of it and out of ALT below. Ids
 // checked against src/data/lines.js. Study and Drill still offer them in full.
-const NO_SHUFFLE=new Set(["trap","soltis-trap","syn-hipdown"]);
+// def-ohanlon is here for its repair ply: it must reach the game's ...Re8, a
+// concession, and only line mode refuses that move before playing it.
+const NO_SHUFFLE=new Set(["trap","soltis-trap","syn-hipdown","def-ohanlon"]);
 /* ALT maps a board to every line and ply that trains it. Where two lines transpose
    and want different replies, Shuffle accepts any of them: the position is asked on
    its own there, so there is no continuation to keep consistent. Study and Drill are
@@ -131,13 +133,24 @@ function bookExcluded(l){return S.bookOnly&&(KIND[l.id]==="game"||KIND[l.id]==="
    never demoted: the counting stops at twenty ply, so "not counted" and "rare" are
    different things and only one is known. FRQS floors the rare forcing positions at
    neutral - a chess judgement recorded in research/, not a number. The spread is
-   narrow on purpose: this reorders Shuffle, it silences nothing. */
-const FRQB=Object.create(null),FRQS=new Set(),FRQW=[.55,.7,.85,1,1.2,1.5];
+   narrow on purpose: this reorders Shuffle, it silences nothing.
+   One table per rating band (FRQ_BANDS); FRQB is the one in use. The trainer never
+   knows the user's rating, so it starts on FRQ_DEF - the band most counted games
+   fall in - and says so in the options sheet rather than pretending to fit. */
+const FRQBS=[],FRQS=new Set(),FRQW=[.55,.7,.85,1,1.2,1.5];
 (function(){
-  const g=FRQ.split(",");
-  for(let b=0;b<g.length;b++)for(let i=0;i<g[b].length;i+=5)FRQB[g[b].slice(i,i+5)]=b;
+  for(const t of FRQ){
+    const m=Object.create(null),g=t.split(",");
+    for(let b=0;b<g.length;b++)for(let i=0;i<g[b].length;i+=5)m[g[b].slice(i,i+5)]=b;
+    FRQBS.push(m);
+  }
   for(let i=0;i<FRQ_SHARP.length;i+=5)FRQS.add(FRQ_SHARP.slice(i,i+5));
 })();
+let FRQB=FRQBS[FRQ_DEF];
+function setBand(i){S.band=i;FRQB=FRQBS[i];}
+// A stored band is kept only if this build ships it; anything else is the default,
+// never band 0, which would quietly assume the user is a beginner.
+function bandIdx(v){return (typeof v==="number"&&Number.isInteger(v)&&v>=0&&v<FRQBS.length)?v:FRQ_DEF;}
 function fhash(s){
   let h=2166136261;
   for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
@@ -516,6 +529,9 @@ function cleanStats(d){
     // On when absent: a v4/v5 backup and a first run both look like that, and a
     // setting nobody has an opinion about is not "off".
     freqW:d.freqW===undefined?true:!!d.freqW,
+    // Absent in every backup made before bands existed: the default band, the
+    // same table those users were already weighted by the nearest equivalent of.
+    band:bandIdx(d.band),
     recog:d.recog===undefined?true:!!d.recog};
 }
 // Sanitise a record's miss log at the import trust boundary: keep only string->
@@ -564,7 +580,7 @@ el("pImport").onclick=()=>{
     return;
   }
   stats=cleanStats(d);
-  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;S.recog=stats.recog;
+  S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;
   SAVE_HELD=false; // the user has chosen what to keep; writing is theirs to allow again
   applyTheme();syncOpts(); // apply immediately; do not make the user reload to see it
   save();renderProgress();el("pData").value="Imported.";
@@ -575,7 +591,7 @@ el("pReset").onclick=function(){
   // bookOnly is a setting, not progress: leaving it out of the rebuilt object wiped
   // it from storage while S.bookOnly still showed it on in the options sheet.
   stats={pos:{},pz:{},day:"",today:0,theme:S.theme,set:S.set,bookOnly:S.bookOnly,
-    freqW:S.freqW,recog:S.recog};S.run=0;
+    freqW:S.freqW,band:S.band,recog:S.recog};S.run=0;
   SAVE_HELD=false; // "erase everything" is explicit consent to write over whatever is there
   save();resetArmed=false;this.textContent="Reset all progress";renderProgress();
 };
@@ -1916,6 +1932,7 @@ function syncOpts(){
   el("oBook").setAttribute("aria-pressed",S.bookOnly);
   el("oFreqS").textContent=S.freqW?"on":"off";
   el("oFreq").setAttribute("aria-pressed",S.freqW);
+  el("oBandS").textContent=FRQ_BANDS[S.band]+(S.band===FRQ_DEF?" (most games)":"");
   el("oRecogS").textContent=S.recog?"on":"off";
   el("oRecog").setAttribute("aria-pressed",S.recog);
   el("oRestart").style.display=S.mode==="shuffle"?"none":"";
@@ -1928,6 +1945,7 @@ el("oSet").onclick=()=>{S.set=(S.set+1)%SETS.length;stats.set=S.set;save();syncO
   if(S.screen==="board")render(false);};
 el("oBook").onclick=()=>{S.bookOnly=!S.bookOnly;stats.bookOnly=S.bookOnly;save();syncOpts();};
 el("oFreq").onclick=()=>{S.freqW=!S.freqW;stats.freqW=S.freqW;save();syncOpts();};
+el("oBand").onclick=()=>{setBand((S.band+1)%FRQBS.length);stats.band=S.band;save();syncOpts();};
 // Turning this off does not rewrite any record: the answer logs stay, and turning
 // it back on reads them again.
 el("oRecog").onclick=()=>{S.recog=!S.recog;stats.recog=S.recog;save();syncOpts();if(S.screen==="menu")renderMenu();};
@@ -2062,7 +2080,7 @@ async function load(){
     try{d=JSON.parse(raw);}catch(e){d=null;}
     if(d&&typeof d==="object"&&d.pos&&typeof d.pos==="object"&&!Array.isArray(d.pos)){
       stats=cleanStats(d);
-      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;S.recog=stats.recog;
+      S.theme=stats.theme;S.set=stats.set;S.bookOnly=stats.bookOnly;S.freqW=stats.freqW;setBand(stats.band);S.recog=stats.recog;
       if(stats.day!==new Date().toDateString()){stats.day=new Date().toDateString();stats.today=0;}
       if(fromOld)save();
     }else{

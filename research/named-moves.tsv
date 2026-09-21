@@ -20,3 +20,12 @@ r1b1r1k1/ppqn1ppp/2n1p3/2bpP3/8/2PB1N2/PP1NQPPP/R1B2RK1 w - - 0 1	d3h7
 rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP2P/2N1B3/PPP2PP1/R2QKBNR b KQkq - 0 1	b7b5 g8f6 c7c5
 # The storm tabiya after 5.g4: alternatives the notes name, so each carries a number.
 rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP1P1/2N1B3/PPP2P1P/R2QKBNR b KQkq - 0 1	b7b5 g8f6 c7c5
+
+# Break or capture: the three structural choices the notes now state as numbers
+# rather than rules. ck ply 18 (after 10...Qc7): e5 at once, against the exchange
+# the table prefers. kolt ply 20 (after 11...Re8): the exchange exd5, against the
+# e5 clamp it prefers. hip66 ply 21 (after d5 with c4 in): the capture ...exd5,
+# against the ...e5 lock; syn-hipc5 is the same push without c4, where it flips.
+r1b2rk1/ppq2ppp/2n1pn2/2bp4/4P3/2PB1N2/PP1N1PPP/R1BQ1RK1 w - - 0 1	e4e5
+r1b1r1k1/ppq2ppp/2n1pn2/2bp4/4P3/2PB1N2/PP1NQPPP/R1B2RK1 w - - 0 1	e4d5
+r2q1rk1/pbpnnpb1/1p1pp1pp/3P4/2P1P3/2N1BN2/PPQ1BPPP/3R1RK1 b - - 0 1	e6d5

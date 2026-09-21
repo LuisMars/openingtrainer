@@ -1106,3 +1106,16 @@ commit and push.
   overclaim).
 - Page size: the user does not treat it as a constraint (2026-09-21).
 - `npm test`: exit 0, 98 checks.
+- Items 13 (rating bands) and prioritisation record, 20 (e5/d5 as a
+  choice), 23 (defensive alternatives) integrated.
+  - Bands from the lichess 2014-01 dump: under 1500 (202,157 games), 1500-1899
+    (437,890, default because 63% of games are in it), 1900+ (57,211). The
+    1500-1899 and 1900+ bands sum to 495,101, the earlier >=1500 pool.
+  - Break notes rewritten as conditions with stored numbers; syn-hipc5 and
+    syn-e5colle now drill the better choice (both old concessions gone).
+  - def-ohanlon and def-kolt drill the defender's side. def-ohanlon passes
+    through O'Hanlon's ...Re8 (concession, 37 cp) with a repair ply, so it is
+    in NO_SHUFFLE and invariant 7 now names it. Spot-checked in the shipped
+    table: Kg8 0, Kg6 -307, Kh8 mated in 5.
+  - 64 lines, 516 drilled: best 190, equal 296, concession 28, inferior 2,
+    losing 0, unknown 0. `npm test`: exit 0, 102 checks.

@@ -723,6 +723,51 @@ check("occurrence weighting is a toggle in the options sheet",
   fqOpt.off.live === false && fqOpt.off.stored === false && fqOpt.off.label === "off" && fqOpt.on === true,
   JSON.stringify(fqOpt));
 
+// Rating bands: one table per band, the middle one by default and labelled as the
+// default, never band 0 assumed. Cycling the button swaps the table, persists the
+// choice, and a Reset keeps it (it is a setting, not progress).
+const band = await page.evaluate(() => {
+  const out = { n: FRQ.length, names: FRQ_BANDS.length, def: FRQ_DEF, start: S.band,
+    startLabel: el("oBandS").textContent, same: FRQB === FRQBS[FRQ_DEF] };
+  const counted = FRQBS.map((m) => Object.keys(m).length);
+  const differ = FRQBS.some((m, i) => i && Object.keys(m).some((h) => m[h] !== FRQBS[0][h]));
+  el("oBand").click();
+  out.next = { live: S.band, stored: stats.band, label: el("oBandS").textContent, swapped: FRQB === FRQBS[S.band] };
+  el("pReset").click(); el("pReset").click();
+  out.afterReset = stats.band;
+  for (let i = 0; i < FRQBS.length; i++) if (S.band !== FRQ_DEF) el("oBand").click();
+  out.back = { live: S.band, label: el("oBandS").textContent };
+  return Object.assign(out, { counted, differ });
+});
+check("occurrence is counted per rating band, the middle band by default",
+  band.n === band.names && band.n >= 3 && band.def > 0 && band.start === band.def && band.same &&
+    /most games/.test(band.startLabel) && band.counted.every((c) => c > 0) && band.differ,
+  JSON.stringify(band));
+check("the rating band is a setting that persists and survives a reset",
+  band.next.live === (band.def + 1) % band.n && band.next.stored === band.next.live && band.next.swapped &&
+    !/most games/.test(band.next.label) && band.afterReset === band.next.live &&
+    band.back.live === band.def && /most games/.test(band.back.label),
+  JSON.stringify(band));
+
+// A backup with no band (every backup made before bands existed) or a band this
+// build does not ship gets the default band, not band 0; a valid one is kept.
+const bandImport = await page.evaluate(() => {
+  const saved = JSON.stringify(stats), out = {};
+  for (const [name, b] of [["absent", undefined], ["bogus", 99], ["text", "1"], ["zero", 0]]) {
+    const d = { v: 6, pos: {}, pz: {} };
+    if (b !== undefined) d.band = b;
+    el("pData").value = JSON.stringify(d);
+    el("pImport").click();
+    out[name] = { live: S.band, stored: stats.band, table: FRQB === FRQBS[S.band] };
+  }
+  el("pData").value = saved; el("pImport").click();
+  return out;
+});
+check("an imported backup without a valid band falls back to the default band",
+  bandImport.absent.live === band.def && bandImport.bogus.live === band.def && bandImport.text.live === band.def &&
+    bandImport.zero.live === 0 && bandImport.zero.stored === 0 && bandImport.zero.table && bandImport.absent.table,
+  JSON.stringify(bandImport));
+
 // Due first, with the weighting pulling the other way as hard as the table allows:
 // the due key is the rarest one Shuffle will serve, the key it competes with is the
 // most common one, and that one is also slow and has missed three times.
@@ -822,11 +867,11 @@ if (canStore) {
   const mig = await page.evaluate(() => ({
     rec: stats.pos["8/8/8/8/8/8/8/8 w - - 0 1:e2e4"],
     v6: !!localStorage.getItem("colle-hippo:v6"),
-    theme: S.theme, freqW: S.freqW, recog: S.recog,
+    theme: S.theme, freqW: S.freqW, recog: S.recog, band: S.band, def: FRQ_DEF,
   }));
   check("v4 progress is adopted verbatim and rewritten as v6",
     !!mig.rec && mig.rec.ok === 2 && mig.rec.no === 1 && mig.v6 && mig.theme === 1 &&
-    mig.freqW === true && mig.recog === true,
+    mig.freqW === true && mig.recog === true && mig.band === mig.def,
     JSON.stringify(mig));
   await page.evaluate(() => { localStorage.removeItem("colle-hippo:v4"); localStorage.removeItem("colle-hippo:v6"); });
 
@@ -856,19 +901,33 @@ if (canStore) {
   await page.evaluate(() => {
     localStorage.setItem("colle-hippo:v6", JSON.stringify({
       pos: { "8/8/8/8/8/8/8/8 w - - 0 1:e2e4": { ok: 1, no: 0, streak: 1, last: 1, ms: 500 } },
-      pz: {}, day: "", today: 0, theme: 99, set: 42, bookOnly: true,
+      pz: {}, day: "", today: 0, theme: 99, set: 42, bookOnly: true, band: 99,
     }));
   });
   await page.reload();
   await page.waitForTimeout(700);
   const boot = await page.evaluate(() => ({
     menu: el("scMenu").classList.contains("on"), screen: S.screen,
-    theme: S.theme, set: S.set, book: S.bookOnly,
+    theme: S.theme, set: S.set, book: S.bookOnly, band: S.band, def: FRQ_DEF,
     kept: !!stats.pos["8/8/8/8/8/8/8/8 w - - 0 1:e2e4"],
   }));
   check("an out-of-range stored theme does not brick startup",
-    boot.menu && boot.screen === "menu" && boot.theme === 0 && boot.set === 0 && boot.book === true && boot.kept,
+    boot.menu && boot.screen === "menu" && boot.theme === 0 && boot.set === 0 && boot.book === true && boot.kept &&
+      boot.band === boot.def,
     JSON.stringify(boot));
+  await page.evaluate(() => localStorage.removeItem("colle-hippo:v6"));
+
+  // A chosen band is read back on the next visit, table and all.
+  await page.evaluate(() => {
+    localStorage.setItem("colle-hippo:v6", JSON.stringify({ pos: {}, pz: {}, band: FRQ_BANDS.length - 1 }));
+  });
+  await page.reload();
+  await page.waitForTimeout(700);
+  const bandBack = await page.evaluate(() => ({ band: S.band, want: FRQ_BANDS.length - 1,
+    table: FRQB === FRQBS[S.band], label: el("oBandS").textContent, last: FRQ_BANDS[FRQ_BANDS.length - 1] }));
+  check("a stored rating band is restored on load",
+    bandBack.band === bandBack.want && bandBack.table && bandBack.label === bandBack.last,
+    JSON.stringify(bandBack));
   await page.evaluate(() => localStorage.removeItem("colle-hippo:v6"));
 
   // Loading must be lenient per record. A single bad field (a negative ms, which a

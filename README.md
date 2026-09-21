@@ -7,7 +7,7 @@ exception and it is opt-in: paste a lichess API token in Settings and the Study 
 statistics panel, which fetches from `explorer.lichess.org` each time you open it. Without a stored
 token, nothing leaves the page.
 
-**62 lines · 485 trainable positions · 80 tactics puzzles.**
+**64 lines · 516 trainable positions · 80 tactics puzzles.**
 
 ---
 
@@ -28,7 +28,7 @@ piece set (Cburnett standard, or a custom engraved set), and **drill book lines 
 
 ---
 
-## The 62 lines and where each came from
+## The 64 lines and where each came from
 
 Every line carries a visible tag. The tag is the claim being made.
 
@@ -83,14 +83,15 @@ Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
 1...e6, the move order that waits (added after the coverage count showed it was
 the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 25)
+### `model` and `synthetic` — written for this trainer (3 + 27)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
-Zukertort against a Queen's Indian · locking the centre then ...f5 · ...h5 against the pawn storm ·
+Zukertort against a Queen's Indian · d5 without c4, taking on d5 · ...h5 against the pawn storm ·
 the Colle against a Slav shape · Zukertort with Qf3 and Qh3 ·
 answering ...Ne4 · the Hippo against 1.c4 · the Hippo against a London setup · punishing an early e5 ·
 how the Hippo loses · meeting the h4 lunge against the Modern · the ...c4 clamp on the Colle bishop ·
-when Black's ...e5 equaliser lands · against the Dutch (a Leningrad shape) · against 1...c5 ·
+when Black's ...e5 lands, and e4 beats the capture · against the Dutch (a Leningrad shape) · against 1...c5 ·
+defending the Greek gift in Colle–O'Hanlon (13...Kg8) · ...h6 against the Koltanowski clamp ·
 4...Be7, where there is no bishop to shoot at · 2...Nc6, the knight in front of the c-pawn ·
 the King's Indian shell completed · 3.e5 before it is prepared · 4.Bg5 against the
 ...Nf6 order · 2.Nf3 and the King's Indian Attack · flank openings · h4 and g4 straight out of the
@@ -100,16 +101,28 @@ met and had no line for, and every move in them was graded before a word was
 written about it. One more, the queenside answer to g4 out of the same
 tabiya, was built from the stored analysis itself: against g4 the engine
 prefers ...b5, which it rates a clear concession against h4, so the two
-storms are drilled side by side.
+storms are drilled side by side. Two more take the attacking model games from the defender's side:
+the moves are the game's until the defender's decision, then the line follows the stored analysis.
+Every Black move in them grades best or equal except O'Hanlon's own 8...Re8, 37 centipawns behind,
+which the line asks you to improve on before it plays the game move.
 
 Nobody played these and no book prints them. They are legal, thematic sequences built to teach a
-structural rule, and they are tagged so you can exclude them: **drill book lines only** drops `game`,
+structural idea, and they are tagged so you can exclude them: **drill book lines only** drops `game`,
 `model` and `synthetic` lines from Shuffle.
 
-### Two structural rules worth more than the move lists
+### Two structural responses, and when they change
 
-- White plays **e5** → Black answers **...d5**, the structure becomes a French, the break is **...c5**.
-- White plays **d5** → Black answers **...e5**, the structure becomes a King's Indian, the break is **...f5**.
+- White plays **e5** → Black usually answers **...d5**, the structure becomes a French, the break is **...c5**.
+  In the model line this is the table's choice, 18 centipawns ahead of the next move and 26 ahead of the
+  capture ...dxe5. Against the storm setup, with Be3, Qd2 and f4 already in, the capture ...Bxf3 is 94 ahead
+  of the lock instead.
+- White plays **d5** → Black often answers **...e5**, the structure becomes a King's Indian, the break is
+  **...f5**. In Petrosian–Spassky, with c4 ready to recapture, ...e5 is joint first and the capture ...exd5
+  29 behind; in the model without c4 the capture is 38 ahead of the lock.
+
+The Colle has the same kind of decision. e5 straight after ...Qc7 is -1.21 by the stored analysis and +0.80
+two moves later with Qe2 in; and when Black gets ...e5 in first, the counter-break e4 beats the capture dxe5
+by 44. The responses are candidates to check against the position, not rules.
 
 Black's pawns control every square on the fifth rank, so White cannot make progress without pushing a pawn
 into the swamp — which is what finally gives Black something to hit.
@@ -170,6 +183,12 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
   was reached in the counted player games (see `research/METHOD.md`). Due reviews are never
   reweighted, so they still come first. A position the count never reached is left at 1, not
   treated as rare, and a handful of rare but forcing counters are held at 1 as well.
+- **Rating band for those counts** (*Counted at ratings*). The counts exist three times over — games
+  whose two players average under 1500, 1500–1899, and 1900 and over, all from lichess rated games of
+  January 2014 — and the button cycles between them. The trainer does not know your rating and does not
+  guess it: it starts on 1500–1899, marked *most games*, because that is where most of the counted games
+  fall. The choice is stored with your other settings and travels in an export. Ratings are lichess's
+  2014 scale, which is not today's.
 - **Solid needs a second good move** (on by default). Where the table accepts two or more moves
   within 30 centipawns of the best, a position counts as *solid* only once you have found two
   different accepted moves there. Where one move is accepted, one answer is enough.
