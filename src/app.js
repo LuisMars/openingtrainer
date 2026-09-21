@@ -176,7 +176,13 @@ const KEYCACHE={},ALT={};
     }
   });
 })();
-function altAt(pos,uci){const a=ALT[keyFen(pos)];return a?a.find(x=>x[2]===uci):null;}
+// A move counts as book only for a line that trains the same side in the same
+// chapter as the one being played: 1...d5 is def-kolt's move after 1.d4, but it is
+// no Hippopotamus move, and naming the Colle defence inside a Hippo drill is noise.
+function altAt(pos,uci,cur){
+  const a=ALT[keyFen(pos)];
+  return a?a.find(x=>x[2]===uci&&(!cur||(LINES[x[0]].ch===cur.ch&&LINES[x[0]].you===cur.you))):null;
+}
 function key(l,p){return l.id.indexOf("pz:")===0?l.id+":"+p:(KEYCACHE[l.id+":"+p]||l.id+":"+p);}
 function rec(k){return stats.pos[k];}
 const SLOW=7000;
@@ -1142,7 +1148,12 @@ function tap(name){
   if(ms.length>1&&ms[0].p){askPromotion(pos,name,ms);return;}
   playMove(pos,name,ms[0]||null);
 }
+/* matTok counts move attempts, so a material search still waiting to run (see the
+   end of playMove) can tell that the user has since played something else. */
+let matTok=0;
+const MAT_DEFER=40; // ms: long enough for the "checking" line to be painted first
 function playMove(pos,name,m){
+  matTok++;
   const study=S.mode==="study";
   const wanted=S.ply<L().moves.length?L().moves[S.ply][0]:null;
   if(!m){
@@ -1162,23 +1173,29 @@ function playMove(pos,name,m){
      At the repair ply the line's own move is the mistake, so playing it is refused
      with its price; any move the grader accepts is credited, and the line then
      plays its habit move so the lesson still arrives. Invariant 7 is untouched:
-     these lines keep targets:[] and stay out of Shuffle. */
+     these lines keep targets:[] and stay out of Shuffle.
+     repair.kind "game" is the other use: a defence line that follows a real game
+     past a concession. The move is the game's, not a habit on show, so the words
+     say that instead. */
   const rep=S.mode==="line"?L().repair:null;
   if(rep&&S.ply===rep.ply){
-    const row=evalFor(pos),g=gradeMove(row,pos,m);
+    const row=evalFor(pos),g=gradeMove(row,pos,m),game=rep.kind==="game";
     g.reply=replyAfter(pos,m,row,g);
     if(played===wanted){
       S.sel=null;S.tries++;render(false);flash(name,"bad");
-      el("nMsg").innerHTML='<span class="no">That is the move the line is about.</span> <span class="neutral">'+esc(gradeLine(g))+"</span>";
+      el("nMsg").innerHTML='<span class="no">'+(game?"That is the game move; find a better one first.":"That is the move the line is about.")+
+        '</span> <span class="neutral">'+esc(gradeLine(g))+"</span>";
       el("nText").textContent=rep.why;
       return;
     }
     if(GRADE.accept.includes(g.verdict)){
       S.sel=null;render(false);flash(name,"good");
-      const t=san(pos,m);
-      el("nMsg").innerHTML='<span class="ok hit">\u2713 Repaired</span> <span class="ok">\u2014 '+esc(t)+".</span> "+
+      const t=san(pos,m),own=L().moves[S.ply][1];
+      el("nMsg").innerHTML='<span class="ok hit">\u2713 '+(game?"Accepted":"Repaired")+'</span> <span class="ok">\u2014 '+esc(t)+".</span> "+
         '<span class="neutral">'+esc(gradeLine(g))+"</span>";
-      el("nText").textContent="The line plays "+L().moves[S.ply][1]+" instead, which is the habit it exists to show. Tap to see it.";
+      el("nText").textContent=game
+        ?"The game went "+own+" instead, and the line follows it so the defence that comes later can be drilled. Tap to see it."
+        :"The line plays "+own+" instead, which is the habit it exists to show. Tap to see it.";
       armWait();
       return;
     }
@@ -1189,7 +1206,7 @@ function playMove(pos,name,m){
   // switches to that line and credits it; drill stays on this line and says so without
   // grading, so the user retries instead of being told a repertoire move was wrong.
   // ALT excludes NO_SHUFFLE ids, so the deliberate-mistake lines never count as book.
-  const alt=S.mode==="puzzle"?null:altAt(pos,played);
+  const alt=S.mode==="puzzle"?null:altAt(pos,played,L());
   // bookExcluded mirrors shuffle()'s own candidate filter (app.js, S.bookOnly check):
   // an alt from a line drill-book-only mode was told to exclude must not be credited,
   // or S.li ends up pointing at exactly the kind of line the mode hides.
@@ -1211,8 +1228,8 @@ function playMove(pos,name,m){
   }
   // The stored analysis answers first. EVL holds a row for every position the user
   // is asked to move in, so the table already knows what the four-ply search was
-  // being asked - and knows it for free, where the search costs about half a second
-  // per wrong move. setupGate decides whether "builds the setup too" may be said
+  // being asked - and knows it for free, where the search costs around a tenth of a
+  // second per wrong move on a desktop, and several times that at its worst. setupGate decides whether "builds the setup too" may be said
   // here and hands back the grade it computed, so nothing is graded twice;
   // matVerdict now runs only where the table is silent about the move played.
   const t=san(pos,m);
@@ -1259,15 +1276,26 @@ function playMove(pos,name,m){
   }
   // Only here is the search still the best evidence available: the table does not
   // cover this move (or, defensively, there is no row at all).
-  const v=matVerdict(pos,m);
-  if(!pz&&setupMove(pos,m,v,gate)){
-    if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,null,null));return;}
-    noteWay(key(L(),S.ply),t);
-    S.sel=null;render(false);
-    el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. This line's order plays "+L().moves[S.ply][1]+" here.</span>";
-    return;
-  }
-  offBook(name,t,v,g,null);
+  // The search runs on this thread and can take a noticeable fraction of a second
+  // on a slow device, and its answer decides the grade - so say what is happening
+  // first, let the page paint, and grade when it returns. later() drops it if the
+  // session changed meanwhile; matTok drops it if another move was played, and the
+  // line/ply check drops it if Skip or anything else moved the drill on.
+  S.sel=null;render(false);
+  el("nMsg").innerHTML='<span class="neutral">'+t+" is legal. Checking what it costs in material…</span>";
+  const tok=matTok,li=L(),ply=S.ply,mode=S.mode;
+  later(()=>{
+    if(tok!==matTok||L()!==li||S.ply!==ply||S.mode!==mode)return;
+    const v=matVerdict(pos,m);
+    if(!pz&&setupMove(pos,m,v,gate)){
+      if(S.mode==="shuffle"){setupGood(pos,m,t,setupLead(t,null,null));return;}
+      noteWay(key(L(),S.ply),t);
+      S.sel=null;render(false);
+      el("nMsg").innerHTML='<span class="neutral">'+t+" builds the setup too — the formation matters more than the order it goes up in. This line's order plays "+L().moves[S.ply][1]+" here.</span>";
+      return;
+    }
+    offBook(name,t,v,g,null);
+  },MAT_DEFER);
 }
 function touch(k,ms){
   if(k.indexOf("pz:")===0)return;

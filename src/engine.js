@@ -13,51 +13,38 @@ function fenPos(fen){
     ep:p[3]&&p[3]!=="-"?ix(p[3]):-1};
 }
 function clonePos(p){return {b:p.b.slice(),w:p.w,cr:p.cr,ep:p.ep};}
-function isW(c){return c===c.toUpperCase();}
+// Same answer as c===c.toUpperCase() for every ASCII character, without the string
+// allocation: this is on the hottest path of the material search.
+function isW(c){return c<"a"||c>"z";}
 
+/* attacked(b, sqi, byWhite): does a piece of that colour attack sqi? The squares
+   each kind of attacker could stand on are precomputed per target square, by
+   exactly the stepping and wrap rules the loop version used (including sqi -1,
+   which kingIdx returns for a kingless board), so the answer is the same and only
+   the per-call arrays and string work are gone. Rays are listed nearest first; the
+   first occupied square on a ray is the only one that can attack. */
+const AT_P={},AT_N={},AT_K={},AT_O={},AT_D={};
+for(let s=-1;s<64;s++){
+  const steps=(ds,lim,lo)=>ds.map(d=>s+d).filter(j=>j>=0&&j<=63&&
+    Math.abs(file(j)-file(s))<=lim&&Math.abs(file(j)-file(s))>=lo);
+  AT_P[s]=[steps([9,7],1,1),steps([-9,-7],1,1)];  // [by white, by black]
+  AT_N[s]=steps(DIRS.n,2,1);
+  AT_K[s]=steps(DIRS.k,1,0);
+  const rays=ds=>ds.map(d=>{
+    const r=[];let j=s,prev=s;
+    while(true){j+=d;if(j<0||j>63||Math.abs(file(j)-file(prev))>1)break;r.push(j);prev=j;}
+    return r;
+  }).filter(r=>r.length);
+  AT_O[s]=rays(DIRS.r);AT_D[s]=rays(DIRS.b);
+}
 function attacked(b,sqi,byWhite){
-  // pawns
-  const pd=byWhite?[9,7]:[-9,-7];      // from target back to attacker square
-  for(const d of pd){
-    const j=sqi+d;
-    if(j<0||j>63)continue;
-    if(Math.abs(file(j)-file(sqi))!==1)continue;
-    const pc=b[j];
-    if(pc&&(byWhite?pc==="P":pc==="p"))return true;
-  }
-  for(const d of DIRS.n){
-    const j=sqi+d;
-    if(j<0||j>63)continue;
-    const dd=Math.abs(file(j)-file(sqi));
-    if(dd>2||dd===0)continue;
-    const pc=b[j];
-    if(pc&&(byWhite?pc==="N":pc==="n"))return true;
-  }
-  for(const d of DIRS.k){
-    const j=sqi+d;
-    if(j<0||j>63)continue;
-    if(Math.abs(file(j)-file(sqi))>1)continue;
-    const pc=b[j];
-    if(pc&&(byWhite?pc==="K":pc==="k"))return true;
-  }
-  const rays=[[DIRS.r,"rq"],[DIRS.b,"bq"]];
-  for(const [dirs,set] of rays){
-    for(const d of dirs){
-      let j=sqi,prev=sqi;
-      while(true){
-        j+=d;
-        if(j<0||j>63)break;
-        if(Math.abs(file(j)-file(prev))>1)break;
-        const pc=b[j];
-        if(pc){
-          const low=pc.toLowerCase();
-          if(isW(pc)===byWhite&&set.includes(low))return true;
-          break;
-        }
-        prev=j;
-      }
-    }
-  }
+  const P=byWhite?"P":"p",N=byWhite?"N":"n",K=byWhite?"K":"k",
+    R=byWhite?"R":"r",B=byWhite?"B":"b",Q=byWhite?"Q":"q";
+  for(const j of AT_P[sqi][byWhite?0:1])if(b[j]===P)return true;
+  for(const j of AT_N[sqi])if(b[j]===N)return true;
+  for(const j of AT_K[sqi])if(b[j]===K)return true;
+  for(const r of AT_O[sqi])for(const j of r){const pc=b[j];if(pc){if(pc===R||pc===Q)return true;break;}}
+  for(const r of AT_D[sqi])for(const j of r){const pc=b[j];if(pc){if(pc===B||pc===Q)return true;break;}}
   return false;
 }
 function kingIdx(b,white){
@@ -133,7 +120,7 @@ function make(p,m){
   if(m.c==="k"){b[m.t+1]="";b[m.t-1]=w?"R":"r";}
   if(m.c==="q"){b[m.t-2]="";b[m.t+1]=w?"R":"r";}
   let cr=n.cr;
-  const drop=s=>{for(const ch of s)cr=cr.replace(ch,"");};
+  const drop=s=>{if(cr)for(const ch of s)cr=cr.replace(ch,"");};
   if(pc==="K")drop("KQ");
   if(pc==="k")drop("kq");
   if(m.f===63||m.t===63)drop("K");
@@ -145,12 +132,31 @@ function make(p,m){
   n.w=!n.w;
   return n;
 }
+/* legalMove(b, w, m, ki): would m leave the mover's own king attacked? Plays the
+   board half of make() on b in place, asks, and puts every square back, so legal()
+   no longer clones a position per pseudo-move. ki is the mover's king square before
+   the move (kingIdx), which is where it is afterwards unless the king moved. The
+   promoted piece and the castling rook are placed exactly as make() places them:
+   what the king can see depends on every occupied square. */
+function legalMove(b,w,m,ki){
+  matTests++;
+  const f=m.f,t=m.t,pc=b[f],cap=b[t];
+  let eps=-1,epc="",r1=-1,r2=-1,c1="",c2="";
+  b[f]="";
+  if(m.ep){eps=t+(w?8:-8);epc=b[eps];b[eps]="";}
+  b[t]=m.p?(w?m.p.toUpperCase():m.p):pc;
+  if(m.c==="k"){r1=t+1;r2=t-1;}else if(m.c==="q"){r1=t-2;r2=t+1;}
+  if(r1>=0){c1=b[r1];c2=b[r2];b[r1]="";b[r2]=w?"R":"r";}
+  const ok=!attacked(b,pc===(w?"K":"k")?t:ki,!w);
+  if(r1>=0){b[r2]=c2;b[r1]=c1;}
+  b[t]=cap;
+  if(eps>=0)b[eps]=epc;
+  b[f]=pc;
+  return ok;
+}
 function legal(p){
-  const out=[];
-  for(const m of pseudo(p)){
-    const n=make(p,m);
-    if(!attacked(n.b,kingIdx(n.b,p.w),!p.w))out.push(m);
-  }
+  const out=[],b=p.b,w=p.w,ki=kingIdx(b,w);
+  for(const m of pseudo(p))if(legalMove(b,w,m,ki))out.push(m);
   return out;
 }
 function uciOf(m){return sq(m.f)+sq(m.t)+(m.p||"");}
@@ -201,10 +207,17 @@ function perft(p,d){
    outranks a farther one and any score beyond MATE-64 can only mean a forced mate
    inside the search depth - which is the one evaluation claim this search licenses. */
 const MATE=1000,MAT_CAP=60000,MAT_STOP={};
-let matNodes=0;
+// matTests counts legality tests (legalMove calls, from anywhere), reset with
+// matNodes per verdict: tests per node is the per-node cost the regression check
+// in test/w1b-engine.mjs holds down, because wall time on a loaded box cannot.
+let matNodes=0,matTests=0;
+// VAL signed by colour and keyed by the board's own letter, so the hot loops below
+// never call toLowerCase().
+const VALC={};
+for(const k in VAL){VALC[k]=-VAL[k];VALC[k.toUpperCase()]=VAL[k];}
 function matBal(b){
   let s=0;
-  for(const pc of b)if(pc)s+=isW(pc)?VAL[pc.toLowerCase()]:-VAL[pc.toLowerCase()];
+  for(const pc of b)if(pc)s+=VALC[pc];
   return s;
 }
 // Material a move wins outright: the victim, plus what a promotion adds (the pawn
@@ -214,7 +227,8 @@ function matBal(b){
 // which is what made quiescence skip queening altogether. Used by both the ordering
 // below and the delta-pruning test in matQuiesce, so the two cannot drift apart.
 function matGain(p,m){
-  return (m.ep?1:(p.b[m.t]?VAL[p.b[m.t].toLowerCase()]:0))+(m.p?VAL[m.p]-1:0);
+  const v=p.b[m.t];
+  return (m.ep?1:(v?Math.abs(VALC[v]):0))+(m.p?VAL[m.p]-1:0);
 }
 // Winning-looking captures first (gain over attacker), quiet moves next, losing-
 // looking captures last. The middle slot matters as much as the first: at a node
@@ -222,12 +236,17 @@ function matGain(p,m){
 // and trying QxP-style losing captures ahead of it made half the verdicts blow the
 // node budget in testing - measured, this ordering is what keeps a four-ply search
 // of a full opening position inside it.
+// Each key is computed once, not once per comparison; sort() is stable, so equal
+// keys keep generation order exactly as before.
 function matOrder(p,ms){
-  const v=m=>{
+  if(ms.length<2)return ms;
+  const dec=ms.map(m=>{
     const g=matGain(p,m);
-    return g?g*10-VAL[p.b[m.f].toLowerCase()]:5;
-  };
-  return ms.sort((a,b)=>v(b)-v(a));
+    return {m:m,k:g?g*10-Math.abs(VALC[p.b[m.f]]):5};
+  });
+  dec.sort((a,b)=>b.k-a.k);
+  for(let i=0;i<dec.length;i++)ms[i]=dec[i].m;
+  return ms;
 }
 /* Quiescence: captures only (and queening), so the search never stands on a
    position where half an exchange is still hanging. Two shaping rules keep it from
@@ -250,33 +269,43 @@ function matOrder(p,ms){
    so the static score is not a lower bound on what it can hold, and a cutoff taken
    on it is a bound the node cannot claim - measured, on R6k/1R6/8/8/8/8/q7/6K1 b
    the old code returned -1 against beta -500 while Black was in check and lost, and
-   at an OPPONENT node that inflates the swing the caller reports. So inCheck() is
-   paid at every quiescence node (one attacked() scan, cheap beside the legal()
-   below it), and when it is true every evasion is searched - blocks and king steps
+   at an OPPONENT node that inflates the swing the caller reports. So the check test is
+   paid at every quiescence node (one attacked() scan), and when it is true every evasion is searched - blocks and king steps
    included, not just captures, which were the only evasions the old code could see.
    Termination of a long checking sequence rests on MAT_CAP: a check chain that will
    not resolve spends the budget and the caller gets null, which is the honest
-   answer, not a wrong one. */
+   answer, not a wrong one.
+   Speed: the rewrite that made legal() test moves in place (legalMove) and made
+   quiescence test only the moves it will search visits exactly the same nodes in
+   the same order - every one of 4,110 verdicts (516 drill positions x 8 wrong
+   moves) came back identical, swing, reply, null and node count - at about a sixth
+   of the wall time. test/w1b-engine.mjs holds the cost down by counting work. */
 function matQuiesce(p,alpha,beta,ply){
   if(++matNodes>MAT_CAP)throw MAT_STOP;
-  const stand=(p.w?1:-1)*matBal(p.b),chk=inCheck(p);
-  if(!chk){
+  const b=p.b,w=p.w,ki=kingIdx(b,w);
+  const stand=(w?1:-1)*matBal(b),chk=attacked(b,ki,!w);
+  let ms;
+  if(chk){
+    ms=legal(p);
+    if(!ms.length)return -(MATE-ply);
+  }else{
     if(stand>=beta)return stand;
     if(stand>alpha)alpha=stand;
+    // Only moves that win material are searched out of check, so only those are
+    // tested for legality - same moves in the same order as filtering legal(p)
+    // afterwards, without paying for every quiet move. Under-promotions can never
+    // win more material than the queen does, so the material search skips them
+    // here; matOrder still ranks them if a full-width ply above hands one over.
+    const ps=pseudo(p);
+    ms=[];
+    for(const m of ps)
+      if(matGain(p,m)&&!(m.p&&m.p!=="q")&&legalMove(b,w,m,ki))ms.push(m);
+    // No legal move at all is stalemate, scored 0 whatever the stand-pat said.
+    if(!ms.length)return ps.some(m=>legalMove(b,w,m,ki))?alpha:0;
   }
-  const ms=legal(p);
-  if(!ms.length)return chk?-(MATE-ply):0;
   matOrder(p,ms);
   for(const m of ms){
-    if(!chk){
-      const v=matGain(p,m);
-      if(!v)continue;
-      // Under-promotions can never win more material than the queen does, so the
-      // material search skips them here; matOrder still ranks them if a full-width
-      // ply above hands one over.
-      if(m.p&&m.p!=="q")continue;
-      if(stand+v<alpha)continue;
-    }
+    if(!chk&&stand+matGain(p,m)<alpha)continue;
     const s=-matQuiesce(make(p,m),-beta,-alpha,ply+1);
     if(s>=beta)return s;
     if(s>alpha)alpha=s;
@@ -309,7 +338,7 @@ function matSearch(p,depth,alpha,beta,ply){
    and a swing measured across two different horizons is partly a horizon artefact
    rather than material lost. */
 function matVerdict(pos,m){
-  matNodes=0;
+  matNodes=0;matTests=0;
   try{
     const before=matSearch(pos,4,-MATE,MATE,0);
     const after=make(pos,m);

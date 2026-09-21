@@ -15,9 +15,9 @@ const html = readFileSync(join(root, "docs/index.html"), "utf8");
 const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"));
 const bundle = js.slice(0, js.indexOf("/* ================= state ================= */"));
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,START,startPos,fenPos,findMove,make,san,legal,uciOf,inCheck,fenOf,matBal,matGain,matQuiesce,matVerdict,posKey,candidateEval,EVL});")(ctx);
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,START,startPos,fenPos,findMove,make,san,legal,uciOf,inCheck,fenOf,matBal,matGain,matQuiesce,matVerdict,posKey,candidateEval,EVL,matCost:()=>[matNodes,matTests]});")(ctx);
 const { LINES, START, startPos, fenPos, findMove, make, san, legal, uciOf, inCheck,
-  fenOf, matGain, matQuiesce, matVerdict, posKey, candidateEval, EVL } = ctx;
+  fenOf, matGain, matQuiesce, matVerdict, posKey, candidateEval, EVL, matCost } = ctx;
 
 let fail = 0;
 const bad = (m) => { console.error("  ✗ " + m); fail++; };
@@ -201,6 +201,41 @@ const replay = (sans) => {
     }
   }
   if (!fail) console.log("✓ quiescence sees captures that win material back, not only recaptures");
+}
+
+// 8. The search stays cheap enough to run on the page. matVerdict runs on the main
+//    thread (deferred, so the move's message paints first) and wall time on a loaded
+//    CI box proves nothing, so this counts work instead - both numbers are exact and
+//    machine-independent. Over every 25th drill position x 3 wrong moves (63
+//    verdicts): mean search nodes, measured 17,782, which catches an ordering or
+//    pruning change that blows the tree up; and legality tests per node, measured
+//    4.95, which catches per-node cost creeping back. Quiescence used to run the
+//    full legal() at every node, 14.3 tests per node on the same sample and about
+//    five times the wall time; it now tests only the moves it will search.
+{
+  const spots = [], seen = new Set();
+  for (const l of LINES) {
+    let p = startPos();
+    for (let i = 0; i < l.moves.length; i++) {
+      const k = l.id + ":" + i;
+      if ((p.w ? "w" : "b") === l.you && !seen.has(k)) { seen.add(k); spots.push([p, l.moves[i][0]]); }
+      p = make(p, legal(p).find((x) => uciOf(x) === l.moves[i][0]));
+    }
+  }
+  let nodes = 0, tests = 0, n = 0;
+  spots.forEach(([p, want], i) => {
+    if (i % 25) return;
+    const w = legal(p).filter((m) => uciOf(m) !== want);
+    for (const m of [w[0], w[w.length >> 1], w[w.length - 1]]) {
+      matVerdict(p, m);
+      const [a, b] = matCost();
+      nodes += a; tests += b; n++;
+    }
+  });
+  const mean = nodes / n, per = tests / nodes;
+  if (mean > 19500) bad(`material search mean ${mean.toFixed(0)} nodes per verdict, ceiling 19,500 (was 17,782)`);
+  if (per > 7) bad(`material search does ${per.toFixed(2)} legality tests per node, ceiling 7 (was 4.95)`);
+  if (!fail) console.log(`✓ material search cost held: ${n} verdicts, ${mean.toFixed(0)} nodes mean, ${per.toFixed(2)} legality tests per node`);
 }
 
 console.log(fail ? `\n${fail} check(s) failed.` : "\nAll w1b engine checks passed.");

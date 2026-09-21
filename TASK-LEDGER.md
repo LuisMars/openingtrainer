@@ -1172,3 +1172,18 @@ commit and push.
     shut with ...h5" did not: ...h6 is 11 cp behind and grades equal. Both
     storm plans now give the numbers instead.
   - `IMPLEMENTATION-WAVES.md` status updated.
+
+## Follow-ups 1-3 — 2026-09-21
+
+1. "Book too" now requires the same chapter and the same side; def-kolt no
+   longer passes as book in Hippo drills (it stays in Shuffle).
+2. Repair wording: optional `repair.kind:"game"` (def-ohanlon only) says
+   "That is the game move; find a better one first" and "Accepted", not the
+   mistake-line wording; trap and syn-hipdown unchanged.
+3. Wrong-move material check about 6x cheaper with identical results: 0
+   differences over 4,110 verdicts; perft passes in the suite, and deeper
+   checks pass too (kiwipete depth 4 = 4,085,603; position 3 depth 5 =
+   674,624). Chromium median 319 -> 101 ms, max 2,448 -> 779 ms (load ~9).
+   The message now appears at once and the verdict follows; a stale result
+   cannot land on a later move. check-matsearch: 0 overclaims.
+`npm test`: exit 0, 121 checks.

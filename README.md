@@ -219,7 +219,7 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
   exactly what the first one was. Taking it spends that first hint tier. Whether it counts as a miss
   depends on the grading below.
 - **Book elsewhere is not a miss.** If the move you played is the book move for a different line
-  trained from this exact board, it is not graded wrong: Drill names that line and lets you retry
+  trained from this exact board, in the same chapter and for the same side, it is not graded wrong: Drill names that line and lets you retry
   with nothing recorded, Shuffle switches to that line and credits the answer. Puzzles and the
   deliberate-mistake lines are excluded, so they can never be waved through this way.
 

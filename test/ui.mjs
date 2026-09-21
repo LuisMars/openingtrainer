@@ -249,6 +249,14 @@ const many = await probe("ck", 0, ["Nf3", "e4", "c4", "g3"]);
 check("several good moves are all accepted at one position",
   many.every((r) => !refused(r) && r.ply === 0 && free(r)),
   many.map((r) => r.san + ": " + r.msg.slice(0, 46)).join(" | "));
+check("book too names a line from the same chapter and side",
+  /Nf3 is book too — Colle System: Rhamphorhynchus/.test(many.find((r) => r.san === "Nf3").msg),
+  many.find((r) => r.san === "Nf3").msg);
+// 1...d5 after 1.d4 is the Colle chapter's defence line (def-kolt), not a Hippo move:
+// a Hippopotamus drill must not call it book or name that line.
+const hipD5 = (await probe("syn-london", 1, ["d5"]))[0];
+check("a defence line from another chapter is not book in a Hippo drill",
+  !/book too|Koltanowski/i.test(hipD5.msg) && hipD5.ply === 1, hipD5.msg);
 check("the fifth-ranked move is accepted on its number, never on its rank",
   !/rank|fifth|sixth|worst/i.test(many.find((r) => r.san === "g3").msg),
   many.find((r) => r.san === "g3").msg);
@@ -606,6 +614,52 @@ check("queening when a knight was wanted is not accepted",
   promoGrade.wrong.ply === 0 && promoGrade.wrong.msg.includes("is legal") &&
   promoGrade.right.ply === 1 && promoGrade.right.msg.includes("Solved"),
   JSON.stringify(promoGrade));
+
+// The material search runs on the main thread, so a wrong move the table does not
+// cover must paint its message BEFORE the search starts, and grade when it returns.
+// Checked by order, not by the clock: matNodes is set to -1 and must still be -1
+// when playMove returns. Then the result must never land on a later position -
+// neither after another move nor after leaving the session.
+const deferred = await page.evaluate(async () => {
+  const savedLine = PZLINE, savedMode = S.mode, savedStats = JSON.stringify(stats.pos);
+  const settle = async () => { for (let i = 0; i < 3000 && /Checking what it costs/.test(el("nMsg").textContent); i++) await new Promise((r) => setTimeout(r, 20)); };
+  const wait = () => new Promise((r) => setTimeout(r, MAT_DEFER * 4));
+  const setup = () => {
+    PZLINE = { id: "pz:w1b", ch: "Tactics", you: "w", name: "test",
+      pz: { id: "w1b", r: 1500, t: "test" }, src: "test",
+      start: "4k3/P7/8/8/8/8/8/4K3 w - -", targets: [],
+      moves: [["a7a8n", "a8=N", ""]] };
+    S.mode = "puzzle"; S.ply = 0; S.sel = null; S.tries = 0; S.hint = 0;
+    clearFree(); render(false);
+  };
+  const play = (u) => { const pos = nowPos(); playMove(pos, "a8", legal(pos).find((x) => uciOf(x) === u)); };
+  const out = {};
+  setup(); matNodes = -1; play("a7a8q");
+  out.now = { msg: el("nMsg").textContent, nodes: matNodes, tries: S.tries };
+  await settle();
+  out.done = { msg: el("nMsg").textContent, nodes: matNodes, tries: S.tries };
+  // superseded by another move before the search ran
+  setup(); matNodes = -1; play("a7a8q"); play("a7a8n");
+  const solved = el("nMsg").textContent;
+  await wait();
+  out.superseded = { nodes: matNodes, same: el("nMsg").textContent === solved, tries: S.tries };
+  // abandoned by leaving the session
+  setup(); matNodes = -1; play("a7a8q"); stopAll();
+  await wait();
+  out.left = { nodes: matNodes, tries: S.tries };
+  stopAll(); PZLINE = savedLine; S.mode = savedMode; stats.pos = JSON.parse(savedStats);
+  S.ply = 0; S.sel = null; S.tries = 0; clearFree(); go("menu");
+  return out;
+});
+check("an uncovered wrong move says so before the material search runs, and grades after",
+  /a8=Q\+ is legal/.test(deferred.now.msg) && /Checking what it costs/.test(deferred.now.msg) &&
+    deferred.now.nodes === -1 && deferred.now.tries === 0 &&
+    deferred.done.nodes > 0 && deferred.done.tries === 1 && !/Checking/.test(deferred.done.msg),
+  JSON.stringify(deferred));
+check("a pending material search never lands on a later move or a left session",
+  deferred.superseded.nodes === -1 && deferred.superseded.same && deferred.superseded.tries === 0 &&
+    deferred.left.nodes === -1 && deferred.left.tries === 0,
+  JSON.stringify({ superseded: deferred.superseded, left: deferred.left }));
 
 // The masters panel paints remote JSON. Strings go through esc(); the numbers have
 // to be coerced, because a string where a count belongs concatenates instead of
@@ -1102,7 +1156,7 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
 {
   const rep = await page.evaluate(() => {
     const out = {};
-    for (const id of ["trap", "syn-hipdown"]) {
+    for (const id of ["trap", "syn-hipdown", "def-ohanlon"]) {
       const li = LINES.findIndex((l) => l.id === id), l = LINES[li], ply = l.repair.ply;
       const run = (pick) => {
         S.screen = "board"; S.mode = "line"; S.li = li; S.ply = ply; S.sel = null;
@@ -1125,6 +1179,14 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
   check("a deliberate-mistake line asks to be repaired, not reproduced",
     ok(rep.trap) && ok(rep["syn-hipdown"]),
     JSON.stringify({ trapOwn: rep.trap.own.msg.slice(0, 70), trapBetter: rep.trap.better.msg.slice(0, 70) }));
+  // def-ohanlon's repair ply is a real game's concession, not a habit on show: the
+  // words must say "game" and never call the move a habit or a repair.
+  const oh = rep["def-ohanlon"];
+  check("a defence line's repair ply asks for a better move than the game's",
+    /that is the game move/i.test(oh.own.msg) && /centipawns behind/i.test(oh.own.msg) &&
+      /accepted/i.test(oh.better.msg) && /the game went Re8/i.test(oh.better.text) &&
+      !/habit|repaired|the line is about/i.test(oh.own.msg + oh.better.msg + oh.better.text),
+    JSON.stringify({ own: oh.own.msg.slice(0, 80), better: oh.better.msg.slice(0, 60), text: oh.better.text.slice(0, 60) }));
 }
 
 // Position details and common mistakes. Invariant 4 over the whole repertoire:
