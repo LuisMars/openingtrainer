@@ -47,6 +47,28 @@ the owner has looked, or a defect from the look is filed here as a BUG.
 
 ## Bugs
 
+**BUG — Shuffle refuses every Hippo move after 1.d4 when it serves a
+defence line.** Owner report with a phone screenshot, 2026-09-22: Shuffle
+showed "Black to play · Colle as White · Defending the Koltanowski clamp:
+...h6 first" after 1.d4, and "none of the basic hippo moves are valid". The
+cause: `def-kolt` and `def-ohanlon` are Black lines in the Colle chapter, so
+their early boards (1.d4, 1.d4 d5 2.Nf3 …) are served in Shuffle. The
+in-system rule counts only moves from lines of the same chapter and side,
+so ...g6, ...e6 and the other wall moves are refused as "not a move of the
+defence this chapter trains", and only the game's ...d5 is accepted. The
+header "Colle as White" over "Black to play" also misleads. The lesson of
+those lines is the defence (10...h6 in `def-kolt`, the Greek-gift defence
+in `def-ohanlon`), not O'Hanlon's opening moves. Proposed fix: drill a
+defence line only from the ply where the defence starts. Earlier plies
+play themselves, the same way the opponent's moves do, so Shuffle never
+serves a move-1 board under a defence line. Files: `src/data/lines.js` (a
+first-drill-ply field on the two lines), `src/app.js` (`drillPlies`, and
+the chapter label for Black-to-play boards in the Colle chapter), and
+`test/ui.mjs`. Verified by a UI check that Shuffle serves no `def-*` board
+before its first drill ply, and that ...g6 after 1.d4 in Shuffle is
+credited or sent to a Hippo line. Done when a Hippo player never meets a
+board where the Hippo move is refused because a defence line owns it.
+
 **BUG — Two accepted moves from one square draw overlapping arrows.** For
 example ...d6 and ...d5 from d7: the shorter arrow sits inside the longer.
 Files: `src/app.js` (`drawArrows`), `src/styles.css`. Verified by a UI check
