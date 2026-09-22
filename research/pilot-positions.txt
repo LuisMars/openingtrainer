@@ -33,3 +33,13 @@ rnbqkbnr/pppppp1p/6p1/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1
 rnbqkbnr/pp1ppp1p/6p1/2p5/4PP2/8/PPPP2PP/RNBQKBNR w KQkq - 0 1
 rnbqk1nr/pp1pppbp/6p1/2p5/4PP2/5N2/PPPP2PP/RNBQKB1R w KQkq - 0 1
 rnbqk1nr/pp2ppbp/6p1/2pp4/4PP2/2P2N2/PP1P2PP/RNBQKB1R w KQkq - 0 1
+
+# 1...d6 batch (research/W6-content-batch.md, section 7): the position after
+# 3.Nf3 in h-d6f4 and h-d6bc4, where each line stops because no Hippopotamus
+# move is inside the band. The plans cite these rows. No line drills them.
+rnbqkbnr/ppp2ppp/3pp3/8/4PP2/5N2/PPPP2PP/RNBQKB1R b KQkq - 0 1
+rnbqkbnr/ppp2ppp/3pp3/8/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1
+# h-d6d3: the two White-to-move positions whose notes name the table's choice
+# for White (4.d4, 5.Nf3). Too few games in the band reach them to count.
+rnbqkbnr/1pp2ppp/p2pp3/8/4P3/2NP4/PPP2PPP/R1BQKBNR w KQkq - 0 1
+r1bqkbnr/1ppn1ppp/p2pp3/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1

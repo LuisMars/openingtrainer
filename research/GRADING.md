@@ -398,3 +398,9 @@ demanding, the storm tabiya (§6) among them.
 After the W6 content batch (`W6-content-batch.md`): 605 drilled moves, best
 282, equal 298, concession 23, inferior 2 (best+equal 580); every one of the
 89 new drilled moves is accepted, and 128 positions are checked at depth 28.
+
+After the defence lines stopped drilling their 16 opening plies: 589 drilled
+moves, best+equal 564. After the 1...d6 batch (`W6-content-batch.md` §7): 603
+drilled moves, best 277, equal 301, concession 23, inferior 2 (best+equal
+578); all 14 new drilled moves are accepted, and no new position qualifies for
+the depth-28 check.

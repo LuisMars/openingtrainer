@@ -2,7 +2,7 @@
 # engine: lila-stockfish-web 0.0.11 sf16-7 (Stockfish 16, small NNUE net nn-ecb35f70ff2a, sha256 ecb35f70ff2aa4492caec6b552a1628e24319fbe1cc2aaf95eaebabdd92a1e37)
 # settings: Threads 1, Hash 64 MB, ucinewgame before each position, MultiPV 5, go depth 28; drilled moves outside the top five searched with searchmoves
 # baseline: src/data/evals.js (depth 20, same engine and settings); scores side-to-move centipawns, #n = mate in n
-# selection: 128 of 364 drilled positions (narrow = one move within 30 cp of best; demanding = setupGate "demanding"; tactical = best is mate, capture or check)
+# selection: 128 of 373 drilled positions (narrow = one move within 30 cp of best; demanding = setupGate "demanding"; tactical = best is mate, capture or check)
 # only_move: narrow claim 44 hold, 10 fail; demanding: 58 hold, 10 fail; drilled-move accept/reject changed at depth: 9
 key	lines	flags	d20_best	d20_second	d20_gap	d20_ways	d28_best	d28_second	d28_gap	d28_ways	only_move	demanding	drilled	drilled_d20	drilled_d28	reached_depth
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1	ck:0 kolt:0 ohanlon:0 …	demanding	Nf3 31	e4 31	0	5	d4 32	e4 32	0	5	n/a	fails	d4 Nf3	equal best	best equal	28

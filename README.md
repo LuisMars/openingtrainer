@@ -8,7 +8,7 @@ screen gains a masters statistics panel. Save sends one test request to `explore
 the token only if lichess accepts it; after that the panel asks lichess once per position and keeps the
 answer until the tab closes. Without a stored token, nothing leaves the page.
 
-**79 lines · 80 tactics puzzles.**
+**83 lines · 80 tactics puzzles.**
 
 ---
 
@@ -37,7 +37,7 @@ note names one, the reply that punishes it; nothing that points at the answer. S
 
 ---
 
-## The 79 lines and where each came from
+## The 83 lines and where each came from
 
 Every line carries a visible tag. The tag is the claim being made.
 
@@ -92,7 +92,7 @@ Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
 1...e6, the move order that waits (added after the coverage count showed it was
 the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 42)
+### `model` and `synthetic` — written for this trainer (3 + 46)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
 Zukertort against a Queen's Indian · d5 without c4, taking on d5 · ...h5 against the pawn storm ·
@@ -107,8 +107,10 @@ the King's Indian shell completed · 3.e5 before it is prepared · 4.Bg5 against
 Be3 tabiya · 1...e5, the Englund Gambit · 3...Bb4+ · 2...c6 and 3...Bg4 · 1...c6 and 3...Bf5 ·
 1...d6 · 1...b6 · 2...Bf5, hunt the bishop · 2...c5 and an early ...cxd4 · 2...Bg4, Ne5 at once ·
 3...Bg4 4.h3 Bxf3 · 2.Bc4 and 3.Qf3 against f7 · 2.f4, strike before the bishop · 2.Nf3 and 3.Bc4 ·
-1...d6 2.Nf3 back into the crouch · 1.d4 g6 2.Nf3 and 3.e3. The last twenty-four
-were built from the coverage count (`research/W6-content-batch.md` ranks the latest fifteen): each answers a reply the repertoire measurably
+1...d6 2.Nf3 back into the crouch · 1.d4 g6 2.Nf3 and 3.e3 · 1...d6 2.f4, ...e6 not ...g6 ·
+1...d6 2.Bc4, close the diagonal · 1...d6 2.d4 Nf6 3.Bd3 · 1...d6 2.d3, the knights behind the pawns.
+The last twenty-eight
+were built from the coverage count (`research/W6-content-batch.md` ranks the latest nineteen): each answers a reply the repertoire measurably
 met and had no line for, and every move in them was graded before a word was
 written about it. One more, the queenside answer to g4 out of the same
 tabiya, was built from the stored analysis itself: against g4 the engine

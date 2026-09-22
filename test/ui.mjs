@@ -984,7 +984,9 @@ const duefirst = await page.evaluate(() => {
   const rnd = Math.random; let seed = 4242;
   Math.random = () => ((seed = Math.imul(seed ^ (seed >>> 15), 2246822507) + 0x9e3779b9 | 0) >>> 0) / 4294967296;
   const seen = new Map();
-  for (let i = 0; i < 60; i++) { shuffle(true); const b = bucket(S.lastKey); if (b !== undefined) seen.set(S.lastKey, b); }
+  // A sharp position keeps a weight floor of 1 however rare it is, so it cannot
+  // stand for "the weighting pulls the other way"; leave those out of the pick.
+  for (let i = 0; i < 60; i++) { shuffle(true); const b = bucket(S.lastKey); if (b !== undefined && !FRQS.has(fhash(fenOf(S.lastKey)))) seen.set(S.lastKey, b); }
   const sorted = [...seen.entries()].sort((a, b) => a[1] - b[1]);
   if (sorted.length < 2) { Math.random = rnd; return { skipped: true }; }
   const rare = sorted[0][0], common = sorted[sorted.length - 1][0];

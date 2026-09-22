@@ -9,18 +9,18 @@
 // reply is met (METHOD.md).
 //   [under 1500] freq-colle-player-u1500.json: 49063 of 202157 games, avg Elo any to 1499.5, maxPly 20, speeds all, 2026-09-21
 //   [under 1500] freq-hippo-player-u1500.json: 202157 of 202157 games, avg Elo any to 1499.5, maxPly 20, speeds all, 2026-09-21
-//   [under 1500] research/choices-player.json gap fill: 11 positions their own pool file missed, parent games >= 20, 2026-09-21
+//   [under 1500] research/choices-player.json gap fill: 11 positions their own pool file missed, parent games >= 20, 2026-09-22
 //   [1500–1899] freq-colle-player-1500-1899.json: 119433 of 437890 games, avg Elo 1500 to 1899.5, maxPly 20, speeds all, 2026-09-21
 //   [1500–1899] freq-hippo-player-1500-1899.json: 437890 of 437890 games, avg Elo 1500 to 1899.5, maxPly 20, speeds all, 2026-09-21
-//   [1500–1899] research/choices-player.json gap fill: 20 positions their own pool file missed, parent games >= 20, 2026-09-21
+//   [1500–1899] research/choices-player.json gap fill: 22 positions their own pool file missed, parent games >= 20, 2026-09-22
 //   [1900 and over] freq-colle-player-1900.json: 18243 of 57211 games, avg Elo 1900 to any, maxPly 20, speeds all, 2026-09-21
 //   [1900 and over] freq-hippo-player-1900.json: 57211 of 57211 games, avg Elo 1900 to any, maxPly 20, speeds all, 2026-09-21
-//   [1900 and over] research/choices-player.json gap fill: 9 positions their own pool file missed, parent games >= 20, 2026-09-21
+//   [1900 and over] research/choices-player.json gap fill: 9 positions their own pool file missed, parent games >= 20, 2026-09-22
 // SHAPE: FRQ holds one string per band, in FRQ_BANDS order. Each is six
 // comma-separated groups, bucket 0 first; each group is the low 5 base-36 digits of
 // the FNV-1a hash of keyFen, run together. Bucket 5 is a share of 0.1 or more
-// of that band's probe tree, then 0.03, 0.01, 0.003, 0.001. Of 384 drilled
-// positions, under 1500: 96, 1500–1899: 129, 1900 and over: 96 were reached;
+// of that band's probe tree, then 0.03, 0.01, 0.003, 0.001. Of 396 drilled
+// positions, under 1500: 99, 1500–1899: 134, 1900 and over: 99 were reached;
 // the rest ship nothing and are neutral, never rare.
 // FRQ_DEF is the band used until the user picks one: the middle band, where most
 // of the dump's games are. It is not a guess at the user's rating.
@@ -28,5 +28,5 @@
 // judgement, not a data result, and the same in every band.
 const FRQ_BANDS=["under 1500","1500–1899","1900 and over"];
 const FRQ_DEF=1;
-const FRQ=["hca2uzx8lqfu8va9uh2g3az78mfmyf904sy94t1me9l28acii00xlr8lbusdkpmlyo8j3ct73z3h2ywsd7tzm3hl5aohsoj0hbniiq7rnm5y0he2d0mzi6l6i9vqzn2n3ppqcvg8m4i4vf0n2p28n8g2rwp1jsjhf18utxc6dejerq3ogaf3zvildf6gm0g3j5y34pyie2pn9c6vy9gcu7feudy0vy0y8suyujiv058zaw9ov4s4gesgl6mvnanxbjhdgs9negiybi,y19r7vwr8lfmtdeit8mbufz6d75u95ro6yydzx1eo5ik6ehpdubaqdz,jj2jiw9hn6p1sc4j8sdytvhb7x4fpel9zpkkyn47p8xu3essi5q1vhw,t01jvtqpwmi4ax1kz1p3870df0axohhh1xksatk4fljeph5a440f0mnys8sx,xh4i5mdj1pbm8jr,2scof8lim8vghhlvzlk6o7pqn","t73z3n2n3pbaqdzd7tzm3hl5aohsojiq7rne2d0mkpmlyh2ywso8j3czvild904sypqcvgi9vqzg2rwpf18ut8m4i4p28n8suyujxc6devf0n234pyiogaf3zi6l6yi6ylg3j5yzaw9oeudy0f6gm0c6vy9jerq3cbmov0hbni1jsjh2fo6fwdwpgvy0y8mvnanwu38xiv0585fx5wlsej76ntpb6e42vpb0sxm5prif3g9lmay4rl7xv0elghipnlj9fnq67ju564xbjhdisirrgcu7f5uzixgs9neeazugv4s4gfa9uee2pn96dwf57dda2min8jesgl60mb3uvse53giybifo5tqs70na6u3dcc8wjj4bk2ooc6c4,o5ik63az78fmtdehca2umfmyfehpdu94t1mdzx1em5y0hacii09uh2gzx8lqe9l280xlr8lbusd,p1sc475u95tvhb7essi5vwr8lx4fpero6yyp8xu3l9zpky19r7jj2jiq1vhwufz6dit8mbfu8vakyn47,hh1xk0axoh0f0mnt01jvtqpwmh5a44satk4w9hn6ys8sxfljepj8sdy,bm8jrmdj1p870dfi4ax1kz1p3,2scof8lim8vghhlvzlk6xh4i5o7pqn","kyn47zi6l6zvildc6vy9o8j3csuyujzaw9oe2d0mm5prii9vqzf18utl7xv08m4i4ogaf3h2ywsmvnanfmtdev4s4gbaqdzdzx1ezx8lqvf0n2fa9uevy0y86e42vxbjhd34pyikpmly0mb3us70naf6gm0eudy0gcu7fe2pn9gs9ner2iew,mfmyfp8xu3m5y0h9uh2gn2n3pd7tzmit8mbjj2ji3az78acii0lbusde9l28g3j5y94t1mohsojg2rwp1jsjhiq7rnt73z3pqcvgiv058,y19r7o5ik6ehpduro6yyx4fpefu8vafljepufz6d0xlr83hl5aq1vhwhca2ul9zpk,0axoh75u95t01jvp1sc4h5a44ys8sxtvhb7essi5j8sdyw9hn6vwr8l,o7pqnsatk4870dfmdj1phh1xkbm8jrtqpwm0f0mnkz1p3i4ax1,2scof8lim8vzlk6vghhlxh4i5"];
+const FRQ=["hca2uzx8lqfu8va9uh2gfjlng3az78mfmyf904sy94t1me9l28acii00xlr8lbusdkpmlyo8j3ct73z3h2ywsd7tzm3hl5aohsoj0hbniiq7rnm5y0he2d0m5tzmuzi6l6i9vqzn2n3ppqcvg8m4i4vf0n2p28n8g2rwp1jsjhf18utxc6dejerq3ogaf3zvildf6gm0g3j5y34pyie2pn9c6vy9gcu7feudy0vy0y8suyujiv058zaw9ov4s4gesgl6mvnanxbjhdgs9negiybi,y19r7auhocvwr8lfmtdeit8mbufz6d75u95ro6yydzx1eo5ik6ehpdubaqdz,jj2jiw9hn6p1sc4j8sdytvhb7x4fpel9zpkkyn47p8xu3essi5q1vhw,t01jvtqpwmi4ax1kz1p3870df0axohhh1xksatk4fljeph5a440f0mnys8sx,xh4i5mdj1pbm8jr,2scof8lim8vghhlvzlk6o7pqn","t73z3n2n3pbaqdzd7tzm3hl5aohsojiq7rne2d0mkpmlyh2ywso8j3czvild904sy5tzmupqcvgi9vqzg2rwpf18ut8m4i4p28n8suyujxc6devf0n234pyiogaf3zi6l6yi6ylg3j5yzaw9oeudy0f6gm0c6vy9jerq3cbmov0hbni1jsjh2fo6fwdwpgvy0y8mvnanwu38xiv0585fx5wlsej76ntpb6e42vpb0sxm5prif3g9lmay4rl7xv0elghiq11xwpnlj9fnq67ju564xbjhdisirrgcu7f5uzixgs9neeazugv4s4gfa9uee2pn96dwf57dda2ikpj0min8jesgl60mb3uvse53giybifo5tqs70na6u3dcc8wjj4bk2ooc6c4,o5ik63az78auhocfmtdehca2umfmyfehpdu94t1mdzx1em5y0hacii09uh2gfjlngzx8lqe9l280xlr8lbusd,p1sc475u95tvhb7essi5vwr8lx4fpero6yyp8xu3l9zpky19r7jj2jiq1vhwufz6dit8mbfu8vakyn47,hh1xk0axoh0f0mnt01jvtqpwmh5a44satk4w9hn6ys8sxfljepj8sdy,bm8jrmdj1p870dfi4ax1kz1p3,2scof8lim8vghhlvzlk6xh4i5o7pqn","kyn47zi6l6zvildc6vy9o8j3csuyujzaw9oe2d0mm5prifjlngi9vqzf18utl7xv0auhoc8m4i4ogaf3h2ywsmvnanfmtdev4s4gbaqdzdzx1ezx8lqvf0n2fa9uevy0y86e42vxbjhd34pyikpmly0mb3us70naf6gm0eudy0gcu7fe2pn9gs9ner2iew,mfmyfp8xu3m5y0h9uh2gn2n3pd7tzmit8mbjj2ji3az785tzmuacii0lbusde9l28g3j5y94t1mohsojg2rwp1jsjhiq7rnt73z3pqcvgiv058,y19r7o5ik6ehpduro6yyx4fpefu8vafljepufz6d0xlr83hl5aq1vhwhca2ul9zpk,0axoh75u95t01jvp1sc4h5a44ys8sxtvhb7essi5j8sdyw9hn6vwr8l,o7pqnsatk4870dfmdj1phh1xkbm8jrtqpwm0f0mnkz1p3i4ax1,2scof8lim8vzlk6vghhlxh4i5"];
 const FRQ_SHARP="t01jvr2iewhgsusdzx1egcu7feuob5nnthmju564904sy";

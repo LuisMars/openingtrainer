@@ -379,7 +379,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| e4 | 58.9% (291474) | 73.1% (112838) | 48.1% (256028) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-bg5` (synthetic), `h-2nf3` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `h-bc4` (synthetic), `h-f4` (synthetic), `h-nf3bc4` (synthetic), `h-d6nf3` (synthetic) | yes |
+| e4 | 58.9% (291474) | 73.1% (112838) | 48.1% (256028) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-bg5` (synthetic), `h-2nf3` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `h-bc4` (synthetic), `h-f4` (synthetic), `h-nf3bc4` (synthetic), `h-d6nf3` (synthetic), `h-d6f4` (synthetic), `h-d6bc4` (synthetic), `h-d6bd3` (synthetic), `h-d6d3` (synthetic) | yes |
 | d4 | 25.4% (125718) | 21.4% (32987) | 32.1% (170669) | covered | `def-ohanlon` (synthetic), `def-kolt` (synthetic), `hip-g16` (game), `eco-averb` (eco), `eco-psam` (eco), `eco-rat` (eco), `syn-london` (synthetic), `h-d4nf3` (synthetic) | yes |
 | c4 | 3.2% (15627) | 1.9% (2955) | 5.9% (31592) | covered | `syn-english` (synthetic) | yes |
 | Nf3 | 2.4% (11962) | 3.3% (5154) | 10.1% (53785) | covered | `hip66` (game) | yes |
@@ -406,12 +406,12 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| d4 | 42.8% (5281) | 98.8% (80435) | 90.1% (7884) | covered | `h-bg5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco) | yes |
+| d4 | 42.8% (5281) | 98.8% (80435) | 90.1% (7884) | covered | `h-bg5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco), `h-d6bd3` (synthetic) | yes |
 | Nf3 | 26.3% (3251) | 0.5% (405) | 3.2% (280) | covered | `h-d6nf3` (synthetic) | yes |
-| f4 | 8.3% (1030) | 0.0% (34) | 0.7% (61) | missing | — | yes |
-| Bc4 | 7.5% (928) | 0 / 81429 | 0.4% (35) | missing | — | no |
+| f4 | 8.3% (1030) | 0.0% (34) | 0.7% (61) | covered | `h-d6f4` (synthetic) | yes |
+| Bc4 | 7.5% (928) | 0 / 81429 | 0.4% (35) | covered | `h-d6bc4` (synthetic) | yes |
 | Nc3 | 5.3% (653) | 0.6% (523) | 3.6% (312) | missing | — | no |
-| d3 | 4.6% (567) | 0 / 81429 | 0.5% (43) | missing | — | no |
+| d3 | 4.6% (567) | 0 / 81429 | 0.5% (43) | covered | `h-d6d3` (synthetic) | yes |
 
 ### rnbqkbnr/pppppp1p/6p1/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1
 
@@ -474,7 +474,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Nc3 | 65.0% (1096) | 90.7% (71853) | 90.2% (5886) | covered | `h-bg5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco) | yes |
-| Bd3 | 19.8% (334) | 5.7% (4475) | 6.6% (432) | missing | — | no |
+| Bd3 | 19.8% (334) | 5.7% (4475) | 6.6% (432) | covered | `h-d6bd3` (synthetic) | yes |
 | f3 | 4.5% (76) | 3.0% (2375) | 2.5% (162) | missing | — | no |
 | e5 | 3.8% (64) | 0 / 79183 | 0 / 6527 | missing | — | no |
 
@@ -761,4 +761,4 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 ## Totals
 
-102 counted replies are played somewhere in `LINES` from the same position, 16 lead to a position a line reaches by another order, and 219 are neither. A "missing" row is a candidate for coverage, not an obligation: the plan stops at a teachable decision rather than expanding an unlimited game tree.
+106 counted replies are played somewhere in `LINES` from the same position, 16 lead to a position a line reaches by another order, and 215 are neither. A "missing" row is a candidate for coverage, not an obligation: the plan stops at a teachable decision rather than expanding an unlimited game tree.

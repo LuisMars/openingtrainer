@@ -39,10 +39,10 @@ counts are floors for the position. Every such count quoted in a note says
 |---|---|---|---|---|---|
 | 1 | 1.e4 d6 2.Nf3 | 16.84% (2,907/10,411) | 16.37% | 8.49% | **built** `h-d6nf3` (conditional on the learner choosing 1...d6) |
 | 2 | 1.e4 g6 2.Bc4 | 5.89% (876/8,962) | 9.37% | 1.21% | **built** `h-bc4`, with 3.Qf3 (220 of 736 at the next node) |
-| 3 | 1.e4 d6 2.f4 | 5.25% | 2.16% | 3.03% | not built: 1...d6 order, see §3 |
-| 4 | 1.e4 d6 2.Bc4 | 5.16% | 8.47% | 0.94% | not built: 1...d6 order |
+| 3 | 1.e4 d6 2.f4 | 5.25% | 2.16% | 3.03% | **built** `h-d6f4` (§7) |
+| 4 | 1.e4 d6 2.Bc4 | 5.16% | 8.47% | 0.94% | **built** `h-d6bc4` (§7) |
 | 5 | 1.e4 g6 2.f4 | 4.90% (728/8,962) | 2.15% | 3.68% | **built** `h-f4` |
-| 6 | 1.e4 d6 2.d4 Nf6 3.Bd3 | 4.50% | 2.27% | 6.36% | not built: 1...d6 order |
+| 6 | 1.e4 d6 2.d4 Nf6 3.Bd3 | 4.50% | 2.27% | 6.36% | **built** `h-d6bd3` (§7) |
 | 7 | 1.d4 d5 2.Nf3 c6 | 4.40% (830/8,159) | 2.57% | 6.08% | **built** `c-2c6` |
 | 8 | 1.d4 d6 | 4.39% (4,830/109,938) | 3.93% | 6.86% | **built** `c-1d6` |
 | 9 | 1.e4 g6 2.Nf3 Bg7 3.Bc4 | 3.85% (505/2,000) | 4.24% | 1.05% | **built** `h-nf3bc4` |
@@ -50,8 +50,8 @@ counts are floors for the position. Every such count quoted in a note says
 | 11 | 1.d4 d5 2.Nf3 Bf5 | 3.44% (649/8,159) | 3.68% | 1.29% | **built** `c-2bf5` |
 | 12 | 1.d4 c6 | 3.38% (3,721/109,938) | 2.21% | 3.85% | **built** `c-1c6` |
 | 13 | 1.d4 g6 2.Nf3 | 3.37% (728/5,419) | 2.32% | 5.02% | **built** `h-d4nf3` |
-| 14 | 1.e4 d6 2.Nc3 | 3.14% | 3.02% | 2.74% | not built: 1...d6 order |
-| 15 | 1.e4 d6 2.d3 | 3.05% | 2.64% | 1.01% | not built: 1...d6 order |
+| 14 | 1.e4 d6 2.Nc3 | 3.14% | 3.02% | 2.74% | not built: no Hippopotamus move in the band (§7) |
+| 15 | 1.e4 d6 2.d3 | 3.05% | 2.64% | 1.01% | **built** `h-d6d3` (§7) |
 | 16 | 1.e4 g6 2.d3 | 2.83% | 2.90% | 1.98% | not built: folds into `h-2nf3`'s shape |
 | 17 | 1.e4 g6 2.Nc3 | 2.82% | 2.88% | 3.07% | not built: 2...Bg7 3.d4 is the main line |
 | 18 | 1.e4 g6 2.d4 Bg7 3.c3 | 2.73% | 1.76% | 3.25% | not built: no decision, the wall goes up |
@@ -80,8 +80,8 @@ Twelve rows above the line were not built, for two stated reasons:
   lines taught that order; the repertoire's answer to 1.e4 is 1...g6 in every
   other Black line. Of that fan, only 2.Nf3 was built, because it is the largest
   (28% of White's replies to 1...d6) and because it funnels straight back into
-  the crouch. **2.f4 and 2.Bc4 after 1...d6 are the first candidates for the
-  next batch** and are recorded here as open.
+  the crouch. The next batch built four of the five and recorded why the
+  fifth was not built (§7).
 - **Fold-ins (rows 16–19, 21, 23, 24).** The reply is missing from the matrix
   only because no line plays that exact order; one or two system moves later the
   position is one the repertoire already drills. A line would teach nothing the
@@ -193,3 +193,78 @@ row after 2.Nf3 and is quoted from there rather than searched again.
 - **Occurrence buckets**: 88 / 112 / 90 of 384 positions per band; 9 sharp
   floors (was 4).
 - **Coverage matrix**: covered 88 -> 102, transposes 14 -> 16, missing 235 -> 219.
+
+## 7. The 1...d6 batch: rows 3, 4, 6, 14 and 15
+
+Four `synthetic` lines, built the same way as §5, with one more rule: every
+drilled Black move is a Hippopotamus move (a `HIPPO_T` square, or a move another
+Hippopotamus line plays from the same board, as ...Nf6 in `h-bg5`) and grades
+best or equal. Where the commonest White reply left no such move in the band,
+the line stops before it rather than drilling a concession or a non-system move.
+Counts are `tools/count-prefix.mjs`, 1500–1899 band, literal move orders
+(floors). Players' choices are `src/data/choices.js`.
+
+| id | answers | drilled moves | grades |
+|---|---|---|---|
+| `h-d6f4` | 2.f4 e6 | 2 (...d6, ...e6) | 0 best, 2 equal |
+| `h-d6bc4` | 2.Bc4 e6 | 2 (...d6, ...e6) | 0 best, 2 equal |
+| `h-d6bd3` | 2.d4 Nf6 3.Bd3 g6 4.Nf3 Bg7 5.O-O Nbd7 | 5 | 3 best, 2 equal |
+| `h-d6d3` | 2.d3 e6 3.Nc3 a6 4.d4 Nd7 5.Nf3 Ne7 | 5 | 0 best, 5 equal |
+
+Per move, depth-20 table (loss to the row's best):
+
+- `h-d6f4`: ...e6 -21, 14 behind ...c5. ...g6, which 173 of 904 players chose,
+  is 40 behind. After 3.Nf3 (107 of 146 games) the best is ...d5 at -18; the
+  six wall moves, each searched alone, are ...Ne7 -52, ...a6 -55, ...h6 -57,
+  ...g6 -60, ...Nd7 -66, ...b6 -68. The nearest is 34 behind, so the line stops
+  at ...e6.
+- `h-d6bc4`: ...e6 -14, 9 behind ...Nf6. ...g6 (160 of 889) is 36 behind. After
+  3.Nf3 (42 of 150) the best is ...d5 and ...Nf6 at 0; the wall moves are
+  ...a6 -39, ...Nd7 -49, ...g6, ...h6 and ...Ne7 -53, ...b6 -60. The line stops
+  at ...e6.
+- `h-d6bd3`: ...Nf6 2 behind ...e5; ...g6, ...Bg7 and ...Nbd7 are each the
+  table's first choice. 4.f4 (21 of 118 games) was one game more common than
+  4.Nf3 (20). It was not taken: after 4.f4 Bg7 5.Nf3 the first two choices in a
+  depth-20 search are ...c5 and castling, ...Nbd7 is not in the top five, and
+  searched with five other named moves it is 30 behind, the edge of the band (the build's worker,
+  not stored).
+- `h-d6d3`: ...e6 24 behind ...c5 (101 of 525 players, as many as ...g6);
+  ...a6 17 behind ...c5 after 3.Nc3 (37 of 97); ...Nd7 18 behind ...b5 after
+  4.d4; ...Ne7 10 behind ...b5 after 5.Nf3. Too few games reach 3...a6 to count
+  White's reply, so 4.d4 is the table's first choice for White and 5.Nf3 its
+  second, 2 behind 5.a4. 2...g6 was not used: its
+  commonest reply, 3.c4 (33 of 93), leaves ...Bg7 37 behind ...c5 in a
+  depth-20 search (worker, not stored).
+- ...d6 itself is 22 behind ...c5 at 1.e4, as already stored.
+
+**Not built: 2.Nc3 (row 14).** At 1.e4 d6 2.Nc3 the table's first choice is
+...c5 at -17. Every Hippopotamus move is outside the band: ...g6 -52 (35
+behind; 113 of 539 games in the band chose it), ...h6 -56, ...a6, ...Nd7 and
+...e6 -58, ...b6 -76 (the build's worker at depth 20, not stored). A line would
+have to drill a concession or leave the system. It stays `missing` in the
+matrix and is filed in TICKETS.md under "Needs a decision".
+
+**Rows added to the table.** Eight drilled positions, and four more through
+`research/pilot-positions.txt`: the two positions after 3.Nf3 where `h-d6f4`
+and `h-d6bc4` stop (their six wall moves named `alone` in
+`research/named-moves.tsv`), and the two White-to-move positions in `h-d6d3`
+whose notes name the table's move for White. The common-choice section of
+`named-moves.tsv` was regenerated by `count-choices --tsv`: three new shared
+searches at new positions, one at 1.e4 d6 2.f4 (already a row, now drilled).
+
+**Numbers after the batch.**
+
+- Grading: 603 drilled moves (was 589): best 277, equal 301, concession 23,
+  inferior 2. Best+equal 564 -> 578; the 14 new drilled moves are all accepted.
+- Evaluation table: 384 -> 396 rows. 383 of the 384 existing rows are byte for
+  byte identical. The one that changed, 1.e4 d6 2.f4, was an `--extra` row and
+  is now drilled: it gained its threat `t` and its common choices `x`/`xp`
+  (...Nc6 -34, ...c6 -39, ...g6 -47). Its `m`, `pv` and `p` did not move.
+- Depth 28: no new position qualifies (none is narrow, demanding or
+  tactical at depth 20); `src/data/deep.js` rows unchanged, 128 checked.
+- Common choices: 442 moves at 99 positions (was 419 at 94); the 94 existing
+  positions are unchanged.
+- Occurrence buckets: 99 / 134 / 99 of 396 positions per band (was 96 / 129 /
+  96 of 384); no existing position changed bucket; sharp list unchanged.
+- Coverage matrix: covered 102 -> 106, transposes 16, missing 219 -> 215.
+

@@ -1282,3 +1282,30 @@ Fifteen `synthetic` lines: `c-englund`, `c-bb4`, `c-2c6`, `c-1c6`, `c-1d6`,
   "demanding", as designed.
 - Layers: stacking was correct; arrow opacity 0.75-0.85 -> 0.93-0.95.
 `npm test`: exit 0, 153 checks.
+
+## The 1...d6 move orders against 1.e4 — 2026-09-22
+
+Rows 3, 4, 6, 14 and 15 of `research/W6-content-batch.md`; details in its §7.
+Four `synthetic` lines: `h-d6f4` (2.f4 e6), `h-d6bc4` (2.Bc4 e6), `h-d6bd3`
+(2.d4 Nf6 3.Bd3 g6 4.Nf3 Bg7 5.O-O Nbd7), `h-d6d3` (2.d3 e6 3.Nc3 a6 4.d4 Nd7
+5.Nf3 Ne7). Every drilled Black move is a Hippopotamus move and best or equal.
+White's moves from `tools/count-prefix.mjs` (1500–1899), except where too few
+games reach the position (the table's move, noted as such).
+
+- 2.Nc3 not built: best ...c5 -17, best Hippopotamus move ...g6 -52 (35
+  behind). Filed under "Needs a decision".
+- `h-d6f4` and `h-d6bc4` stop after ...e6: after 3.Nf3 the nearest wall move
+  is 34 and 39 behind (two `--extra` rows, six moves each searched alone).
+- 14 new drilled moves: 3 best, 11 equal. Repertoire 603: best 277, equal 301,
+  concession 23, inferior 2.
+- `evals.js` 384 -> 396 rows; 383 byte-identical. 1.e4 d6 2.f4 (an `--extra`
+  row, now drilled) gained `t`, `x`, `xp`; its `m`, `pv`, `p` unchanged.
+- `count-choices` needed two `--tsv` passes: new drilled positions have no row
+  on the first pass, so their common choices only appear on the second.
+- Common choices 442 at 99 positions (the 94 old ones unchanged). Occurrence
+  99 / 134 / 99 of 396; no old position changed bucket. Depth 28: nothing new
+  qualifies. Coverage: covered 102 -> 106, missing 219 -> 215.
+- Found in integration: the seeded due-first UI check picked a sharp position
+  as "rare" once the pool changed; a sharp position keeps weight 1, so the
+  check now leaves sharp positions out of that pick.
+`npm test`: exit 0.

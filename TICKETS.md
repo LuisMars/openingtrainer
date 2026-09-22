@@ -32,6 +32,14 @@ rule would mark them as misses. Files: `src/app.js` (`altAt`, the book
 branch in `playMove`). Verified by a UI check at one of those boards. Done
 when the owner has chosen, and the code and README match the choice.
 
+**FEAT — 1.e4 d6 2.Nc3 has no line.** The other four 1...d6 orders are
+built (`research/W6-content-batch.md` §7). Here no Hippopotamus move is inside
+the 30-centipawn band: the best is ...c5 at -17, ...g6 is -52 (35 behind),
+and ...h6, ...a6, ...Nd7, ...e6 and ...b6 are further back (depth 20, not
+stored). A line must drill a concession, drill a move outside the system, or
+not exist. Files: `src/data/lines.js`, regenerated `src/data/*.js`. Verified
+by `npm test` and the coverage matrix. Done when the owner has chosen.
+
 ---
 
 ## Bugs
@@ -50,14 +58,6 @@ Files: none unless a check fails. Done when each check passes on a phone.
 ---
 
 ## Features
-
-**FEAT — Lines for the 1...d6 move orders against 1.e4.** Ranked in
-`research/W6-content-batch.md`: 2.f4 5.25%, 2.Bc4 5.16%, 3.Bd3 4.50% and
-the rest listed there (reach at 1500–1899). They matter to a learner who
-answers 1.e4 with 1...d6. Files: `src/data/lines.js`, regenerated
-`src/data/*.js`, stated counts. Verified by `npm test` and the coverage
-matrix. Done when each listed order has a line whose drilled moves grade
-best or equal and are in the system.
 
 **FEAT — Forcing replies still not drilled.** ...Qb6 in the b3 window,
 ...Ne4 in the c3 structure, 2...Bb4+ after 1.d4 e6 2.Nf3 (W1-C §3). Files
