@@ -8,7 +8,7 @@ screen gains a masters statistics panel. Save sends one test request to `explore
 the token only if lichess accepts it; after that the panel asks lichess once per position and keeps the
 answer until the tab closes. Without a stored token, nothing leaves the page.
 
-**86 lines · 80 tactics puzzles.**
+**96 lines · 80 tactics puzzles.**
 
 ---
 
@@ -37,7 +37,7 @@ note names one, the reply that punishes it; nothing that points at the answer. S
 
 ---
 
-## The 86 lines and where each came from
+## The 96 lines and where each came from
 
 Every line carries a visible tag. The tag is the claim being made.
 
@@ -92,7 +92,7 @@ Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
 1...e6, the move order that waits (added after the coverage count showed it was
 the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 49)
+### `model` and `synthetic` — written for this trainer (3 + 59)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
 Zukertort against a Queen's Indian · d5 without c4, taking on d5 · ...h5 against the pawn storm ·
@@ -109,9 +109,17 @@ Be3 tabiya · 1...e5, the Englund Gambit · 3...Bb4+ · 2...c6 and 3...Bg4 · 1.
 3...Bg4 4.h3 Bxf3 · 2.Bc4 and 3.Qf3 against f7 · 2.f4, strike before the bishop · 2.Nf3 and 3.Bc4 ·
 1...d6 2.Nf3 back into the crouch · 1.d4 g6 2.Nf3 and 3.e3 · 1...d6 2.f4, ...e6 not ...g6 ·
 1...d6 2.Bc4, close the diagonal · 1...d6 2.d4 Nf6 3.Bd3 · 1...d6 2.d3, the knights behind the pawns ·
-1...e6 2.Nf3 Bb4+, block with the c-pawn · 5...Qb6 in the b3 window · 5...Ne4 in the c3 structure.
-The last three answer forcing replies too rare to count, chosen for what they threaten (`research/W6-content-batch.md` §8).
-The twenty-eight before them
+1...e6 2.Nf3 Bb4+, block with the c-pawn · 5...Qb6 in the b3 window · 5...Ne4 in the c3 structure ·
+1...d6 2.Nc3, ...g6 as a stated concession · 1...e6 2.Nf3 c5, take back with the pawn ·
+2...Nc6 3.e3 Nf6, the knight to d2 first · 4.Bd3 against the Pirc · 1...g6 2.Nf3 Bg7 3.Nc3, ...d6 not ...e6 ·
+1...e6 2.Nf3 b6, the knight before the e-pawn · 4.Bc4 against the Modern, close the diagonal ·
+2...Nc6 3.e3 Bf5, the bishop to d3 · 4.Be3 against the Pirc · 1...e6 2.Nf3 d6, e3 at the edge of the band.
+The last ten were built from the next rows of the coverage count (`research/W6-content-batch.md` §9).
+One of them drills a move the table grades a concession, on purpose: after 1.e4 d6 2.Nc3 no
+Hippopotamus move is inside the band, and ...g6, the cheapest, is 35 centipawns behind ...c5. The
+line says so on the move.
+The three before them answer forcing replies too rare to count, chosen for what they threaten (§8).
+The twenty-eight before those
 were built from the coverage count (`research/W6-content-batch.md` ranks the latest nineteen): each answers a reply the repertoire measurably
 met and had no line for, and every move in them was graded before a word was
 written about it. One more, the queenside answer to g4 out of the same

@@ -1332,3 +1332,28 @@ Three `synthetic` Colle lines: `c-e6bb4` (1.d4 e6 2.Nf3 Bb4+ 3.c3 Ba5 4.Nbd2),
   bucket; `FRQ_SHARP` 9 -> 12. Coverage unchanged: 106 / 16 / 215.
 `npm test`: exit 0.
 
+
+## The coverage batch: 1...d6 2.Nc3, and ranked rows 26–38 — 2026-09-22
+
+Details in `research/W6-content-batch.md` §9. The owner answered the "Needs a
+decision" ticket: drill 1.e4 d6 2.Nc3 g6 as a stated concession. Ten
+`synthetic` lines: `h-d6nc3` (2.Nc3 g6 3.d4 Bg7), `c-e6c5`, `c-nc6nf6`,
+`h-pircbd3`, `h-nf3nc3`, `c-e6b6`, `h-4bc4`, `c-nc6bf5`, `h-pircbe3`, `c-e6d6`.
+Every other drilled move is in the system and best or equal.
+
+- `h-d6nc3`: ...g6 -52, 35 behind ...c5, graded a concession; ...Nd7 -55, ...a6
+  -56, ...h6 -58, ...e6 -62, ...b6 -79 (four searched alone). Credited as the
+  line's move in Drill and Shuffle; the note states the cost (`test/ui.mjs`,
+  `test/w2b-grading.mjs`).
+- Skipped: rows 28 and 38 (3.e5 then ...dxe5, the only move in the band, is no
+  Hippopotamus move); row 29 (fold-in, §2 row 19); row 32 (same board as row 27,
+  now `transposes`).
+- 44 new drilled moves: 16 best, 27 equal, 1 concession. Repertoire 666: best
+  304, equal 336, concession 24, inferior 2.
+- `evals.js` 407 -> 430 rows; all 407 unchanged field for field. `deep.js` 129
+  -> 130 (4.exd4 in `c-e6c5`, holds), the 129 unchanged. Common choices 502 at
+  112 positions; 96 old positions unchanged, four changed counts only (more
+  games stay in the tree), no eval row moved. `--tsv`: second pass changed the
+  section, third identical. Occurrence 111 / 149 / 110 of 430; no old position
+  changed bucket; `FRQ_SHARP` 12. Coverage 106 / 16 / 215 -> 110 / 17 / 210.
+`npm test`: exit 0.

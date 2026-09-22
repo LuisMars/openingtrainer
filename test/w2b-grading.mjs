@@ -488,7 +488,8 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // def-ohanlon 15): 16 opening plies left the count, 605 -> 589.
   // The 1...d6 batch added four lines and 14 drilled moves: 603.
   // The forcing-replies batch added three lines and 19 drilled moves: 622.
-  eq(n, 622, "drilled moves");
+  // The coverage batch added ten lines and 44 drilled moves: 666.
+  eq(n, 666, "drilled moves");
   eq(counts.unknown || 0, 0, "unknown drilled moves");
   // No drilled move reaches the lost region any more. The W4 content audit
   // deleted syn-greek (its Bxh7+ was -269 in a position kolt reaches and
@@ -504,8 +505,20 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // The 16 defence-line opening plies no longer drilled were all best or equal: 564.
   // The 14 drilled moves of the 1...d6 batch are all best or equal: 578.
   // The 19 drilled moves of the forcing-replies batch are all best or equal: 597.
-  eq(counts.best + counts.equal, 597, "best+equal drilled moves");
-  eq(counts.concession, 23, "concession drilled moves");
+  // The coverage batch's 44 drilled moves: 43 best or equal (640), and one
+  // concession on purpose. h-d6nc3 drills 2...g6 after 1.e4 d6 2.Nc3, 35 behind
+  // ...c5, because no Hippopotamus move is inside the band there; the owner chose
+  // to drill it as a stated concession rather than leave the reply without a line.
+  eq(counts.best + counts.equal, 640, "best+equal drilled moves");
+  eq(counts.concession, 24, "concession drilled moves");
+  {
+    const nc3 = lineAt("h-d6nc3", 3);
+    const g6 = gradeMove(nc3.row, nc3.p, nc3.mv[0]);
+    eq(g6.verdict + " " + g6.lossCp + " " + g6.why.depth, "concession 35 20", "h-d6nc3 ...g6: a concession, 35 behind at depth 20");
+    const others = ["Nd7", "a6", "h6", "e6", "b6"].map((s) => g(nc3, s));
+    if (others.some((r) => r.analysis !== "checked" || r.lossCp <= g6.lossCp))
+      bad("h-d6nc3: every other wall move must be scored and cost more than ...g6");
+  }
   // The only two left outside accept are meant to be: ohanlon's Rxd6 is a real
   // game move in a position the table still scores as won, and syn-hipdown is
   // the deliberate-mistake line doing its job.

@@ -24,13 +24,7 @@ Prefix key: **BUG** a defect · **FEAT** new behaviour · **CHORE** upkeep ·
 
 ## Needs a decision
 
-**FEAT — 1.e4 d6 2.Nc3 has no line.** The other four 1...d6 orders are
-built (`research/W6-content-batch.md` §7). Here no Hippopotamus move is inside
-the 30-centipawn band: the best is ...c5 at -17, ...g6 is -52 (35 behind),
-and ...h6, ...a6, ...Nd7, ...e6 and ...b6 are further back (depth 20, not
-stored). A line must drill a concession, drill a move outside the system, or
-not exist. Files: `src/data/lines.js`, regenerated `src/data/*.js`. Verified
-by `npm test` and the coverage matrix. Done when the owner has chosen.
+None open.
 
 ---
 
@@ -51,7 +45,7 @@ Files: none unless a check fails. Done when each check passes on a phone.
 
 ## Features
 
-**FEAT — The rest of the coverage gaps.** 219 replies in
+**FEAT — The rest of the coverage gaps.** 210 replies in
 `research/COVERAGE-MATRIX.md` have no line. Take them in the order the
 matrix ranks them, in batches. Done per batch as above.
 

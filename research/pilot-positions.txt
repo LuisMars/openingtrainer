@@ -53,3 +53,12 @@ rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/1P1BPN2/P1P2PPP/RNBQK2R b KQkq - 0 1
 # Colle's e3 against the table's first choice.
 rnbqk1nr/pppp1ppp/4p3/b7/3P4/2P2N2/PP1NPPPP/R1BQKB1R b KQkq - 0 1
 rnbqk1nr/pp1p1ppp/2p1p3/b7/3P4/2P2N2/PP1NPPPP/R1BQKB1R w KQkq - 0 1
+
+# Coverage batch (research/W6-content-batch.md, section 9): the positions whose
+# numbers the notes of h-4bc4, h-pircbe3 and c-e6b6 cite. No line drills them.
+# h-4bc4 and h-pircbe3: White-to-move positions whose notes name the table's
+# choice for White (6.a4, 6.Qd2). Too few games in the band reach them to count.
+rnbqk2r/ppp1npbp/3pp1p1/8/2BPP3/5N2/PPP2PPP/RNBQ1RK1 w kq - 0 1
+rnbqk2r/1pp1ppbp/p2p1np1/8/3PP3/2N1BP2/PPP3PP/R2QKBNR w KQkq - 0 1
+# c-e6b6 stops at 3.Nbd2: after ...Bb7 the Colle's e3 against the table's first choice.
+rn1qkbnr/pbpp1ppp/1p2p3/8/3P4/5N2/PPPNPPPP/R1BQKB1R w KQkq - 0 1

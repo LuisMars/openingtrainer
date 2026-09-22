@@ -408,3 +408,10 @@ the depth-28 check.
 After the forcing-replies batch (`W6-content-batch.md` §8): 622 drilled moves,
 best 288, equal 309, concession 23, inferior 2 (best+equal 597); all 19 new
 drilled moves are accepted, and 129 positions are checked at depth 28.
+
+After the coverage batch (`W6-content-batch.md` §9): 666 drilled moves, best
+304, equal 336, concession 24, inferior 2 (best+equal 640). 43 of the 44 new
+drilled moves are accepted. The other is a concession on purpose: `h-d6nc3`
+drills 2...g6 after 1.e4 d6 2.Nc3, 35 behind ...c5, because no Hippopotamus
+move is inside the band there; the owner chose a stated concession over no
+line. 130 positions are checked at depth 28.

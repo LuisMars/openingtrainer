@@ -403,6 +403,29 @@ check("a concession carries on with its cost stated in centipawns",
 // a place in a list, here or anywhere else.
 check("a scored move's rank of 0 is never shown as a place",
   !/rank|sixth|worst|last of/i.test(conc[0].msg), conc[0].msg);
+// h-d6nc3 drills a concession on purpose: after 1.e4 d6 2.Nc3 no Hippopotamus move
+// is inside the band, and the line plays ...g6, 35 behind ...c5. As the line's own
+// move it is credited in Drill and in Shuffle, and the words on screen state the cost.
+const nc3 = await page.evaluate(() => {
+  const li = LINES.findIndex((l) => l.id === "h-d6nc3"), out = {};
+  for (const mode of ["line", "shuffle"]) {
+    S.mode = mode; S.li = li; S.ply = 3; S.sel = null; S.tries = 0; S.hint = 0;
+    S.passKeys = new Set(); clearFree(); stats.pos = {}; S.run = 3; render(false);
+    const pos = posAt(LINES[li], 3), m = legal(pos).find((x) => san(pos, x) === "g6");
+    playMove(pos, sq(m.t), m);
+    if (S.pending) { clearTimeout(S.pending); S.pending = 0; }
+    if (mode === "line") autoReply();
+    out[mode] = { ply: S.ply, run: S.run, tries: S.tries, text: el("nText").textContent };
+  }
+  stats.pos = {}; S.run = 0; S.mode = "study"; S.li = 0; S.ply = 0;
+  S.tries = 0; S.hint = 0; S.sel = null; clearFree(); render(false);
+  return out;
+});
+check("h-d6nc3's ...g6 is credited as a concession with its cost stated",
+  nc3.line.ply >= 4 && nc3.line.run === 4 && nc3.line.tries === 0 &&
+    /g6: -52, 35 behind \.\.\.c5: a concession/.test(nc3.line.text) &&
+    nc3.shuffle.run === 4 && /35 behind \.\.\.c5: a concession/.test(nc3.shuffle.text),
+  JSON.stringify(nc3).slice(0, 300));
 
 // Changed with the system rule: this used to expect Shuffle to credit 1.c4 at the
 // start of a Colle line. 1.c4 is sound and is not the Colle, so Shuffle now answers

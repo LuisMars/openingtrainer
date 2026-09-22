@@ -50,7 +50,7 @@ counts are floors for the position. Every such count quoted in a note says
 | 11 | 1.d4 d5 2.Nf3 Bf5 | 3.44% (649/8,159) | 3.68% | 1.29% | **built** `c-2bf5` |
 | 12 | 1.d4 c6 | 3.38% (3,721/109,938) | 2.21% | 3.85% | **built** `c-1c6` |
 | 13 | 1.d4 g6 2.Nf3 | 3.37% (728/5,419) | 2.32% | 5.02% | **built** `h-d4nf3` |
-| 14 | 1.e4 d6 2.Nc3 | 3.14% | 3.02% | 2.74% | not built: no Hippopotamus move in the band (§7) |
+| 14 | 1.e4 d6 2.Nc3 | 3.14% | 3.02% | 2.74% | **built** `h-d6nc3` as a stated concession (§9); no Hippopotamus move is in the band (§7) |
 | 15 | 1.e4 d6 2.d3 | 3.05% | 2.64% | 1.01% | **built** `h-d6d3` (§7) |
 | 16 | 1.e4 g6 2.d3 | 2.83% | 2.90% | 1.98% | not built: folds into `h-2nf3`'s shape |
 | 17 | 1.e4 g6 2.Nc3 | 2.82% | 2.88% | 3.07% | not built: 2...Bg7 3.d4 is the main line |
@@ -242,7 +242,8 @@ Per move, depth-20 table (loss to the row's best):
 behind; 113 of 539 games in the band chose it), ...h6 -56, ...a6, ...Nd7 and
 ...e6 -58, ...b6 -76 (the build's worker at depth 20, not stored). A line would
 have to drill a concession or leave the system. It stays `missing` in the
-matrix and is filed in TICKETS.md under "Needs a decision".
+matrix and is filed in TICKETS.md under "Needs a decision". The owner chose
+the concession; §9 builds it.
 
 **Rows added to the table.** Eight drilled positions, and four more through
 `research/pilot-positions.txt`: the two positions after 3.Nf3 where `h-d6f4`
@@ -327,3 +328,127 @@ section of that file came out identical on both `--tsv` passes.
   99 of 396); no existing position changed bucket. The three new forcing
   positions are added to `FRQ_SHARP` (`tools/build-freq.mjs`): 9 -> 12.
 - Coverage matrix: covered 106, transposes 16, missing 215, unchanged.
+
+## 9. The coverage batch: 1...d6 2.Nc3 as a concession, and the next rows
+
+Two parts. First, the owner's answer to §7's open row: build 1.e4 d6 2.Nc3 and
+drill ...g6 as a stated concession. Second, the next rows of the §2 ranking,
+recomputed by the §1 method against the current `LINES` (1500–1899 reach, with
+u1500 / 1900+ beside it). Rows 1–25 are §2's; the rows below continue it. Same
+rules as §7 and §8: every drilled move of the learner is in the system (a
+`COLLE_T`, `ZUK_T` or `HIPPO_T` square, castling, the recapture on d4, or a move
+another line of the same system plays from the same board) and grades best or
+equal, or the line stops, or the reply is skipped with its reason. The one
+exception is `h-d6nc3`'s ...g6, which the owner chose.
+
+| # | gap | reach | u1500 | 1900+ | disposition |
+|---|---|---|---|---|---|
+| 14 | 1.e4 d6 2.Nc3 | 3.14% | 3.02% | 2.74% | **built** `h-d6nc3` (stated concession) |
+| 26 | 1.d4 e6 2.Nf3 c5 | 1.99% | 1.84% | 0.71% | **built** `c-e6c5` |
+| 27 | 1.d4 d5 2.Nf3 Nc6 3.e3 Nf6 | 1.93% | 4.11% | 0.50% | **built** `c-nc6nf6` |
+| 28 | 1.e4 g6 2.d4 Bg7 3.e5 d6 4.f4 | 1.79% | 2.33% | — | not built: ...dxe5 is the only move in the band, and it is no Hippopotamus move |
+| 29 | 1.d4 e6 2.Nf3 d5 3.e3 c5 | 1.70% | 1.07% | 1.67% | not built: the board of §2 row 19 by the 1...e6 order; 4.Bd3 Nf6 rejoins `ck` |
+| 30 | 1.e4 d6 2.d4 Nf6 3.Nc3 g6 4.Bd3 | 1.59% | 0.40% | 1.59% | **built** `h-pircbd3` |
+| 31 | 1.e4 g6 2.Nf3 Bg7 3.Nc3 | 1.55% | 1.74% | 1.01% | **built** `h-nf3nc3` |
+| 32 | 1.d4 d5 2.Nf3 Nf6 3.e3 Nc6 | 1.37% | 2.09% | 0.71% | the board of row 27; now `transposes` |
+| 33 | 1.d4 e6 2.Nf3 b6 | 1.33% | 0.86% | 0.71% | **built** `c-e6b6` |
+| 34 | 1.e4 g6 2.d4 Bg7 3.Nf3 d6 4.Bc4 | 1.30% | 0.87% | 0.95% | **built** `h-4bc4` |
+| 35 | 1.d4 d5 2.Nf3 Nc6 3.e3 Bf5 | 1.25% | 1.99% | 0.12% | **built** `c-nc6bf5` |
+| 36 | 1.e4 d6 2.d4 Nf6 3.Nc3 g6 4.Be3 | 1.18% | 0.80% | 3.55% | **built** `h-pircbe3` |
+| 37 | 1.d4 e6 2.Nf3 d6 | 1.07% | 1.36% | 0.33% | **built** `c-e6d6` |
+| 38 | 1.e4 d6 2.d4 Nf6 3.e5 | 1.05% | 2.74% | 0.75% | not built: ...dxe5 is the only move in the band, and it is no Hippopotamus move |
+| — | *cut-off* | | | | |
+| 39 | 1.d4 Nf6 2.Nf3 g6 3.e3 Bg7 4.c4 d5 | 1.00% | — | — | next |
+| 40 | 1.e4 g6 2.Nf3 Bg7 3.c3 | 0.98% | 0.94% | 0.24% | next |
+
+Rows 26–29, 31, 33, 35 and 37 are not in the coverage matrix: the matrix reads
+the pooled 1500+ player files, which have no position before any of them (none
+after 1.d4 e6 2.Nf3, for one). They are ranked from the band files, as §2
+ranked rows 26 and 27.
+
+| id | answers | drilled moves | grades |
+|---|---|---|---|
+| `h-d6nc3` | 2.Nc3 g6 3.d4 Bg7 | 3 | 1 best, 1 equal, 1 concession |
+| `c-e6c5` | 2...c5 3.e3 cxd4 4.exd4 Nc6 5.Bd3 | 5 | 3 best, 2 equal |
+| `c-nc6nf6` | 3...Nf6 4.Nbd2 | 4 | 2 best, 2 equal |
+| `h-pircbd3` | 4.Bd3 Bg7 5.Be3 Nbd7 | 5 | 1 best, 4 equal |
+| `h-nf3nc3` | 3.Nc3 d6 | 3 | 0 best, 3 equal |
+| `c-e6b6` | 2...b6 3.Nbd2 | 3 | 2 best, 1 equal |
+| `h-4bc4` | 4.Bc4 e6 5.O-O Ne7 6.a4 b6 | 6 | 3 best, 3 equal |
+| `c-nc6bf5` | 3...Bf5 4.Bd3 | 4 | 1 best, 3 equal |
+| `h-pircbe3` | 4.Be3 Bg7 5.f3 a6 6.Qd2 Nbd7 | 6 | 0 best, 6 equal |
+| `c-e6d6` | 2...d6 3.e3 Be7 4.Bd3 Nd7 5.O-O | 5 | 3 best, 2 equal |
+
+Per move, depth-20 table (loss to the row's best). Counts are
+`tools/count-prefix.mjs`, 1500–1899, literal move orders (floors).
+
+- `h-d6nc3`: ...c5 -17 first; ...g6 -52, 35 behind, a concession. The other
+  wall moves: ...Nd7 -55, ...a6 -56, ...h6 -58, ...e6 -62, ...b6 -79 (the four
+  outside the top five searched alone, `research/named-moves.tsv`). 113 of 539
+  players chose ...g6, the commonest move. 3.d4 and 3.d3 tie at 30 of 109; the
+  line takes 3.d4, after which ...Bg7 is first (-46) and the board is the
+  model setup's 1.e4 g6 2.d4 Bg7 3.Nc3 d6. The trainer credits ...g6 as the
+  line's own move in Drill and in Shuffle, and the note on the move states the
+  cost; `test/w2b-grading.mjs` and `test/ui.mjs` pin both.
+- `c-e6c5`: 3.e3 20, 15 behind Nc3 35; c3 (66 of 315 players) 3. 4.exd4 32,
+  17 ahead of Nxd4; depth 28 keeps it first (25, 11 ahead). 5.Bd3 25, 1 behind
+  Bf4. After 5.Bd3 too few games in the band reach the board to count.
+- `c-nc6nf6`: 4.Nbd2 36 first; Bd3 10 (26 behind). After 4.Nbd2 only 7 games
+  in the band continue, too few to choose Black's reply, so the line stops. (After
+  ...Bf5, 4 of the 7, Bd3 would be 51 behind Bb5 and c3 exactly 30 behind; worker,
+  not stored.)
+- `h-pircbd3`: ...Bg7 -29 first; after 5.Be3 (19 of 40), ...Nbd7 -24, 16 behind
+  ...e5. After 6.f4, the table's first choice for White, ...e5 is -19 and the
+  nearest wall move, ...e6, -68 (worker, not stored): the line stops at ...Nbd7.
+- `h-nf3nc3`: ...d6 -48, 28 behind ...c5; ...e6 (67 of 197, the commonest) -75.
+  4.d4 (30 of 53) reaches the model setup's 1.e4 g6 2.d4 Bg7 3.Nc3 d6 4.Nf3.
+- `c-e6b6`: 3.Nbd2 44, 24 behind e4 68; e3 (36 of 210) 19, 49 behind. After
+  ...Bb7 (8 games) e3 is 7, 49 behind e4 56 (an `--extra` row): the line stops.
+- `h-4bc4`: ...e6 -56, 14 behind ...Nf6; ...Nd7 (5 of 75) -342, the table's line
+  Bxf7+. 5.O-O (9 of 18); ...Ne7 -46, level with ...d5. 6.a4 is the table's first
+  choice for White (an `--extra` row); ...b6 -46, 1 behind ...d5.
+- `c-nc6bf5`: 4.Bd3 30, 12 behind Bb5. After ...Bxd3 (6 of 9 games) the
+  recaptures are Qxd3 and cxd3, neither a system move: the line stops at 4.Bd3.
+- `h-pircbe3`: ...Bg7 -57, 5 behind ...a6 (34 of 37 players chose it); 5.f3
+  (18 of 32); ...a6 -52, 3 behind ...c6; 6.Qd2 the table's first choice (an
+  `--extra` row); ...Nbd7 -62, 21 behind ...b5. The line stops there.
+- `c-e6d6`: 3.e3 44, exactly 30 behind e4 74 (searched in the drilled-move job,
+  outside the top five): equal, at the edge. ...Be7 (11 of 33); 4.Bd3 45, 6
+  behind e4; ...Nd7 (3 games, the only reply counted); 5.O-O 46, first.
+
+Skipped rows, depth-20 worker searches, not stored:
+
+- Row 28, 3.e5 d6 4.f4: ...dxe5 67, ...c5 36, ...Nh6 31; the wall moves ...a6 7
+  and ...Nd7 -1. `h-3e5` takes on e5 after 4.Nf3, not on this board.
+- Row 38, 3.e5 against the Pirc: ...dxe5 117; the knight retreats ...Nfd7 -50,
+  ...Nd5 -57.
+
+**Rows added to the table.** 20 drilled positions and three `--extra` rows in
+`research/pilot-positions.txt`: the White-to-move boards before 6.a4 and 6.Qd2,
+and the board after 3.Nbd2 Bb7 where `c-e6b6` stops. Four moves named `alone`
+at 1.e4 d6 2.Nc3. The common-choice section of `named-moves.tsv` changed on the
+second `--tsv` pass (the new drilled positions have rows only after the first
+evaluation run) and came out identical on the third.
+
+**Numbers after the batch.**
+
+- Grading: 666 drilled moves (was 622): best 304, equal 336, concession 24,
+  inferior 2. Best+equal 597 -> 640; 43 of the 44 new drilled moves are
+  accepted, and the 44th is `h-d6nc3`'s ...g6.
+- Evaluation table: 407 -> 430 rows. All 407 existing rows are unchanged, field
+  for field.
+- Depth 28: 129 -> 130 positions (4.exd4 in `c-e6c5`, tactical, holds); the 129
+  existing `src/data/deep.js` rows unchanged. Only-move and demanding tallies
+  unchanged.
+- Common choices: 502 moves at 112 positions (was 443 at 100). 96 of the 100
+  existing positions are unchanged. Four changed only in their counts, because
+  the new lines keep more games in the tree: 1.e4 g6 2.d4 Bg7 3.Nc3 d6 4.Nf3
+  (283 -> 322 games in the middle band), 1.e4 g6 2.d4 Bg7 3.Nc3 d6 4.Be3
+  (47 -> 61; ...a6 now crosses the floor), 1.e4 d6 2.d4 Nf6 3.Nc3 g6 4.f4 Bg7
+  5.Nf3 (40 -> 41), and
+  1.d4 Nf6 2.Nf3 e6 3.e3 c5 (40 -> 47; Bd3 now crosses the floor). Every choice
+  that crosses the floor there already had a stored score, so no row changed.
+- Occurrence buckets: 111 / 149 / 110 of 430 positions per band (was 101 / 136 /
+  100 of 407); no existing position changed bucket. `FRQ_SHARP` unchanged at 12:
+  no new line answers a forcing reply.
+- Coverage matrix: covered 106 -> 110, transposes 16 -> 17, missing 215 -> 210.
