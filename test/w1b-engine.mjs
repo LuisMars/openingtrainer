@@ -105,7 +105,7 @@ const replay = (sans) => {
     l.moves.forEach((mv, i) => {
       const m = findMove(p, mv[0]);
       if (!m) return;
-      if ((i % 2 === 0 ? "w" : "b") === l.you) { seen++; if (!EVL[posKey(p)]) missing++; }
+      if (i >= (l.drill || 0) && (i % 2 === 0 ? "w" : "b") === l.you) { seen++; if (!EVL[posKey(p)]) missing++; }
       p = make(p, m);
     });
   }

@@ -7,7 +7,7 @@ exception and it is opt-in: paste a lichess API token in Settings and the Study 
 statistics panel, which fetches from `explorer.lichess.org` each time you open it. Without a stored
 token, nothing leaves the page.
 
-**79 lines · 605 trainable positions · 80 tactics puzzles.**
+**79 lines · 589 trainable positions · 80 tactics puzzles.**
 
 ---
 
@@ -278,7 +278,7 @@ centipawns behind in one position and far more in another, and a separately scor
   how often it is reached, how many games reached it, the table's depth and how far its first choice
   stands clear of the second, the line it comes from, and the opponent's threat where there is one: the
   same board searched at build time with the move handed to the opponent, shown only when that free move
-  gains at least 150 centipawns over the position as it stands (50 of 605 drill plies). While the
+  gains at least 150 centipawns over the position as it stands (49 of 589 drill plies). While the
   question is live nothing there can name the answer — every row is checked against the move, a threat
   that touches the answer's squares waits until it is answered, and Shuffle hides the line and its plan.
   Once answered it adds the line's plan, the line's own note on the move, the table's first choice with

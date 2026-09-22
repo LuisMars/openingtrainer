@@ -36,29 +36,16 @@ when the owner has chosen, and the code and README match the choice.
 
 ## Bugs
 
-**BUG — Stay inside the learner's system: Colle as White, Hippo as Black.**
-The owner's rule (2026-09-22): "We're playing the Colle system and the
-Hippo, not all should be accepted." The in-system rule shipped in `5858f8a`,
-but it is not complete:
-- **Defence lines take over Hippo boards.** Owner report with a phone
-  screenshot: Shuffle showed "Black to play · Colle as White · Defending the
-  Koltanowski clamp" after 1.d4, and "none of the basic hippo moves are
-  valid". `def-kolt` and `def-ohanlon` are Black lines in the Colle chapter,
-  so their opening boards are served in Shuffle and only the game's ...d5 is
-  in the system there. Their lesson is the defence (10...h6, the Greek-gift
-  defence), not O'Hanlon's opening. Proposed: drill a defence line only
-  from the ply where the defence starts, let earlier plies play themselves,
-  and never label a Black-to-play board "Colle as White".
-- **Still to check on a phone:** Colle move 1 answered (arrows for d4 and
-  Nf3, none for e4); 1.e4 refused as "not a Colle move here"; the
-  Rhamphorhynchus 1.Nf3 order credited; an out-of-order Hippo wall move
-  credited; the `h-nf3bc4` castling arrow over the e8 king.
-Files: `src/data/lines.js` (a first-drill-ply field on the defence lines),
-`src/app.js` (`drillPlies`, `inSystem`, the chapter label), `test/ui.mjs`.
-Verified by a UI check that Shuffle serves no `def-*` board before its first
-drill ply, that ...g6 after 1.d4 is credited in Shuffle, and by the phone
-checks above. Done when a Hippo player never has a Hippo move refused
-because another chapter's line owns the board, and the phone checks pass.
+**VERIFY — Check the in-system rule on a phone.** The rule shipped in
+`5858f8a`; a person must look at it on a phone:
+- Colle move 1 answered: arrows for d4 and Nf3, none for e4.
+- 1.e4 refused as "not a Colle move here".
+- The Rhamphorhynchus 1.Nf3 order credited.
+- An out-of-order Hippo wall move credited.
+- The `h-nf3bc4` castling arrow over the e8 king.
+- Shuffle after 1.d4: a Hippo move is credited, and no Black-to-play board
+  is labelled "Colle as White".
+Files: none unless a check fails. Done when each check passes on a phone.
 
 **BUG — Two accepted moves from one square draw overlapping arrows.** For
 example ...d6 and ...d5 from d7: the shorter arrow sits inside the longer.
@@ -70,7 +57,7 @@ are distinct.
 **BUG — README states things the code does not do.** Found while writing
 `FEATURES.md` against the code:
 - Stale counts the build does not check: "All 829 moves across the 51 lines"
-  (79 lines now), "Of the 425 trainable positions, 420…" (605 drill plies),
+  (79 lines now), "Of the 425 trainable positions, 420…" (589 drill plies),
   `data/deep.js` "116 narrow drilled positions" (128).
 - It says perft runs "inside the shipped file in a browser" on four
   positions; the in-browser self-check (`selfTest`) runs only perft(start, 3).

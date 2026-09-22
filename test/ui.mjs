@@ -261,6 +261,58 @@ check("book too names a line from the same chapter and side",
 const hipD5 = (await probe("syn-london", 1, ["d5"]))[0];
 check("a defence line from another chapter is not book in a Hippo drill",
   !/book too|Koltanowski/i.test(hipD5.msg) && hipD5.ply === 1, hipD5.msg);
+
+// The defence lines are drilled only from their drill ply. Before it the game's
+// opening plays itself, and Shuffle never serves those boards: the board after
+// 1.d4 belongs to the Hippo chapter, where ...g6 is credited.
+const defs = await page.evaluate(() => {
+  const saved = JSON.stringify(stats), sv = { book: S.bookOnly };
+  const rnd = Math.random;
+  let seed = 4242;
+  Math.random = () => ((seed = Math.imul(seed ^ (seed >>> 15), 2246822507) + 0x9e3779b9 | 0) >>> 0) / 4294967296;
+  const out = { early: [], plies: {}, d4: null };
+  const d4fen = fenOf(posAt(LINES.find((l) => l.id === "h-d4nf3"), 1));
+  try {
+    stats.pos = {}; S.bookOnly = false; S.mode = "shuffle"; S.lastKey = null;
+    for (let i = 0; i < 1500; i++) {
+      shuffle(true); clearTimeout(S.pending); S.pending = 0;
+      const l = L();
+      if (l.drill && S.ply < l.drill) out.early.push(l.id + ":" + S.ply);
+      if (!out.d4 && S.ply === 1 && fenOf(nowPos()) === d4fen) {
+        const pos = nowPos(), m = legal(pos).find((x) => san(pos, x) === "g6");
+        out.d4 = { id: l.id, ch: l.ch, label: el("nSrc").textContent };
+        playMove(pos, sq(m.t), m);
+        out.d4.msg = el("nMsg").textContent;
+        clearTimeout(S.pending); S.pending = 0; clearFree();
+      }
+    }
+  } finally { Math.random = rnd; }
+  for (const l of LINES) if (l.drill) out.plies[l.id] = [l.drill, drillPlies(l)[0]];
+  // Line mode: the opening before the drill ply plays itself.
+  S.mode = "line"; S.li = LINES.findIndex((l) => l.id === "def-kolt"); startLine();
+  autoReply();
+  out.linePly = S.ply;
+  // Labels: a Black-to-play board in the Colle chapter is not "Colle as White".
+  S.mode = "shuffle"; S.ply = 19; S.pending = 0; render(false);
+  out.defLabel = el("nSrc").textContent;
+  S.li = LINES.findIndex((l) => l.id === "ck"); S.ply = 2; render(false);
+  out.colleLabel = el("nSrc").textContent;
+  stats = JSON.parse(saved); S.bookOnly = sv.book; S.mode = "study"; S.li = 0; S.ply = 0; S.lastKey = null;
+  clearFree(); render(false);
+  return out;
+});
+check("defence lines are drilled only from their drill ply",
+  defs.plies["def-kolt"][0] === 19 && defs.plies["def-kolt"][1] === 19 &&
+    defs.plies["def-ohanlon"][0] === 15 && defs.plies["def-ohanlon"][1] === 15 && defs.linePly === 19,
+  JSON.stringify({ plies: defs.plies, linePly: defs.linePly }));
+check("Shuffle serves no defence-line board before its drill ply",
+  defs.early.length === 0, defs.early.slice(0, 5).join(", "));
+check("Shuffle after 1.d4 is a Hippo board, and ...g6 is credited",
+  !!defs.d4 && defs.d4.ch === "Hippopotamus as Black" && /Correct/.test(defs.d4.msg) && !/is legal, but|not a/.test(defs.d4.msg),
+  JSON.stringify(defs.d4));
+check("a Black-to-play board in the Colle chapter is not labelled Colle as White",
+  defs.defLabel === "Colle chapter · defending as Black" && defs.colleLabel === "Colle as White",
+  defs.defLabel + " | " + defs.colleLabel);
 check("the fifth-ranked move is priced on its number, never on its rank",
   !/rank|fifth|sixth|worst/i.test(many.find((r) => r.san === "g3").msg),
   many.find((r) => r.san === "g3").msg);

@@ -51,6 +51,7 @@ its review interval is over. A *level* is a group of positions by move number.
 
 - The learner plays one line from the first move, from memory. The trainer plays the opponent's replies.
 - The note on the learner's move stays on screen after the reply, with the name of its move.
+- The two Black defence lines in the Colle chapter have a first drill ply (`drill` in `src/data/lines.js`). The trainer plays the moves before it (`yourTurn` in `src/app.js`).
 - The Notation panel hides the moves that the learner did not reach.
 - The Middlegame plan panel shows only when the line is complete.
 - The controls are Back one, Hint, Restart and, at the end, Next line.
@@ -62,6 +63,8 @@ its review interval is over. A *level* is a group of positions by move number.
 - Shuffle serves one position from any line. It picks the position by weight, not in order.
 - Shuffle does not serve the same position two times in a row.
 - Before an answer, the note shows only the chapter, the side to move and the opponent's last move.
+- Shuffle does not serve a defence-line position before its first drill ply (`drillPlies` in `src/app.js`). The Hippopotamus lines own the Black positions of the opening.
+- A Black-to-play position from the Colle chapter shows the label "Colle chapter · defending as Black" (`chapterLabel` in `src/app.js`).
 - Shuffle shows the line name after a wrong try or a hint.
 - After an answer, Shuffle shows the line, its source, its tag, the last moves, the move note and the opponent's reply.
 - A move with no note gets a generic "In general" sentence. The trainer labels it so it cannot look like the line's own note.

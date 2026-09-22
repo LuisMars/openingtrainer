@@ -77,7 +77,9 @@ function armPz(ms){
   S.pending=later(()=>{S.pending=0;startPuzzle(S.pz+1);},ms);
 }
 const L=()=>(S.mode==="puzzle"&&PZLINE)?PZLINE:LINES[S.li];
-const yourTurn=()=>(nowPos().w?"w":"b")===L().you;
+// A line with a drill field (the defence lines) is drilled only from that ply: the
+// plies before it are the game's opening, and they play themselves.
+const yourTurn=()=>(nowPos().w?"w":"b")===L().you&&(S.free.length>0||S.ply>=(L().drill||0));
 // Review intervals in hours, indexed by streak (state() clamps the index to the last
 // entry, so a longer streak just sits on the ceiling). The old ceiling was 336h (14d):
 // with 442 positions that is a permanent floor of ~30 reviews a day once everything is
@@ -85,6 +87,9 @@ const yourTurn=()=>(nowPos().w?"w":"b")===L().you;
 // ladder position, so this does not change what counts as mastered.
 const HOUR=36e5, LADDER=[0,4,24,72,168,336,720,1440];
 const CHAPTERS=["Colle as White","Hippopotamus as Black"];
+// A board label names the side the user plays. The Colle chapter holds two Black
+// defence lines, and "Colle as White" over a Black-to-play board is false.
+function chapterLabel(l){return l.ch===CHAPTERS[0]&&l.you==="b"?"Colle chapter \u00b7 defending as Black":l.ch;}
 LINES.sort((a,b)=>CHAPTERS.indexOf(a.ch)-CHAPTERS.indexOf(b.ch));
 
 function boardAt(l,n){let b=fenBoard(l.start);for(let i=0;i<n;i++)b=apply(b,l.moves[i][0]);return b;}
@@ -95,7 +100,7 @@ function posAt(l,n){
 }
 function nowPos(){return S.free.length?S.fpos:posAt(L(),S.ply);}
 function clearFree(){S.free=[];S.fpos=null;const o=el("offbook");if(o)o.classList.remove("on");}
-function drillPlies(l){const a=[];for(let p=0;p<l.moves.length;p++)if((p%2===0?"w":"b")===l.you)a.push(p);return a;}
+function drillPlies(l){const a=[];for(let p=l.drill||0;p<l.moves.length;p++)if((p%2===0?"w":"b")===l.you)a.push(p);return a;}
 /* Position identity: two lines can transpose into the same board, and fenOf always
    appends a fixed "0 1" so its output needs no trimming to compare across lines. When
    two lines land on the same board and want the same reply, they should share one
@@ -1149,7 +1154,7 @@ function renderNote(){
     // After an answer good() paints a context block into nText; keep it on
     // screen until Continue clears S.pending rather than overwriting it here.
     if(S.pending)return;
-    el("nSrc").textContent=l.ch;
+    el("nSrc").textContent=chapterLabel(l);
     el("nMove").textContent=(l.you==="w"?"White":"Black")+" to play";
     const played=S.ply>0?"They just played "+m[S.ply-1][1]+". ":"";
     el("nText").textContent=played+((S.tries||S.hint)?l.name+" \u00b7 "+l.src:"Find the repertoire move.");
