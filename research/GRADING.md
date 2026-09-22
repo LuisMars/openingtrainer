@@ -415,3 +415,9 @@ drilled moves are accepted. The other is a concession on purpose: `h-d6nc3`
 drills 2...g6 after 1.e4 d6 2.Nc3, 35 behind ...c5, because no Hippopotamus
 move is inside the band there; the owner chose a stated concession over no
 line. 130 positions are checked at depth 28.
+
+After the first generated batch (`W6-content-batch.md` §10): 940 drilled moves,
+best 408, equal 501, concession 29, inferior 2 (best+equal 909). The 164
+generated moves after each gap are all best or equal at depth 20. The five new
+concessions are the repertoire's existing 2.e3 after 1.d4 c5, on the path of
+five generated lines. 139 positions are checked at depth 28.

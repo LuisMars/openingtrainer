@@ -363,16 +363,19 @@ else console.log("✓ no access token in the bundle");
 // prose in src/html/ drifted to "47 lines" while LINES grew to 52, which is a
 // promise to the user that the data no longer keeps.
 const counts = [["line", LINES.length], ["puzzle", PZ.length]];
-const WORDS = { 40: "Forty", 50: "Fifty", 60: "Sixty", 70: "Seventy", 80: "Eighty", 90: "Ninety" };
+const WORDS = { 20: "Twenty", 30: "Thirty", 40: "Forty", 50: "Fifty", 60: "Sixty", 70: "Seventy", 80: "Eighty", 90: "Ninety" };
 // attribute text counts too: the meta description carried the same stale number.
 const text = html.replace(/<script>[\s\S]*<\/script>/, " ").replace(/<|>/g, " ");
 for (const [what, n] of counts) {
-  for (const m of text.matchAll(new RegExp(`([A-Za-z-]+|\\d+)\\s+${what}s\\b`, "gi"))) {
-    const said = /^\d+$/.test(m[1]) ? +m[1]
-      : Object.entries(WORDS).reduce((acc, [v, w]) =>
-          m[1].toLowerCase().startsWith(w.toLowerCase())
+  // "One hundred and forty-one lines" reads as 141, not 41.
+  for (const m of text.matchAll(new RegExp(`((?:one hundred(?: and)?\\s+)?(?:[A-Za-z-]+|\\d+))\\s+${what}s\\b`, "gi"))) {
+    const hund = /^one hundred/i.test(m[1]) ? 100 : 0;
+    const w1 = m[1].replace(/^one hundred(?: and)?\s+/i, "");
+    const said = /^\d+$/.test(w1) ? hund + +w1
+      : hund + Object.entries(WORDS).reduce((acc, [v, w]) =>
+          w1.toLowerCase().startsWith(w.toLowerCase())
             ? +v + ("one two three four five six seven eight nine".split(" ")
-                .indexOf(m[1].toLowerCase().split("-")[1]) + 1) : acc, NaN);
+                .indexOf(w1.toLowerCase().split("-")[1]) + 1) : acc, NaN);
     if (Number.isFinite(said) && said !== n) bad(`page says "${m[0]}" but ships ${n}`);
   }
 }

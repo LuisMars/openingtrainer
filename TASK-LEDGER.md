@@ -1357,3 +1357,26 @@ Every other drilled move is in the system and best or equal.
   section, third identical. Occurrence 111 / 149 / 110 of 430; no old position
   changed bucket; `FRQ_SHARP` 12. Coverage 106 / 16 / 215 -> 110 / 17 / 210.
 `npm test`: exit 0.
+
+## Generated coverage lines, ranks 1–50 of the remaining gaps — 2026-09-22
+
+Details in `research/W6-content-batch.md` §10. New tool `tools/gen-gap-lines.mjs`
+(`--rank`, `--plan <n>`, `--write`); decisions in `research/gap-lines.json`.
+44 `synthetic` lines built (`gc-…`, `gh-…`), 6 skipped: 5 with no system move in
+the band at the gap's board (ranks 7, 29, 32, 41, 48), 1 covered by a line built
+earlier in the batch (rank 17). Built lines stop by transposition 13, outside the
+band 14, at six moves 17.
+
+- 274 new drilled moves: the 164 after the gap are best 65, equal 99 at depth 20.
+  Repertoire 940: best 408, equal 501, concession 29, inferior 2. The five new
+  concessions are the existing 2.e3 after 1.d4 c5 on five generated paths.
+- `evals.js` 430 -> 717; 427 unchanged field for field, one gained `t`, two gained
+  one appended `x`/`xp` entry (existing entries unchanged). `deep.js` 130 -> 139,
+  the 130 unchanged. Common choices 607 at 148 positions; 100 old positions
+  unchanged, 12 changed counts. Occurrence 149 / 205 / 154 of 717; no old position
+  changed bucket. Coverage 110 / 17 / 210 -> 156 / 24 / 157.
+- `test/verify.mjs` reads "One hundred and forty lines" as 140 (it read 40).
+- An independent audit replayed every generated line against the built page:
+  every move is legal, every learner move is in the system and best or equal,
+  every note number and count matches its source. Ten lines were also read by hand.
+`npm test`: exit 0.

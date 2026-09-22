@@ -452,3 +452,114 @@ evaluation run) and came out identical on the third.
   100 of 407); no existing position changed bucket. `FRQ_SHARP` unchanged at 12:
   no new line answers a forcing reply.
 - Coverage matrix: covered 106 -> 110, transposes 16 -> 17, missing 215 -> 210.
+
+## 10. Generated lines: the first 50 of the remaining 210 gaps
+
+`tools/gen-gap-lines.mjs` (new) takes the rows the coverage matrix lists as
+`missing`, ranks them, and builds or skips them in rank order, 50 per run. Every
+decision, with the numbers behind it, is in `research/gap-lines.json`; the lines
+are rendered from that file into `src/data/lines.js` (ids `gc-…` for the Colle,
+`gh-…` for the Hippopotamus), all tagged `synthetic`.
+
+**Ranking.** The §1 method: reach in the 1500–1899 band file, the product of the
+opponent's shares along the path, the learner's own moves (from lines that are not
+`eco`) at probability 1; the pooled 1500+ file breaks ties and orders rows the band
+file does not reach. One change from §1 and §9: the walk also continues through a
+`transposes` reply, not only a `covered` one. 128 of the 210 rows have a path;
+the other 82 are reached only through an `eco` line's move order (1.Nf3, Bf4, Bg5)
+and will be skipped when their turn comes. `node tools/gen-gap-lines.mjs --rank`
+prints the list.
+
+**Rules per gap**, stated in the tool's header:
+
+- The learner's move is the best-scoring system move at the board: a piece onto a
+  formation square (`isSetupMove` against `HIPPO_T`, or `COLLE_T` and `ZUK_T`),
+  castling, or the Colle's recapture on d4. It is searched at depth 20 with the
+  build's own worker and cache (`tools/build-evals.mjs --worker`), and moves outside
+  the top five are searched alone, the same job build-evals runs for a drilled
+  move, so the number chosen on is the number that ships. It is played only if
+  `gradeRow()` grades it best or equal.
+- The opponent's move is the commonest in the 1500–1899 band at that board when at
+  least 10 counted games continue from it, otherwise the table's first choice. The
+  counts come from one pass over the same dump (cached in `data-src/gap-counts.json`,
+  gitignored). It counts by position (keyFen), from each gap's parent (next move only)
+  and through every game that enters a gap's position, to ply 32. Positions reached
+  only from outside those subtrees are not counted, so every count is a floor.
+- A line stops when the board is one a line of the same side reaches (after the
+  opponent's move, the move is kept so the learner sees the rejoin), when no system
+  move is in the band, or after six moves of its own. A line built earlier in the
+  batch counts as an existing line for every later one.
+- Notes and plans are rendered from the shipped `src/data/evals.js` by
+  `--write`. The second `--write` after the pipeline printed "notes unchanged". Where
+  a line stops for lack of an in-band move, the stop board is an `--extra` row
+  (`research/pilot-positions.txt`) and the nearest system move, if the top five
+  leave it out, is named `alone` (`research/named-moves.tsv`). Every board where the
+  table chose the opponent's move is an `--extra` row too.
+
+**The batch: ranks 1–50.** 44 built, 6 skipped.
+
+- Built lines end by transposition into another line (13), because the next
+  system move is outside the band (14), or at the six-move limit (17).
+- Skipped, no system move in the band at the gap's own board (depth-20 worker,
+  not stored): rank 7, 1.e4 d6 2.d4 Nf6 3.e5 (...dxe5 117, ...Nfd7 -50); rank 29,
+  the same push after 3.Nc3 g6 (...dxe5 37, ...Nfd7 -45); rank 32, 1.d4 c5 2.e3 cxd4
+  3.exd4 Nc6 (d5 64, c3 20); rank 41, 1.c4 g6 2.Nc3 Bg7 3.Nf3 (...c5 -8, ...d6 -49);
+  rank 48, 1.d4 g6 2.Bf4 Bg7 3.Be5 (...Nf6 35, ...h6 -549).
+- Skipped, covered by a line built earlier in the batch: rank 17, 1.e4 g6 2.Nf3
+  Bg7 3.d4 d6 4.c3 (`gh-e4g6d4bg7c3` reaches it).
+- Ranks 1–6 include §2's fold-ins (rows 16–18, 21, 23, 24). They are built now:
+  a line that drills the first move at the gap's board and ends where the board
+  rejoins is the smallest line that closes the gap.
+
+**Checks.** An independent audit script (not shipped) replayed every generated
+line against the built page. Every move is legal. Every learner move after the gap
+is a system move that grades best or equal on the shipped row. Every number in a
+note matches the shipped row. Every count matches the counting pass, and every
+"table's first choice" is the row's first move. Ten lines were also read by hand:
+`gh-e4g6nc3`, `gh-e3`, `gc-nf6nf3d6`, `gh-d4g6c3`, `gc-c5e3e6`,
+`gh-e4g6nf3bg7d4d6be3`, `gc-f5nf3nf6e3e6`, `gh-nf3g6g3`, `gc-c5e3cxd4exd4nf6` and
+`gh-c4g6e3`. Two wording faults were fixed in the tool: "0 behind" for a move tied
+with the first choice now reads "level with", and notes carry the move number so
+that no note repeats inside a line (`test/verify.mjs`). What the rules produce
+and a person may question: the formation rule credits a retreat onto a formation
+square (Ne5-f3 is the stop move in `gc-d5nf3e6e3nf6bd3bd6`) and a capture onto one
+(...cxb6 in `gh-e4g6nf3bg7d4d6bd3`). Most opponent moves late in a line are the
+table's choice, because few counted games get that far.
+
+**Numbers after the batch.**
+
+- Lines 96 -> 140 (`synthetic` 59 -> 103).
+- Grading: 940 drilled moves (was 666): best 408, equal 501, concession 29,
+  inferior 2. The 274 new drilled moves are 164 after the gap (65 best, 99 equal
+  at depth 20) and 110 on the way to it (105 best or equal). The other five are the
+  repertoire's own 2.e3 after 1.d4 c5, 37 behind, which `syn-benoni` drills and
+  five generated lines pass through.
+- Evaluation table: 430 -> 717 rows. 427 existing rows unchanged, field for
+  field. One gained its threat `t` (1.Nf3 g6 2.g3, now drilled). Two gained one
+  appended `x`/`xp` entry each and kept every existing entry: a counted choice that
+  now crosses the floor, searched alone (...b6 after 1.Nf3 g6 2.g3 Bg7 3.Bg2,
+  ...c5 after 1.d4 g6 2.Nf3 Bg7 3.e3). No `m`, `pv` or `p` of an existing row moved.
+- Depth 28: 130 -> 139 positions; the 130 existing `src/data/deep.js` rows
+  unchanged. Narrow claims 45 hold, 11 fail (was 44, 10). Three generated
+  moves grade lower at depth 28: `gh-e4g6nf3bg7d4d6nc3a6bd3` ...h6 (best to equal),
+  and `gh-e4g6nf3bg7d4d6nc3a6be3` ...Ne7 and `gh-e4d6d4nf6nc3g6h3` ...a6 (equal to
+  concession). The page accepts a move either depth accepts.
+- Common choices: 607 moves at 148 positions (was 502 at 112). 100 of the 112
+  existing positions unchanged; 12 changed counts, because more games stay in the
+  tree. At three of them a move now crosses the floor. At 1.e4 g6 2.Nf3 Bg7 3.Nc3,
+  ...Nc6 fell below it. `--tsv`: the second pass changed the section, the third
+  was identical.
+- Occurrence buckets: 149 / 205 / 154 of 717 positions; no existing position
+  changed bucket; `FRQ_SHARP` 12.
+- Coverage matrix: covered 110 -> 156, transposes 17 -> 24, missing 210 -> 157.
+
+**Pipeline, in order** (as run for this batch): `node build.mjs`;
+`node tools/gen-gap-lines.mjs --plan 50`; `--write`; build; `tools/count-choices.mjs
+--in <dump> --maxPly 30`; build and `--tsv` into `named-moves.tsv`;
+`tools/build-evals.mjs --extra research/pilot-positions.txt --force
+research/named-moves.tsv`; build; `count-choices --emit`; repeat `--tsv`,
+build-evals and `--emit` until `--tsv` is identical; `tools/deep-check.mjs`;
+`tools/build-freq.mjs`; `tools/build-eco.mjs`; `tools/coverage-matrix.mjs` (a build
+before each); `gen-gap-lines --write` again, which must print "notes unchanged";
+update the pins in `test/w2b-grading.mjs` and the counts in README and `src/html/`;
+`npm test`.

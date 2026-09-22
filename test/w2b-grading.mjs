@@ -489,7 +489,9 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // The 1...d6 batch added four lines and 14 drilled moves: 603.
   // The forcing-replies batch added three lines and 19 drilled moves: 622.
   // The coverage batch added ten lines and 44 drilled moves: 666.
-  eq(n, 666, "drilled moves");
+  // The first generated batch (tools/gen-gap-lines.mjs) added 44 lines and
+  // 274 drilled moves: 164 after the gap and 110 on the way to it: 940.
+  eq(n, 940, "drilled moves");
   eq(counts.unknown || 0, 0, "unknown drilled moves");
   // No drilled move reaches the lost region any more. The W4 content audit
   // deleted syn-greek (its Bxh7+ was -269 in a position kolt reaches and
@@ -509,8 +511,12 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // concession on purpose. h-d6nc3 drills 2...g6 after 1.e4 d6 2.Nc3, 35 behind
   // ...c5, because no Hippopotamus move is inside the band there; the owner chose
   // to drill it as a stated concession rather than leave the reply without a line.
-  eq(counts.best + counts.equal, 640, "best+equal drilled moves");
-  eq(counts.concession, 24, "concession drilled moves");
+  // The first generated batch: all 164 moves after the gap are best or equal
+  // (the generator plays nothing else), and 105 of the 110 on the way to it.
+  // The other five are the repertoire's own 2.e3 after 1.d4 c5, 37 behind,
+  // which syn-benoni already drills and five generated lines pass through: 909.
+  eq(counts.best + counts.equal, 909, "best+equal drilled moves");
+  eq(counts.concession, 29, "concession drilled moves");
   {
     const nc3 = lineAt("h-d6nc3", 3);
     const g6 = gradeMove(nc3.row, nc3.p, nc3.mv[0]);
