@@ -8,7 +8,7 @@ screen gains a masters statistics panel. Save sends one test request to `explore
 the token only if lichess accepts it; after that the panel asks lichess once per position and keeps the
 answer until the tab closes. Without a stored token, nothing leaves the page.
 
-**83 lines · 80 tactics puzzles.**
+**86 lines · 80 tactics puzzles.**
 
 ---
 
@@ -37,7 +37,7 @@ note names one, the reply that punishes it; nothing that points at the answer. S
 
 ---
 
-## The 83 lines and where each came from
+## The 86 lines and where each came from
 
 Every line carries a visible tag. The tag is the claim being made.
 
@@ -92,7 +92,7 @@ Hippo against the Be3/Qd2/f3/g4 storm · when not to crouch (4.f4) ·
 1...e6, the move order that waits (added after the coverage count showed it was
 the commonest answer to 1.d4 with no line against it).
 
-### `model` and `synthetic` — written for this trainer (3 + 46)
+### `model` and `synthetic` — written for this trainer (3 + 49)
 
 The Hippo model setup vs 1.e4 · White plays e5, the French answer · against the fianchetto (...g6) ·
 Zukertort against a Queen's Indian · d5 without c4, taking on d5 · ...h5 against the pawn storm ·
@@ -108,8 +108,10 @@ Be3 tabiya · 1...e5, the Englund Gambit · 3...Bb4+ · 2...c6 and 3...Bg4 · 1.
 1...d6 · 1...b6 · 2...Bf5, hunt the bishop · 2...c5 and an early ...cxd4 · 2...Bg4, Ne5 at once ·
 3...Bg4 4.h3 Bxf3 · 2.Bc4 and 3.Qf3 against f7 · 2.f4, strike before the bishop · 2.Nf3 and 3.Bc4 ·
 1...d6 2.Nf3 back into the crouch · 1.d4 g6 2.Nf3 and 3.e3 · 1...d6 2.f4, ...e6 not ...g6 ·
-1...d6 2.Bc4, close the diagonal · 1...d6 2.d4 Nf6 3.Bd3 · 1...d6 2.d3, the knights behind the pawns.
-The last twenty-eight
+1...d6 2.Bc4, close the diagonal · 1...d6 2.d4 Nf6 3.Bd3 · 1...d6 2.d3, the knights behind the pawns ·
+1...e6 2.Nf3 Bb4+, block with the c-pawn · 5...Qb6 in the b3 window · 5...Ne4 in the c3 structure.
+The last three answer forcing replies too rare to count, chosen for what they threaten (`research/W6-content-batch.md` §8).
+The twenty-eight before them
 were built from the coverage count (`research/W6-content-batch.md` ranks the latest nineteen): each answers a reply the repertoire measurably
 met and had no line for, and every move in them was graded before a word was
 written about it. One more, the queenside answer to g4 out of the same
@@ -249,7 +251,9 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
 - **Book elsewhere is not a miss.** If the move you played is the book move for a different line
   trained from this exact board, in the same chapter and for the same side, it is not graded wrong: Drill names
   that line and lets you retry with no miss and no streak change, Shuffle switches to that line and credits the
-  answer. Either way the move is kept as a good move found there, which counts towards *Solid needs a second
+  answer. Book is not a quality claim: where the stored table prices the move as a concession or worse, the
+  message states the cost (Stockfish 16, the depth, and the centipawns behind its first choice, or the mate), and a
+  move the table never searched is said to be unsearched. It is still credited. Either way the move is kept as a good move found there, which counts towards *Solid needs a second
   good move*. Puzzles and the
   deliberate-mistake lines are excluded, so they can never be waved through this way.
 

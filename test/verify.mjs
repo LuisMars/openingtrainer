@@ -13,8 +13,8 @@ const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"
 const upto = js.indexOf("/* ================= state ================= */");
 const bundle = js.slice(0, upto);
 const ctx = {};
-new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE,DEEP,cmpScore,gradeMove,posKey,CHO,CHO_BANDS,CHO_FLOOR,FRQ_BANDS,EVL_TPROBE,inCheck});")(ctx);
-const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE, DEEP, cmpScore, gradeMove, posKey, CHO, CHO_BANDS, CHO_FLOOR, FRQ_BANDS, EVL_TPROBE, inCheck } = ctx;
+new Function("ctx", bundle + "\nObject.assign(ctx,{LINES,KIND,SRC,PZ,ECO,START,startPos,fenPos,findMove,make,san,perft,legal,uciOf,sq,ix,matVerdict,refuteLeaks,EVL,EVL_PROBE,DEEP,cmpScore,gradeMove,posKey,CHO,CHO_BANDS,CHO_FLOOR,FRQ_BANDS,EVL_TPROBE,inCheck,gradeRow,GRADE});")(ctx);
+const { LINES, KIND, SRC, PZ, ECO, START, startPos, fenPos, findMove, make, san, perft, legal, matVerdict, refuteLeaks, EVL, EVL_PROBE, DEEP, cmpScore, gradeMove, posKey, CHO, CHO_BANDS, CHO_FLOOR, FRQ_BANDS, EVL_TPROBE, inCheck, gradeRow, GRADE } = ctx;
 const keyOf = posKey;
 
 let fail = 0;
@@ -280,6 +280,36 @@ console.log(`✓ ${pz}/${PZ.length} puzzles replay legally with matching display
   }
   if (fail === deepFail)
     console.log(`✓ ${Object.keys(DEEP).length} depth-28 rows: keys parse and match EVL, ${rows} moves legal with matching SAN, ranked best first`);
+}
+
+// 6c. a note that calls its move the only move (or a one-move position) is a
+// claim the depth-28 search can contradict. Where the board has a DEEP row and
+// any other move there grades inside the accepting band (GRADE.accept), the
+// note overstates and fails. "not the only move" is the honest form and passes.
+{
+  const ONLY = /\b(?<!not the )only (?:\w+ )?move\b|\b(?:one|single)[- ]move position\b/i;
+  let claims = 0, checked = 0, onlyFail = fail;
+  for (const l of LINES) {
+    let q = l.start === START ? startPos() : fenPos(l.start.indexOf(" ") > 0 ? l.start : l.start + " w - -");
+    l.moves.forEach(([u, , note], i) => {
+      if (note && ONLY.test(note)) {
+        claims++;
+        const d = DEEP[keyOf(q)];
+        if (d) {
+          checked++;
+          for (const y of [...d.m, ...(d.x || [])]) {
+            if (y[0] === u) continue;
+            const g = gradeRow(d, q, y[0]);
+            if (GRADE.accept.includes(g.verdict))
+              bad(`${l.id}:${i} note calls ${l.moves[i][1]} the only move, but depth ${d.d} accepts ${y[1]} (${g.verdict})`);
+          }
+        }
+      }
+      q = make(q, findMove(q, u));
+    });
+  }
+  if (fail === onlyFail)
+    console.log(`✓ ${claims} "only move" notes, ${checked} at depth-28 boards, none contradicted by another accepted move`);
 }
 
 // 7. fmtScore is the one formatting choke point for stored evals; a mate must

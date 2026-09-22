@@ -261,6 +261,28 @@ check("book too names a line from the same chapter and side",
 const hipD5 = (await probe("syn-london", 1, ["d5"]))[0];
 check("a defence line from another chapter is not book in a Hippo drill",
   !/book too|Koltanowski/i.test(hipD5.msg) && hipD5.ply === 1, hipD5.msg);
+// A book move the table prices as a concession or worse is still credited without a
+// miss, and the message states its cost. colle-kid:6 is one such board.
+const kidAlt = await page.evaluate(() => {
+  const l = LINES.find((x) => x.id === "colle-kid"), pos = posAt(l, 6);
+  const a = (ALT[keyFen(pos)] || []).find((x) => x[2] !== l.moves[6][0] &&
+    LINES[x[0]].ch === l.ch && LINES[x[0]].you === l.you);
+  if (!a) return null;
+  const m = legal(pos).find((x) => uciOf(x) === a[2]);
+  const g = gradeMove(evalFor(pos), pos, m);
+  return { san: san(pos, m), verdict: g.analysis === "checked" ? g.verdict : null };
+});
+const kidBook = kidAlt && (await probe("colle-kid", 6, [kidAlt.san]))[0];
+check("a priced book move is credited and states its cost",
+  !!kidBook && ["concession", "inferior", "losing"].includes(kidAlt.verdict) &&
+    /is book too — .* plays it here\..*Stockfish 16, depth \d+: .*centipawns? behind its first choice\./.test(kidBook.msg) &&
+    kidBook.ply === 6 && free(kidBook),
+  kidBook ? kidBook.msg : "no book move at colle-kid:6");
+const kidShuf = kidAlt && (await probe("colle-kid", 6, [kidAlt.san], "shuffle"))[0];
+check("Shuffle credits a priced book move and states its cost after Correct",
+  !!kidShuf && /Correct.*Stockfish 16, depth \d+: .*centipawns? behind its first choice\./.test(kidShuf.msg) &&
+    kidShuf.run === 4 && kidShuf.tries === 0,
+  kidShuf ? kidShuf.msg : "no book move at colle-kid:6");
 
 // The defence lines are drilled only from their drill ply. Before it the game's
 // opening plays itself, and Shuffle never serves those boards: the board after

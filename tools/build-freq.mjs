@@ -153,6 +153,9 @@ const SHARP = [
   ["d4 d5 Nf3 Nf6 e3 Bg4 h3 Bxf3", "W1-C 3.5 ...Bxf3 at once: the recapture decides the structure"],
   ["d4 d5 Nf3 c5 e3 cxd4", "W1-C 3.6 ...cxd4 before c3 or b3: the recapture fork"],
   ["e4 g6 Bc4 Bg7 Qf3", "W6 two pieces on f7 before a knight has moved"],
+  ["d4 e6 Nf3 Bb4", "W6 2...Bb4+ in the 1...e6 order: the system move is illegal again"],
+  ["d4 d5 Nf3 Nf6 e3 e6 Bd3 c5 b3 Qb6", "W1-C 3.3 ...Qb6 in the window between b3 and Bb2"],
+  ["d4 d5 Nf3 Nf6 e3 e6 Bd3 c5 c3 Ne4", "W1-C 3.7 ...Ne4 in the c3 structure: challenge it, do not grab"],
 ];
 const sharp = [];
 for (const [pgn, why] of SHARP) {

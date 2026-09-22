@@ -1530,19 +1530,26 @@ function playMove(pos,name,m){
   // an alt from a line drill-book-only mode was told to exclude must not be credited,
   // or S.li ends up pointing at exactly the kind of line the mode hides.
   if(alt&&!bookExcluded(LINES[alt[0]])){
+    // Book is credited, never graded as a miss, but a book move the table prices as a
+    // concession or worse says what it costs, in the same words offBook uses.
+    const t=san(pos,m),bg=gradeMove(evalFor(pos),pos,m);
+    let cost="";
+    if(bg.analysis!=="checked")cost="The table has not searched this move, so nothing is claimed about its cost.";
+    else if(MISTAKE.indexOf(bg.verdict)>=0)cost="Stockfish 16, depth "+bg.why.depth+": "+t+" "+fmtScore(bg)+lossTxt(bg)+".";
     if(S.mode==="shuffle"){
       S.li=alt[0];S.ply=alt[1];
       // The board just answered must not be served straight back: shuffle() only
       // zeroed S.lastKey's own exact key, but the alt reply is graded under a
       // different key (same board, different expected move) - update it here too.
       S.lastKey=key(LINES[alt[0]],alt[1]);
-      good();return;
+      good();
+      if(cost)el("nMsg").innerHTML+=' <span class="neutral">'+cost+"</span>";
+      return;
     }
-    const t=san(pos,m);
     noteWay(key(L(),S.ply),t); // another line's move here is another way to read this board
     S.sel=null;render(false);
     el("nMsg").innerHTML='<span class="neutral">'+t+" is book too — "+LINES[alt[0]].name+
-      " plays it here. This line wants "+L().moves[S.ply][1]+".</span>";
+      " plays it here. This line wants "+L().moves[S.ply][1]+"."+(cost?" "+cost:"")+"</span>";
     return;
   }
   // The stored analysis answers first. EVL holds a row for every position the user

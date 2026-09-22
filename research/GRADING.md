@@ -404,3 +404,7 @@ moves, best+equal 564. After the 1...d6 batch (`W6-content-batch.md` §7): 603
 drilled moves, best 277, equal 301, concession 23, inferior 2 (best+equal
 578); all 14 new drilled moves are accepted, and no new position qualifies for
 the depth-28 check.
+
+After the forcing-replies batch (`W6-content-batch.md` §8): 622 drilled moves,
+best 288, equal 309, concession 23, inferior 2 (best+equal 597); all 19 new
+drilled moves are accepted, and 129 positions are checked at depth 28.

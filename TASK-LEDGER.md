@@ -1309,3 +1309,26 @@ games reach the position (the table's move, noted as such).
   as "rare" once the pool changed; a sharp position keeps weight 1, so the
   check now leaves sharp positions out of that pick.
 `npm test`: exit 0.
+
+## The forcing replies: 2...Bb4+, ...Qb6, ...Ne4 — 2026-09-22
+
+The three open rows of `research/W6-content-batch.md` §4; details in its §8.
+Three `synthetic` Colle lines: `c-e6bb4` (1.d4 e6 2.Nf3 Bb4+ 3.c3 Ba5 4.Nbd2),
+`c-qb6` (5.b3 Qb6 6.Bb2 cxd4 7.exd4 Nc6 8.Nbd2), `c-ne4c3` (5.c3 Ne4 6.Nbd2 f5
+7.O-O). Every drilled White move is a Colle or Zukertort move and best or equal.
+
+- 2...Bb4+: 3.c3 85 first, Nbd2 59, Bd2 40. `c-e6bb4` stops at 4.Nbd2 (7
+  behind e4): after ...c6 the Colle's e3 is 39 behind e4 (searched alone).
+- ...Qb6: four White moves inside the band, 4 apart; the line plays Bb2 (4
+  behind). 7.exd4 holds at depth 28.
+- ...Ne4: 6.Nbd2 first; after ...f5, Bxe4 -35 and Nxe4 -66 against c4 38. The
+  price of ...Ne4 for Black is not stored: its row already has an `x` list.
+- 19 new drilled moves: 11 best, 8 equal. Repertoire 622: best 288, equal 309,
+  concession 23, inferior 2.
+- `evals.js` 396 -> 407 rows; all 396 unchanged field for field. `deep.js`
+  128 -> 129 rows, the 128 unchanged. Common choices 443 at 100 positions (the 99
+  old ones unchanged); both `--tsv` passes left `named-moves.tsv`'s generated
+  section identical. Occurrence 101 / 136 / 100 of 407; no old position changed
+  bucket; `FRQ_SHARP` 9 -> 12. Coverage unchanged: 106 / 16 / 215.
+`npm test`: exit 0.
+

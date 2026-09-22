@@ -89,6 +89,7 @@ its review interval is over. A *level* is a group of positions by move number.
 - A sound move is credited only when it is also in the system.
 - A sound move from another opening gets "sound, but it is not a Colle move here" (or a Hippopotamus move). It costs nothing and the question stays open.
 - A move that another line of the same chapter and side plays from this board is book, not a miss. Drill names that line, and the learner tries again. Shuffle changes to that line and credits the answer.
+- Drill and Shuffle state the cost of a book move that the table grades as a concession or worse. The move stays credited (`playMove`, the `altAt` branch, `src/app.js`).
 - A sound formation move gets "builds the setup too". Drill asks for the line's move. Shuffle credits it and shows the learner's own move.
 - The setup rule refuses a formation move where the first choice in the table is not a formation move. At a deep-checked position, both depths must agree before it refuses.
 - A concession is refused, and the message gives its price.

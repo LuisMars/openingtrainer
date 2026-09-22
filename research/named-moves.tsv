@@ -47,6 +47,15 @@ rnbqkb1r/pppp1ppp/4pn2/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1	f8b4	alone
 rnbqkbnr/ppp2ppp/3pp3/8/4PP2/5N2/PPPP2PP/RNBQKB1R b KQkq - 0 1	g7g6 a7a6 h7h6 b7b6 b8d7 g8e7	alone
 rnbqkbnr/ppp2ppp/3pp3/8/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1	g7g6 a7a6 h7h6 b7b6 b8d7 g8e7	alone
 
+# Forcing-replies batch (research/W6-content-batch.md, section 8). The price of
+# 2...Bb4+ and 5...Qb6 for Black; the Colle's e3 where c-e6bb4 stops; and the two
+# captures on e4 that c-ne4c3's note warns against after ...f5. Each is searched
+# alone, so no shared search moves.
+rnbqkbnr/pppp1ppp/4p3/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1	f8b4	alone
+rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/1P1BPN2/P1P2PPP/RNBQK2R b KQkq - 0 1	d8b6	alone
+rnbqk1nr/pp1p1ppp/2p1p3/b7/3P4/2P2N2/PP1NPPPP/R1BQKB1R w KQkq - 0 1	e2e3	alone
+rnbqkb1r/pp4pp/4p3/2pp1p2/3Pn3/2PBPN2/PP1N1PPP/R1BQK2R w KQkq - 0 1	d2e4 d3e4	alone
+
 # Counted player choices the ranked five do not contain (tools/count-choices.mjs
 # --tsv, from research/choices-player.json). Each was chosen in at least 5% of at least 30
 # games reaching the position in one rating band, and at least 10 times, so

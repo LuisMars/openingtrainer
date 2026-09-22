@@ -99,10 +99,10 @@ for popular.
 | C 3.4 | ...Qa5+ from another order | no data past the gap | **built** inside `c-2c5` (5.Bb5 Qa5+) |
 | C 3.5 | ...Bxf3 after 3...Bg4 4.h3 | below the 20-game floor | **built** `c-bxf3` |
 | C 3.6 | early ...cxd4 before c3/b3 | 33 of 109 at the node | **built** inside `c-2c5` |
-| C 3.3 | ...Qb6 against the b3 window | not measurable | open: needs a branch inside a Zukertort line |
-| C 3.7 | ...Ne4 in the c3 structure | 1/989 pgnmentor | open: same |
+| C 3.3 | ...Qb6 against the b3 window | not measurable | **built** `c-qb6` (§8) |
+| C 3.7 | ...Ne4 in the c3 structure | 1/989 pgnmentor | **built** `c-ne4c3` (§8) |
 | (new) | 2.Bc4 and 3.Qf3, two pieces on f7 | 220 of 736 after 2...Bg7 | **built** in `h-bc4` |
-| — | ...Bb4+ in other orders (1.d4 e6 2.Nf3 Bb4+) | 34 of 2,394 at the node | open |
+| — | ...Bb4+ in other orders (1.d4 e6 2.Nf3 Bb4+) | 34 of 2,394 at the node | **built** `c-e6bb4` (§8) |
 
 The five new positions of this kind that the trainer now drills are added to `FRQ_SHARP`
 (`tools/build-freq.mjs`), so rarity never demotes them: 3...Bb4+, ...Qa5+, the
@@ -268,3 +268,62 @@ searches at new positions, one at 1.e4 d6 2.f4 (already a row, now drilled).
   96 of 384); no existing position changed bucket; sharp list unchanged.
 - Coverage matrix: covered 102 -> 106, transposes 16, missing 219 -> 215.
 
+## 8. The forcing replies: 2...Bb4+, ...Qb6 and ...Ne4
+
+The three rows of §4 left open. Three `synthetic` Colle lines, built as §5 and
+§7: every drilled White move is a Colle or Zukertort move (a `COLLE_T` or
+`ZUK_T` square, castling, or the recapture on d4) and grades best or equal on the
+depth-20 table. Black's moves are the table's first choice where a row exists,
+otherwise the commonest in `tools/count-prefix.mjs` (1500–1899), otherwise the
+engine's line. None of the three nodes is reached often enough to rank, so the
+coverage matrix does not change; they are taken for what they threaten.
+
+| id | answers | drilled moves | grades |
+|---|---|---|---|
+| `c-e6bb4` | 1.d4 e6 2.Nf3 Bb4+ 3.c3 Ba5 4.Nbd2 | 4 | 3 best, 1 equal |
+| `c-qb6` | ...c5 5.b3 Qb6 6.Bb2 cxd4 7.exd4 Nc6 8.Nbd2 | 8 | 5 best, 3 equal |
+| `c-ne4c3` | ...c5 5.c3 Ne4 6.Nbd2 f5 7.O-O | 7 | 3 best, 4 equal |
+
+Per move, depth-20 table (loss to the row's best):
+
+- `c-e6bb4`: 2...Bb4+ is 34 games in the band (26 / 34 / 0 by band) and, for
+  Black, -89, 60 behind ...d5 (searched alone). 3.c3 85 is the first choice,
+  ahead of Nbd2 59 and Bd2 40; 26 of the 34 games chose it. Then ...Ba5 and
+  ...Bd6, 12 games each in the band. 4.Nbd2 96 is 7 behind e4. After 4.Nbd2 the
+  table's first choice for Black is ...c6 (-91, 23 ahead), and after it the
+  Colle's e3 (searched alone) is 47, 39 behind e4 86: the line stops at 4.Nbd2.
+- `c-qb6`: ...Qb6 is -29 for Black, 22 behind ...Be7 (searched alone); 1 of 225
+  twic games and none of 1,081 pgnmentor games at the node; fewer than 3
+  games in the band reach it. At 6, castling 32, Nbd2 31, dxc5 30, Bb2 28: the line plays Bb2. At 7,
+  exd4 38, Bxd4 24, Nxd4 -68; depth 28 keeps exd4 first (35, 19 ahead of Bxd4),
+  the one new depth-28 position. At 8, Nbd2 36, castling 35.
+- `c-ne4c3`: ...Ne4 is 1 of 989 pgnmentor games at the node, and not in the
+  stored five for Black there (fifth ...Nc6, 10 behind ...b6). It was not
+  searched alone: that row already carries an `x` list, and appending to it would
+  change a stored row. 6.Nbd2 32 is first, 7 ahead of castling. After ...f5, c4
+  38, Ne5 34, castling 33; the two captures, each searched alone, are Bxe4 -35
+  and Nxe4 -66. The line castles.
+
+Exploration searches at depth 20 with the build's worker, not stored, decided
+where each line stops; the notes quote only stored rows.
+
+**Rows added to the table.** Seven drilled positions and four `--extra` rows in
+`research/pilot-positions.txt`: the two positions before 2...Bb4+ and 5...Qb6
+(the price of each move for Black), and the two positions where `c-e6bb4` stops.
+Five moves are named `alone` in `research/named-moves.tsv`. The common-choice
+section of that file came out identical on both `--tsv` passes.
+
+**Numbers after the batch.**
+
+- Grading: 622 drilled moves (was 603): best 288, equal 309, concession 23,
+  inferior 2. Best+equal 578 -> 597; the 19 new drilled moves are all accepted.
+- Evaluation table: 396 -> 407 rows. All 396 existing rows are unchanged, field
+  for field.
+- Depth 28: 128 -> 129 positions (7.exd4 in `c-qb6`, tactical, holds); the 128
+  existing `src/data/deep.js` rows unchanged.
+- Common choices: 443 moves at 100 positions (was 442 at 99): 3.c3 at the new
+  position after 2...Bb4+ (26 of 34 games). The 99 existing positions unchanged.
+- Occurrence buckets: 101 / 136 / 100 of 407 positions per band (was 99 / 134 /
+  99 of 396); no existing position changed bucket. The three new forcing
+  positions are added to `FRQ_SHARP` (`tools/build-freq.mjs`): 9 -> 12.
+- Coverage matrix: covered 106, transposes 16, missing 215, unchanged.

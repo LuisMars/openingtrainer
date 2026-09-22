@@ -24,14 +24,6 @@ Prefix key: **BUG** a defect · **FEAT** new behaviour · **CHORE** upkeep ·
 
 ## Needs a decision
 
-**CHORE — Book moves are credited without grading.** 21 moves that another
-line plays from the same board are concessions or worse by the table (for
-example `ohanlon:22`, `anti:16`, `colle-kid:6`). The in-system rule credits
-them because they are repertoire moves; a strict "sound and in the system"
-rule would mark them as misses. Files: `src/app.js` (`altAt`, the book
-branch in `playMove`). Verified by a UI check at one of those boards. Done
-when the owner has chosen, and the code and README match the choice.
-
 **FEAT — 1.e4 d6 2.Nc3 has no line.** The other four 1...d6 orders are
 built (`research/W6-content-batch.md` §7). Here no Hippopotamus move is inside
 the 30-centipawn band: the best is ...c5 at -17, ...g6 is -52 (35 behind),
@@ -59,21 +51,7 @@ Files: none unless a check fails. Done when each check passes on a phone.
 
 ## Features
 
-**FEAT — Forcing replies still not drilled.** ...Qb6 in the b3 window,
-...Ne4 in the c3 structure, 2...Bb4+ after 1.d4 e6 2.Nf3 (W1-C §3). Files
-and checks as above. Done when each has a line or a recorded reason why not.
-
 **FEAT — The rest of the coverage gaps.** 219 replies in
 `research/COVERAGE-MATRIX.md` have no line. Take them in the order the
 matrix ranks them, in batches. Done per batch as above.
 
----
-
-## Debt
-
-**DEBT — Two depth-28 disagreements in the new lines.** `c-englund` 4.Nf3
-and `c-2bg4` 5.cxd5 are not one-move positions at depth 28. No note claims
-they are. Files: `src/data/lines.js`. Verified against
-`research/deep-checks.tsv`. Done when `test/verify.mjs` rejects an "only
-move" note at a board the depth-28 check contradicts, or when this ticket is
-judged not worth a check and deleted.

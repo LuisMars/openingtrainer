@@ -487,7 +487,8 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // The defence lines are drilled only from their drill ply (def-kolt 19,
   // def-ohanlon 15): 16 opening plies left the count, 605 -> 589.
   // The 1...d6 batch added four lines and 14 drilled moves: 603.
-  eq(n, 603, "drilled moves");
+  // The forcing-replies batch added three lines and 19 drilled moves: 622.
+  eq(n, 622, "drilled moves");
   eq(counts.unknown || 0, 0, "unknown drilled moves");
   // No drilled move reaches the lost region any more. The W4 content audit
   // deleted syn-greek (its Bxh7+ was -269 in a position kolt reaches and
@@ -502,7 +503,8 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // moves, every one best or equal (research/W6-content-batch.md): 580 and 23.
   // The 16 defence-line opening plies no longer drilled were all best or equal: 564.
   // The 14 drilled moves of the 1...d6 batch are all best or equal: 578.
-  eq(counts.best + counts.equal, 578, "best+equal drilled moves");
+  // The 19 drilled moves of the forcing-replies batch are all best or equal: 597.
+  eq(counts.best + counts.equal, 597, "best+equal drilled moves");
   eq(counts.concession, 23, "concession drilled moves");
   // The only two left outside accept are meant to be: ohanlon's Rxd6 is a real
   // game move in a position the table still scores as won, and syn-hipdown is

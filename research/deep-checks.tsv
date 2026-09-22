@@ -2,7 +2,7 @@
 # engine: lila-stockfish-web 0.0.11 sf16-7 (Stockfish 16, small NNUE net nn-ecb35f70ff2a, sha256 ecb35f70ff2aa4492caec6b552a1628e24319fbe1cc2aaf95eaebabdd92a1e37)
 # settings: Threads 1, Hash 64 MB, ucinewgame before each position, MultiPV 5, go depth 28; drilled moves outside the top five searched with searchmoves
 # baseline: src/data/evals.js (depth 20, same engine and settings); scores side-to-move centipawns, #n = mate in n
-# selection: 128 of 373 drilled positions (narrow = one move within 30 cp of best; demanding = setupGate "demanding"; tactical = best is mate, capture or check)
+# selection: 129 of 380 drilled positions (narrow = one move within 30 cp of best; demanding = setupGate "demanding"; tactical = best is mate, capture or check)
 # only_move: narrow claim 44 hold, 10 fail; demanding: 58 hold, 10 fail; drilled-move accept/reject changed at depth: 9
 key	lines	flags	d20_best	d20_second	d20_gap	d20_ways	d28_best	d28_second	d28_gap	d28_ways	only_move	demanding	drilled	drilled_d20	drilled_d28	reached_depth
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1	ck:0 kolt:0 ohanlon:0 …	demanding	Nf3 31	e4 31	0	5	d4 32	e4 32	0	5	n/a	fails	d4 Nf3	equal best	best equal	28
@@ -133,3 +133,4 @@ rn1qkbnr/ppp2ppp/4p3/3pNb2/2PP4/8/PP2PPPP/RNBQKB1R w KQkq - 0 1	c-2bg4:8	narrow,
 rn1qkb1r/ppp1pppp/5n2/3p4/3P4/4Pb1P/PPP2PP1/RNBQKB1R w KQkq - 0 1	c-bxf3:8	narrow,tactical	Qxf3 28	gxf3 -17	45	1	Qxf3 33	gxf3 -17	50	1	holds	n/a	Qxf3	best	best	28
 rn1qkb1r/ppp2ppp/4pn2/3p4/3P4/4PQ1P/PPP2PP1/RNB1KB1R w KQkq - 0 1	c-bxf3:10	narrow	c4 39	g3 5	34	1	c4 40	g3 6	34	1	holds	n/a	c4	best	best	28
 rnbqk1nr/ppppppbp/6p1/8/2B1P3/5Q2/PPPP1PPP/RNB1K1NR b KQkq - 0 1	h-bc4:5	narrow	e6 14	d5 -58	72	1	e6 17	Nh6 -57	74	1	holds	n/a	e6	best	best	28
+rnb1kb1r/pp3ppp/1q2pn2/3p4/3p4/1P1BPN2/PBP2PPP/RN1QK2R w KQkq - 0 1	c-qb6:12	tactical	exd4 38	Bxd4 24	14	2	exd4 35	Bxd4 16	19	2	n/a	n/a	exd4	best	best	28

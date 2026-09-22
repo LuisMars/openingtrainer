@@ -43,3 +43,13 @@ rnbqkbnr/ppp2ppp/3pp3/8/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1
 # for White (4.d4, 5.Nf3). Too few games in the band reach them to count.
 rnbqkbnr/1pp2ppp/p2pp3/8/4P3/2NP4/PPP2PPP/R1BQKBNR w KQkq - 0 1
 r1bqkbnr/1ppn1ppp/p2pp3/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1
+
+# Forcing-replies batch (research/W6-content-batch.md, section 8): the positions
+# whose numbers the notes of c-e6bb4 and c-qb6 cite. No line drills them.
+# Before the check, and before ...Qb6: the price of the move for Black.
+rnbqkbnr/pppp1ppp/4p3/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1
+rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/1P1BPN2/P1P2PPP/RNBQK2R b KQkq - 0 1
+# c-e6bb4 stops at 4.Nbd2: Black's reply the table prefers, and after it the
+# Colle's e3 against the table's first choice.
+rnbqk1nr/pppp1ppp/4p3/b7/3P4/2P2N2/PP1NPPPP/R1BQKB1R b KQkq - 0 1
+rnbqk1nr/pp1p1ppp/2p1p3/b7/3P4/2P2N2/PP1NPPPP/R1BQKB1R w KQkq - 0 1
