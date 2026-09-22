@@ -598,6 +598,17 @@ function isSetupMove(targets,pos,m){
   const pc=pos.b[m.f];
   return targets.some(x=>x[0]===sq(m.t)&&x[1]===pc)&&!targets.some(x=>x[0]===sq(m.f)&&x[1]===pc);
 }
+/* isSemiHippoMove(pos, m): the structural half of the semi-Hippo rule, shared by the
+   app (semiHippo) and tools/gen-gap-lines.mjs so the two cannot drift. Black only: a
+   knight to f6, or a pawn pushed to c5, c6 or d5, never a capture. These are not
+   formation moves: they are not in HIPPO_T, setupGate never credits them, and
+   nothing here says the move is good. The band check is the caller's. */
+const SEMI_SQ={f6:"n",c5:"p",c6:"p",d5:"p"};
+function isSemiHippoMove(pos,m){
+  if(!m||pos.w)return false;
+  const pc=pos.b[m.f];
+  return SEMI_SQ[sq(m.t)]===pc&&!pos.b[m.t]&&!m.ep&&(pc==="n"||m.f%8===m.t%8);
+}
 /* setupGate(row, pos, mv, targets): whether "builds the setup too - the formation
    matters more than the order it goes up in" may be said of this move here.
    Returns {credit, reason, grade}. credit is true only when the stored analysis

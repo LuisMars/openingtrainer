@@ -1404,3 +1404,33 @@ Every matrix row is now decided; the coverage-gaps ticket is closed.
 - The audit replayed all 103 generated lines against the built page with no
   problem; thirteen new lines were also read by hand.
 `npm test`: exit 0.
+
+## The semi-Hippo — 2026-09-22
+
+Owner's decision: ...Nf6, ...c5, ...c6 and ...d5 are in the Hippopotamus system
+where the table grades them best or equal. `semiHippo` (`src/app.js`) joins
+`inSystem`, so crediting, `waysAt`/`needWays`, the answer arrows and the position
+details count them alike; `isSemiHippoMove` (`src/engine.js`) is the structural
+half. Never a formation move, never in `NO_SHUFFLE` or repair lines. Shuffle says
+"c5, a semi-Hippo move: the table grades it inside the band here." UI checks:
+...c5 after 1.e4 credited, ...d5 there (a concession) graded as before,
+`syn-hipdown` never credits ...c5. The flipped-board arrow check now skips arrows
+offset on a shared ray (...d6 and ...d5 from d7).
+
+Content, `research/W6-content-batch.md` §12: `tools/gen-gap-lines.mjs --semi`
+reran the 32 Hippopotamus gaps the band had ended (17 stopped lines, 15 skips).
+7 lines extended, 11 built, 1 skipped as reached by a line of the pass, 10 lines
+unchanged, 3 still skipped.
+
+- 90 new drilled moves: the 61 after the gap are best 34, equal 27 at depth 20;
+  24 generated moves are semi-Hippo moves. Repertoire 1439: best 592, equal 805,
+  concession 40, inferior 2. The two new concessions are 2...Bg7 after 1.c4 g6
+  2.Nc3 (`syn-english`) on two new paths.
+- `evals.js` 1155 -> 1267; all 1155 unchanged field for field, seven gained a
+  field. `deep.js` 149 -> 159, the 149 unchanged. Common choices 622 at 154
+  positions; 150 old positions unchanged, 1 changed counts (42 -> 45 band games).
+  Occurrence 172 / 268 / 185 of 1267; no old position changed bucket. `eco.js`:
+  199 old entries unchanged. Coverage 215 / 27 / 95 -> 226 / 28 / 83.
+- The audit replayed the 28 new or changed lines with no problem; ten were also
+  read by hand.
+`npm test`: exit 0.

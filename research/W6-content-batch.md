@@ -650,3 +650,91 @@ after the gap is the table's choice: few counted games get that far.
 
 The pipeline is §10's, in the same order; the second `--write` printed "notes
 unchanged".
+
+## 12. The semi-Hippo pass: the Hippopotamus gaps the band ended
+
+The owner's decision: for the learner playing the Hippopotamus, ...Nf6 (either
+knight), ...c5, ...c6 and ...d5 are in the system where the table grades the move
+best or equal, and nowhere else. They are not formation moves. The app reads the
+rule in `semiHippo` (`src/app.js`), and the structural half is `isSemiHippoMove`
+(`src/engine.js`), which `tools/gen-gap-lines.mjs` reads too, so the page and the
+tool test one rule.
+
+**The tool change.** At each board the formation moves (and castling) are tried
+first, exactly as in §10 and §11; only where none is inside the band are the
+semi-Hippo moves tried, the same way (top five, else each searched alone, played
+only if `gradeRow()` grades it best or equal). So a line that had an in-band wall
+move plays the same move as before. A band stop now names the better of the two
+nearest moves. `--semi` reruns the Hippopotamus gaps that §10 and §11 ended for want
+of an in-band move, in decision order: built lines that stopped at the band
+continue from their stop with their moves kept, and gaps skipped at their own board
+are explored afresh. A line built or extended earlier in the pass is an existing
+line for every later one, and a line never transposes into itself. Each entry in
+`research/gap-lines.json` records what the pass did in `semi`.
+
+**The pass: 32 gaps** (17 stopped lines, 15 skips).
+
+- Extended, 7: `gh-d4g6c3`, `gh-e4g6d4bg7nc3b6bg5`, `gh-c4g6d3`,
+  `gh-e4g6d4bg7nc3b6be2`, `gh-e4g6d4bg7nc3d6f4nf6e5`,
+  `gh-e4g6nf3bg7d4d6nc3a6d5`, `gh-nf3g6h4`.
+- Built, 11: `gh-c4g6nc3bg7nf3`, `gh-d4g6bf4bg7be5`, `gh-c4g6nc3bg7e4`,
+  `gh-nf3g6nc3`, `gh-d4g6bf4bg7nc3`, `gh-e4g6d4bg7nc3d6f4nf6nf3oobc4`,
+  `gh-e4g6d4bg7nc3d6f4nf6nf3oobe2`, `gh-e4g6d4bg7nc3d6bc4`, `gh-d4g6bf4bg7e4`,
+  `gh-nf3g6c4bg7d4d6bf4`, `gh-nf3g6c4bg7d3`.
+- Skipped, reached by a line of this pass: 1.Nf3 g6 2.c4 Bg7 3.Nc3 is the board of
+  1.c4 g6 2.Nc3 Bg7 3.Nf3 (`gh-c4g6nc3bg7nf3`).
+- Unchanged, 10 lines: the semi-Hippo move is outside the band at the stop board
+  too. Their stop sentence now names the nearest Hippopotamus or semi-Hippo move;
+  at `gh-nf3g6b3` that is ...c5, 33 behind ...e5.
+- Still skipped, 3: 1.e4 d6 2.d4 Nf6 3.e5, the same push after 3.Nc3 g6, and 1.e4
+  g6 2.d4 Bg7 3.Nc3 d6 4.f4 Nf6 5.Nf3 O-O 6.e5. The knight is already on f6 there.
+- The 18 lines that grew end by transposition (1), at the band (8) or at the six-move
+  limit (9). They play 24 semi-Hippo moves; each one's note says "A semi-Hippo move,
+  not a wall move", and each such line's plan states the rule.
+
+**Checks.** The audit script (not shipped) replayed the 28 new or changed lines
+against the built page: every move legal and matching its SAN; every learner move
+after the gap a formation move, castling or a semi-Hippo move, best or equal on the
+shipped row (112: best 57, equal 55); no semi-Hippo move where a formation move in
+the shipped row is inside the band; the semi-Hippo sentence on exactly those moves
+and the rule in exactly those plans; every note number and count matching its
+source; every transposition stop a board the named line reaches; at every band
+stop, no formation or semi-Hippo move in the band. No problem. Ten lines were read
+by hand: `gh-c4g6nc3bg7nf3`, `gh-d4g6bf4bg7be5`, `gh-nf3g6nc3`,
+`gh-e4g6d4bg7nc3d6f4nf6e5`, `gh-nf3g6h4`, `gh-e4g6d4bg7nc3d6bc4`,
+`gh-nf3g6c4bg7d3`, `gh-d4g6c3`, `gh-c4g6d3` and `gh-e4g6d4bg7nc3b6be2`. What a
+person may question: ...Nf6 counts from d7 as well as g8 (`gh-e4g6d4bg7nc3d6f4nf6e5`
+takes the knight back to f6 after ...Nfd7); a line can play two semi-Hippo moves
+in a row (...c5 then ...d5 in `gh-nf3g6h4`), which is less a Hippopotamus than the
+name says; and the formation rule still credits captures onto a wall square
+(7...fxg6 in `gh-c4g6d3`, ...exd6 in `gh-e4g6d4bg7nc3d6f4nf6e5`).
+
+**Numbers after the pass.**
+
+- Lines 199 -> 210 (`synthetic` 162 -> 173). Gap decisions: 114 built, 88 skipped
+  (76 `eco`-only, 7 with no move in the band, 5 reached by a line of the same run).
+- Grading: 1439 drilled moves (was 1349): best 592, equal 805, concession 40,
+  inferior 2. The 90 new drilled moves are 61 after the gap (34 best, 27 equal at
+  depth 20) and 29 on the way to it (27 best or equal; the other two are 2...Bg7
+  after 1.c4 g6 2.Nc3, the concession `syn-english` drills).
+- Evaluation table: 1155 -> 1267 rows. All 1155 existing rows unchanged field for
+  field; seven gained a field (six the threat `t`, now drilled; one `x`, `xp` and `t`,
+  a counted choice searched in a new shared job). Three boards where a line used to
+  stop kept their named move searched alone (a new hand section in
+  `research/named-moves.tsv`), because the generated section no longer lists them
+  and dropping the job would have dropped a stored `x` entry.
+- Depth 28: 149 -> 159 positions; the 149 existing `src/data/deep.js` rows
+  unchanged. Narrow claims 48 hold, 15 fail (was 46, 11). One generated move grades
+  lower at depth 28: `gh-e4g6d4bg7nc3d6f4nf6nf3oobc4` ...c5 (equal to concession).
+  The page accepts a move either depth accepts.
+- Common choices: 622 moves at 154 positions (was 615 at 151). 150 of the 151
+  existing positions unchanged. One changed counts because more games stay in the
+  tree: after 1.e4 g6 2.d4 Bg7 3.Nc3 d6 4.Bc4 Nf6 5.Nf3, 45 band games (was 42),
+  29 of them ...O-O (was 26). `--tsv`: the first two passes each changed the
+  section, the third was identical.
+- Occurrence buckets: 172 / 268 / 185 of 1267 positions; no existing position
+  changed bucket; `FRQ_SHARP` 12. `eco.js`: the 199 existing entries unchanged.
+- Coverage matrix: covered 215 -> 226, transposes 27 -> 28, missing 95 -> 83.
+
+The pipeline is §10's, in the same order, with `--semi` in place of `--plan`; the
+second `--write` printed "notes unchanged".

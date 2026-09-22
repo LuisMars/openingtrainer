@@ -12,8 +12,8 @@ reach the same board share one position. A *drill ply* is a move in a line that 
 learner must play. *The table* is the stored engine analysis (`src/data/evals.js`,
 Stockfish 16 at depth 20); *the deep table* is the second search at depth 28
 (`src/data/deep.js`). A move is *in the system* when it is the line's move, a move
-that another line of the same chapter and side plays from that board, or a
-formation move that the setup rule credits. A position is *solid* when the learner
+that another line of the same chapter and side plays from that board, a
+formation move that the setup rule credits, or a semi-Hippo move. A position is *solid* when the learner
 answers it well enough to leave it alone for a long time. A position is *due* when
 its review interval is over. A *level* is a group of positions by move number.
 *Study*, *Drill*, *Shuffle* and *Tactics* are the four board modes. The two
@@ -90,6 +90,7 @@ its review interval is over. A *level* is a group of positions by move number.
 - A sound move from another opening gets "sound, but it is not a Colle move here" (or a Hippopotamus move). It costs nothing and the question stays open.
 - A move that another line of the same chapter and side plays from this board is book, not a miss. Drill names that line, and the learner tries again. Shuffle changes to that line and credits the answer.
 - Drill and Shuffle state the cost of a book move that the table grades as a concession or worse. The move stays credited (`playMove`, the `altAt` branch, `src/app.js`).
+- In a Hippopotamus line, ...Nf6, ...c5, ...c6 and ...d5 are semi-Hippo moves. A semi-Hippo move is in the system only when the table grades it best or equal (`semiHippo`, `src/app.js`; `isSemiHippoMove`, `src/engine.js`). The setup rule does not credit it. The lines that show a mistake and the repair lines do not accept it. Shuffle credits it and names it a semi-Hippo move.
 - A sound formation move gets "builds the setup too". Drill asks for the line's move. Shuffle credits it and shows the learner's own move.
 - The setup rule refuses a formation move where the first choice in the table is not a formation move. At a deep-checked position, both depths must agree before it refuses.
 - A concession is refused, and the message gives its price.

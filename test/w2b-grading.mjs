@@ -493,7 +493,10 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // 274 drilled moves: 164 after the gap and 110 on the way to it: 940.
   // The second generated batch (every remaining gap) added 59 lines and 409
   // drilled moves: 226 after the gap and 183 on the way to it: 1349.
-  eq(n, 1349, "drilled moves");
+  // The semi-Hippo pass (research/W6-content-batch.md section 12) extended seven
+  // Hippopotamus lines and added eleven: 90 drilled moves, 61 after the gap and
+  // 29 on the way to it: 1439.
+  eq(n, 1439, "drilled moves");
   eq(counts.unknown || 0, 0, "unknown drilled moves");
   // No drilled move reaches the lost region any more. The W4 content audit
   // deleted syn-greek (its Bxh7+ was -269 in a position kolt reaches and
@@ -521,8 +524,11 @@ if (!bandsOK) bad("policy constants are not the v1 values research/GRADING.md do
   // and 174 of the 183 on the way to it. The other nine are repertoire moves
   // already drilled as concessions: 2.e3 after 1.d4 c5 (syn-benoni) on eight
   // paths, and 2...Bg7 after 1.c4 g6 2.Nc3 (syn-english) on one: 1309.
-  eq(counts.best + counts.equal, 1309, "best+equal drilled moves");
-  eq(counts.concession, 38, "concession drilled moves");
+  // The semi-Hippo pass: all 61 moves after the gap are best or equal (24 of the
+  // generated moves are semi-Hippo moves), and 27 of the 29 on the way to it. The
+  // other two are 2...Bg7 after 1.c4 g6 2.Nc3 (syn-english) on two new paths: 1397.
+  eq(counts.best + counts.equal, 1397, "best+equal drilled moves");
+  eq(counts.concession, 40, "concession drilled moves");
   {
     const nc3 = lineAt("h-d6nc3", 3);
     const g6 = gradeMove(nc3.row, nc3.p, nc3.mv[0]);

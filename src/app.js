@@ -195,8 +195,9 @@ function altAt(pos,uci,cur){
    learner's opening. 1.e4 is as good as 1.d4 and it is not the Colle, so crediting it
    would drill the learner out of the system they came to learn. A move is in the
    system at a board when it is the line's own move there, a move another line of the
-   same chapter and side plays from this board (altAt), or a formation move setupGate
-   credits against the line's targets. Credit needs both: the grader accepts the move
+   same chapter and side plays from this board (altAt), a formation move setupGate
+   credits against the line's targets, or, in the Hippopotamus, a semi-Hippo move
+   the table puts inside the band (semiHippo). Credit needs both: the grader accepts the move
    and it is in the system. The repair plies are outside this rule: repairing a
    mistake is about finding a sound move, whatever it is. */
 // The formation a line credits. A line with its own targets uses them; one without
@@ -211,10 +212,25 @@ function tgtOf(l){
   if(l.ch===CHAPTERS[0]&&l.you==="w")return COLLE_T;
   return [];
 }
+/* The semi-Hippo (the owner's decision): for the learner playing the Hippopotamus,
+   ...Nf6 (either knight), ...c5, ...c6 and ...d5 are in the system at a board where
+   the stored table grades the move best or equal (gradeMove, GRADE.accept), and
+   nowhere else. They are not formation moves: tgtOf never lists them, so setupGate
+   never credits them. The lines that show a mistake (NO_SHUFFLE) and the repair
+   lines never take them, for the reason tgtOf gives. The structural half is
+   isSemiHippoMove (src/engine.js), which tools/gen-gap-lines.mjs reads too. */
+function semiHippo(l,pos,u,row){
+  if(l.ch!==CHAPTERS[1]||l.you!=="b"||NO_SHUFFLE.has(l.id)||l.repair)return false;
+  const m=typeof u==="string"?findMove(pos,u):u,r=row||evalFor(pos);
+  if(!r||!isSemiHippoMove(pos,m))return false;
+  const g=gradeMove(r,pos,m);
+  return g.analysis==="checked"&&GRADE.accept.indexOf(g.verdict)>=0;
+}
 function inSystem(l,pos,u,want,row){
   if(u===want||altAt(pos,u,l))return true;
   const t=tgtOf(l);
-  return !!(t.length&&setupGate(row||evalFor(pos),pos,u,t).credit);
+  if(t.length&&setupGate(row||evalFor(pos),pos,u,t).credit)return true;
+  return semiHippo(l,pos,u,row);
 }
 // "a Colle move", "a Hippopotamus move": what offSystem says the move is not.
 function sysName(l){
@@ -1587,16 +1603,20 @@ function playMove(pos,name,m){
   // the drill a way round the point.
   // Sound is not enough on its own: the move must be in the learner's system too
   // (inSystem). The line's own move, other lines' book moves and credited formation
-  // moves were all handled above, so what reaches here is either an alternative from
-  // a line "book lines only" hides (still the learner's system) or a move from some
-  // other opening, which is answered neutrally and leaves the question live.
+  // moves were all handled above, so what reaches here is an alternative from a
+  // line "book lines only" hides (still the learner's system), a semi-Hippo move
+  // (the system too, and named as such), or a move from some other opening, which
+  // is answered neutrally and leaves the question live.
   if(g&&g.analysis==="checked"&&GRADE.accept.indexOf(g.verdict)>=0&&
      (gate.reason==="not-target"||gate.reason==="no-targets")&&!NO_SHUFFLE.has(L().id)){
-    if(!altAt(pos,played,L())){offSystem(name,t,g);return;}
-    if(S.mode==="shuffle"){setupGood(pos,m,t,goodLead(t,g,row),g);return;}
+    // A semi-Hippo move in the band is the system too; named as such, never as
+    // a formation move.
+    const semi=!altAt(pos,played,L())&&semiHippo(L(),pos,m,row);
+    if(!semi&&!altAt(pos,played,L())){offSystem(name,t,g);return;}
+    if(S.mode==="shuffle"){setupGood(pos,m,t,goodLead(t,g,row),g,semi?SEMI_TAG:"");return;}
     noteWay(key(L(),S.ply),t);
     S.sel=null;render(false);
-    el("nMsg").innerHTML='<span class="neutral">'+goodLead(t,g,row)+" This line plays "+L().moves[S.ply][1]+" here.</span>";
+    el("nMsg").innerHTML='<span class="neutral">'+(semi?t+" is a semi-Hippo move. ":"")+goodLead(t,g,row)+" This line plays "+L().moves[S.ply][1]+" here.</span>";
     return;
   }
   // Refused, or not covered. Either way the row is better evidence than a search,
@@ -2269,7 +2289,9 @@ function setupMove(pos,m,v,gate){
    S.lastKey needs no update, unlike the book-alternative branch in tap(): the key
    graded is the very one shuffle() served, so the same board is already barred
    from coming straight back. skipNext -> shuffle(false) -> clearFree() cleans up. */
-function setupGood(pos,m,t,lead,g){
+// Said after the move when a semi-Hippo move is credited.
+const SEMI_TAG=", a semi-Hippo move: the table grades it inside the band here.";
+function setupGood(pos,m,t,lead,g,tag){
   const clean=S.hint===0&&S.tries===0;
   const ms=elapsed();S.lastMs=ms;
   S.arrow=null;S.ans=null;
@@ -2289,7 +2311,8 @@ function setupGood(pos,m,t,lead,g){
     (KIND[l.id]?' <span class="kind '+KIND[l.id]+'">'+KIND[l.id]+"</span>":"")+"</span>"+
     "<br>"+(lead||setupLead(t,null,null))+" This line plays "+want+" first.";
   el("nMsg").innerHTML='<span class="ok hit">✓ Correct</span> <span class="ok">— '+t+
-    (clean?"":" (with help)")+(ms?",</span> <span class='neutral'>"+fmtMs(ms)+".</span>":"</span>")+
+    (clean?"":" (with help)")+(tag?tag+"</span>"+(ms?" <span class='neutral'>"+fmtMs(ms)+".</span>":""):
+      (ms?",</span> <span class='neutral'>"+fmtMs(ms)+".</span>":"</span>"))+
     ' <span class="neutral wait">Tap to continue.</span>';
   armWait();
 }

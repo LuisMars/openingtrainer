@@ -608,7 +608,8 @@
     "kind": "band",
     "key": "rnbqkb1r/ppp1pppp/3p1n2/4P3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 1",
     "nearest": "f6d7"
-   }
+   },
+   "semi": "still-skipped"
   },
   {
    "id": "rnbqkb1r/pppppppp/5n2/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1|d7d6",
@@ -943,7 +944,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqkbnr/pp1ppppp/8/2p5/3P4/4P3/PPP2PPP/RNBQKBNR b KQkq - 0 1|e7e6",
@@ -1349,7 +1351,8 @@
       "M": 5
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqkb1r/ppppp1pp/5n2/5p2/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|e7e6",
@@ -1676,7 +1679,17 @@
      "d2d4",
      "g7g6",
      "c2c3",
-     "f8g7"
+     "f8g7",
+     "g1f3",
+     "g8f6",
+     "c1f4",
+     "e8g8",
+     "h2h3",
+     "d7d6",
+     "e2e3",
+     "b7b6",
+     "f4h2",
+     "c8b7"
     ],
     "steps": [
      {
@@ -1686,21 +1699,85 @@
       "loss": 24,
       "n": 138,
       "M": 169
-     }
-    ],
-    "stop": {
-     "kind": "band",
-     "key": "rnbqk1nr/ppppppbp/6p1/8/3P4/2P2N2/PP2PPPP/RNBQKB1R b KQkq - 0 1",
-     "nearest": "d7d6",
-     "after": {
+     },
+     {
       "uci": "g1f3",
+      "who": "opp",
       "src": "count",
       "n": 30,
       "M": 130,
       "tie": []
+     },
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 11,
+      "M": 48
+     },
+     {
+      "uci": "c1f4",
+      "who": "opp",
+      "src": "table",
+      "M": 6
+     },
+     {
+      "uci": "e8g8",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 2
+     },
+     {
+      "uci": "h2h3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 1
+     },
+     {
+      "uci": "f4h2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
      }
+    ],
+    "stop": {
+     "kind": "length"
     }
-   }
+   },
+   "semi": "extended"
   },
   {
    "id": "rnbqkbnr/pppppp1p/6p1/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1|b1c3",
@@ -1932,7 +2009,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|h2h3",
@@ -2445,7 +2523,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|f1d3",
@@ -2674,7 +2753,8 @@
     "kind": "band",
     "key": "rnbqkb1r/ppp1pp1p/3p1np1/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1",
     "nearest": "f6d7"
-   }
+   },
+   "semi": "still-skipped"
   },
   {
    "id": "rnbqkb1r/ppp1pp1p/3p1np1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|h2h3",
@@ -2772,7 +2852,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqkb1r/pppp1ppp/4pn2/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|f8e7",
@@ -3727,12 +3808,54 @@
     "n": 50,
     "M": 337
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N2N2/PP1PPPPP/R1BQKB1R b KQkq - 0 1",
-    "nearest": "d7d6"
-   }
+   "line": {
+    "id": "gh-c4g6nc3bg7nf3",
+    "moves": [
+     "c2c4",
+     "g7g6",
+     "b1c3",
+     "f8g7",
+     "g1f3",
+     "c7c5",
+     "g2g3",
+     "d7d6"
+    ],
+    "steps": [
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 6,
+      "M": 62
+     },
+     {
+      "uci": "g2g3",
+      "who": "opp",
+      "src": "table",
+      "M": 5
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 3
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk1nr/pp2ppbp/3p2p1/2p5/2PP4/2N2NP1/PP2PP1P/R1BQKB1R b KQkq - 0 1",
+     "nearest": "b7b6",
+     "after": {
+      "uci": "d2d4",
+      "src": "table",
+      "M": 0
+     }
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|f5g6",
@@ -3992,7 +4115,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqkb1r/ppp2ppp/4pn2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|c7c6",
@@ -4376,12 +4500,111 @@
     "n": 29,
     "M": 244
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppppppbp/6p1/4B3/3P4/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1",
-    "nearest": "h7h6"
-   }
+   "line": {
+    "id": "gh-d4g6bf4bg7be5",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "f4e5",
+     "g8f6",
+     "c2c3",
+     "d7d6",
+     "e5g3",
+     "b8d7",
+     "e2e3",
+     "b7b6",
+     "a2a4",
+     "c8b7",
+     "g1f3",
+     "a7a6"
+    ],
+    "steps": [
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 10,
+      "M": 28
+     },
+     {
+      "uci": "c2c3",
+      "who": "opp",
+      "src": "table",
+      "M": 8
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e5g3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 16,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "a2a4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|c1g5",
@@ -4672,12 +4895,111 @@
     "n": 36,
     "M": 337
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppppppbp/6p1/8/2P1P3/2N5/PP1P1PPP/R1BQKBNR b KQkq - 0 1",
-    "nearest": "d7d6"
-   }
+   "line": {
+    "id": "gh-c4g6nc3bg7e4",
+    "moves": [
+     "c2c4",
+     "g7g6",
+     "b1c3",
+     "f8g7",
+     "e2e4",
+     "c7c5",
+     "g2g3",
+     "d7d6",
+     "g1e2",
+     "a7a6",
+     "d2d3",
+     "b7b6",
+     "f1g2",
+     "c8b7",
+     "d3d4",
+     "b8d7"
+    ],
+    "steps": [
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 5,
+      "M": 53
+     },
+     {
+      "uci": "g2g3",
+      "who": "opp",
+      "src": "table",
+      "M": 3
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d2d3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1g2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 13,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d3d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqkbnr/pppppp1p/6p1/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1|b1c3",
@@ -4703,12 +5025,111 @@
     "n": 28,
     "M": 411
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqkbnr/pppppp1p/6p1/8/8/2N2N2/PPPPPPPP/R1BQKB1R b KQkq - 0 1",
-    "nearest": "f8g7"
-   }
+   "line": {
+    "id": "gh-nf3g6nc3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "b1c3",
+     "d7d5",
+     "d2d4",
+     "f8g7",
+     "c1g5",
+     "h7h6",
+     "g5f4",
+     "g8f6",
+     "d1d2",
+     "a7a6",
+     "e2e3",
+     "e8g8"
+    ],
+    "steps": [
+     {
+      "uci": "d7d5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 44
+     },
+     {
+      "uci": "d2d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f8g7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 30,
+      "n": 4,
+      "M": 4
+     },
+     {
+      "uci": "c1g5",
+      "who": "opp",
+      "src": "count",
+      "n": 4,
+      "M": 10,
+      "tie": []
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 0,
+      "M": 2
+     },
+     {
+      "uci": "g5f4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1d2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqkbnr/ppppp1pp/8/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1|d7d5",
@@ -4856,12 +5277,54 @@
     "n": 26,
     "M": 244
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppppppbp/6p1/8/3P1B2/2N5/PPP1PPPP/R2QKBNR b KQkq - 0 1",
-    "nearest": "d7d6"
-   }
+   "line": {
+    "id": "gh-d4g6bf4bg7nc3",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "b1c3",
+     "d7d5",
+     "h2h4",
+     "c7c5"
+    ],
+    "steps": [
+     {
+      "uci": "d7d5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 7,
+      "M": 84
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 6
+     },
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk1nr/pp2ppbp/6p1/2pp4/3P1B1P/2N1P3/PPP2PP1/R2QKBNR b KQkq - 0 1",
+     "nearest": "a7a6",
+     "after": {
+      "uci": "e2e3",
+      "src": "table",
+      "M": 0
+     }
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R b KQkq - 0 1|b7b6",
@@ -5021,7 +5484,9 @@
      "g5h4",
      "a7a6",
      "e1g1",
-     "b8d7"
+     "b8d7",
+     "a2a4",
+     "c7c5"
     ],
     "steps": [
      {
@@ -5087,19 +5552,27 @@
       "loss": 5,
       "n": 0,
       "M": 0
+     },
+     {
+      "uci": "a2a4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
      }
     ],
     "stop": {
-     "kind": "band",
-     "key": "r2qk1nr/1bpnppb1/pp1p2pp/8/P1BPP2B/2N2N2/1PP2PPP/R2Q1RK1 b kq - 0 1",
-     "nearest": "e7e6",
-     "after": {
-      "uci": "a2a4",
-      "src": "table",
-      "M": 0
-     }
+     "kind": "length"
     }
-   }
+   },
+   "semi": "extended"
   },
   {
    "id": "rnbqkbnr/pp1ppppp/8/2p5/3P4/4P3/PPP2PPP/RNBQKBNR b KQkq - 0 1|g8f6",
@@ -6101,7 +6574,7 @@
     "stop": {
      "kind": "band",
      "key": "rnbqk1nr/ppppppbp/6p1/8/8/1PP2N2/P2PPPPP/RNBQKB1R b KQkq - 0 1",
-     "nearest": "b7b6",
+     "nearest": "c7c5",
      "after": {
       "uci": "c2c3",
       "src": "count",
@@ -6110,7 +6583,8 @@
       "tie": []
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 0 1|d2d3",
@@ -6761,7 +7235,11 @@
      "b1c3",
      "g8e7",
      "h2h4",
-     "h7h6"
+     "h7h6",
+     "h4h5",
+     "d7d5",
+     "h5g6",
+     "f7g6"
     ],
     "steps": [
      {
@@ -6817,19 +7295,41 @@
       "loss": 19,
       "n": 0,
       "M": 0
+     },
+     {
+      "uci": "h4h5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7d5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "h5g6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f7g6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
      }
     ],
     "stop": {
-     "kind": "band",
-     "key": "rnbqk2r/ppppnpb1/4p1pp/7P/2P1P3/2NP4/PP3PP1/R1BQKBNR b KQkq - 0 1",
-     "nearest": "d7d6",
-     "after": {
-      "uci": "h4h5",
-      "src": "table",
-      "M": 0
-     }
+     "kind": "length"
     }
-   }
+   },
+   "semi": "extended"
   },
   {
    "id": "rnbqkbnr/pp2pppp/8/3p4/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 1|c8g4",
@@ -7127,7 +7627,9 @@
      "b1c3",
      "b7b6",
      "f1e2",
-     "d7d6"
+     "d7d6",
+     "h2h4",
+     "g8f6"
     ],
     "steps": [
      {
@@ -7137,19 +7639,34 @@
       "loss": 0,
       "n": 0,
       "M": 1
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 12,
+      "n": 0,
+      "M": 0
      }
     ],
     "stop": {
      "kind": "band",
-     "key": "rnbqk1nr/p1p1ppbp/1p1p2p1/8/3PP2P/2N5/PPP1BPP1/R1BQK1NR b KQkq - 0 1",
-     "nearest": "h7h6",
+     "key": "rnbqk2r/p1p1ppbp/1p1p1np1/7P/3PP3/2N5/PPP1BPP1/R1BQK1NR b KQkq - 0 1",
+     "nearest": "e7e6",
      "after": {
-      "uci": "h2h4",
+      "uci": "h4h5",
       "src": "table",
       "M": 0
      }
     }
-   }
+   },
+   "semi": "extended"
   },
   {
    "id": "rnbqkbnr/pp1ppppp/8/8/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 1|b7b6",
@@ -7514,7 +8031,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PPP2/2N5/PPP3PP/R1BQKBNR w KQkq - 0 1|e4e5",
@@ -7557,7 +8075,15 @@
      "f2f4",
      "g8f6",
      "e4e5",
-     "f6d7"
+     "f6d7",
+     "g1f3",
+     "c7c5",
+     "c1e3",
+     "e8g8",
+     "e5d6",
+     "e7d6",
+     "d1d2",
+     "d7f6"
     ],
     "steps": [
      {
@@ -7567,19 +8093,76 @@
       "loss": 0,
       "n": 0,
       "M": 18
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c1e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e5d6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1d2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7f6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 20,
+      "n": 0,
+      "M": 0
      }
     ],
     "stop": {
      "kind": "band",
-     "key": "rnbqk2r/pppnppbp/3p2p1/4P3/3P1P2/2N2N2/PPP3PP/R1BQKB1R b KQkq - 0 1",
-     "nearest": "e8g8",
+     "key": "rnbq1rk1/pp3pbp/3p1np1/2P5/5P2/2N1BN2/PPPQ2PP/R3KB1R b KQ - 0 1",
+     "nearest": "d6d5",
      "after": {
-      "uci": "g1f3",
+      "uci": "d4c5",
       "src": "table",
       "M": 0
      }
     }
-   }
+   },
+   "semi": "extended"
   },
   {
    "id": "rnbqkbnr/pp2pppp/8/3p4/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 1|c8f5",
@@ -7756,12 +8339,44 @@
     "n": 21,
     "M": 79
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbq1rk1/ppp1ppbp/3p1np1/8/2BPPP2/2N2N2/PPP3PP/R1BQK2R b KQ - 0 1",
-    "nearest": "f6d7"
-   }
+   "line": {
+    "id": "gh-e4g6d4bg7nc3d6f4nf6nf3oobc4",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "d7d6",
+     "f2f4",
+     "g8f6",
+     "g1f3",
+     "e8g8",
+     "f1c4",
+     "c7c5"
+    ],
+    "steps": [
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "equal",
+      "loss": 25,
+      "n": 2,
+      "M": 15
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbq1rk1/pp2ppbp/3p1np1/2p1P3/2BP1P2/2N2N2/PPP3PP/R1BQK2R b KQ - 0 1",
+     "nearest": "f6d7",
+     "after": {
+      "uci": "e4e5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1|f1e2",
@@ -7794,12 +8409,44 @@
     "n": 8,
     "M": 79
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP1B1PP/R1BQK2R b KQ - 0 1",
-    "nearest": "a7a6"
-   }
+   "line": {
+    "id": "gh-e4g6d4bg7nc3d6f4nf6nf3oobe2",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "d7d6",
+     "f2f4",
+     "g8f6",
+     "g1f3",
+     "e8g8",
+     "f1e2",
+     "c7c5"
+    ],
+    "steps": [
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 2,
+      "M": 4
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbq1rk1/pp2ppbp/3p1np1/2P5/4PP2/2N2N2/PPP1B1PP/R1BQK2R b KQ - 0 1",
+     "nearest": "a7a6",
+     "after": {
+      "uci": "d4c5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|a2a4",
@@ -8115,7 +8762,15 @@
      "b1c3",
      "a7a6",
      "d4d5",
-     "b8d7"
+     "b8d7",
+     "f1e2",
+     "g8f6",
+     "c1e3",
+     "e8g8",
+     "e1g1",
+     "b7b6",
+     "f3d4",
+     "c8b7"
     ],
     "steps": [
      {
@@ -8125,19 +8780,76 @@
       "loss": 28,
       "n": 0,
       "M": 0
+     },
+     {
+      "uci": "f1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c1e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f3d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
      }
     ],
     "stop": {
      "kind": "band",
-     "key": "r1bqk1nr/1ppnppbp/p2p2p1/3P4/4P3/2N2N2/PPP1BPPP/R1BQK2R b KQkq - 0 1",
+     "key": "r2q1rk1/1bpnppbp/pp1p1np1/3P4/3NP1P1/2N1B3/PPP1BP1P/R2Q1RK1 b - - 0 1",
      "nearest": "h7h6",
      "after": {
-      "uci": "f1e2",
+      "uci": "g2g4",
       "src": "table",
       "M": 0
      }
     }
-   }
+   },
+   "semi": "extended"
   },
   {
    "id": "rnbqkbnr/pp1ppppp/8/8/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 1|e7e5",
@@ -8507,12 +9219,9 @@
     "n": 14,
     "M": 60
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N2N2/PP1PPPPP/R1BQKB1R b KQkq - 0 1",
-    "nearest": "d7d6"
-   }
+   "skip": "new-line",
+   "by": "gh-c4g6nc3bg7nf3",
+   "semi": "new-line"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|f1c4",
@@ -8541,12 +9250,34 @@
     "n": 22,
     "M": 435
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/2BPP3/2N5/PPP2PPP/R1BQK1NR b KQkq - 0 1",
-    "nearest": "e7e6"
-   }
+   "line": {
+    "id": "gh-e4g6d4bg7nc3d6bc4",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "d7d6",
+     "f1c4",
+     "g8f6"
+    ],
+    "steps": [
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 19,
+      "M": 37
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gh-e4d6d4nf6nc3g6bc4"
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|f1e2",
@@ -8635,12 +9366,111 @@
     "n": 9,
     "M": 244
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppppppbp/6p1/8/3PPB2/8/PPP2PPP/RN1QKBNR b KQkq - 0 1",
-    "nearest": "d7d6"
-   }
+   "line": {
+    "id": "gh-d4g6bf4bg7e4",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e4",
+     "c7c5",
+     "c2c3",
+     "g8f6",
+     "f1d3",
+     "e8g8",
+     "d4c5",
+     "b7b6",
+     "g1f3",
+     "c8b7",
+     "c5b6",
+     "a7b6"
+    ],
+    "steps": [
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 2,
+      "M": 15
+     },
+     {
+      "uci": "c2c3",
+      "who": "opp",
+      "src": "table",
+      "M": 2
+     },
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d4c5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c5b6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|f1c4",
@@ -8991,7 +9821,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqkb1r/ppppp1pp/5n2/5p2/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|b8c6",
@@ -9183,7 +10014,17 @@
      "g1f3",
      "g7g6",
      "h2h4",
-     "f8g7"
+     "f8g7",
+     "h4h5",
+     "c7c5",
+     "d2d3",
+     "e7e6",
+     "c2c3",
+     "d7d5",
+     "d3d4",
+     "g8e7",
+     "c1f4",
+     "h7h6"
     ],
     "steps": [
      {
@@ -9193,19 +10034,83 @@
       "loss": 17,
       "n": 5,
       "M": 6
+     },
+     {
+      "uci": "h4h5",
+      "who": "opp",
+      "src": "table",
+      "M": 5
+     },
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 1
+     },
+     {
+      "uci": "d2d3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 17,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7d5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d3d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c1f4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
      }
     ],
     "stop": {
-     "kind": "band",
-     "key": "rnbqk1nr/ppppppbp/6p1/7P/8/5N2/PPPPPPP1/RNBQKB1R b KQkq - 0 1",
-     "nearest": "a7a6",
-     "after": {
-      "uci": "h4h5",
-      "src": "table",
-      "M": 5
-     }
+     "kind": "length"
     }
-   }
+   },
+   "semi": "extended"
   },
   {
    "id": "rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R b KQkq - 0 1|c8d7",
@@ -9698,7 +10603,8 @@
     "kind": "band",
     "key": "rnbq1rk1/ppp1ppbp/3p1np1/4P3/3P1P2/2N2N2/PPP3PP/R1BQKB1R b KQ - 0 1",
     "nearest": "f6d7"
-   }
+   },
+   "semi": "still-skipped"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1|c1f4",
@@ -9726,12 +10632,56 @@
     "n": 9,
     "M": 162
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP1B2/5N2/PP2PPPP/RN1QKB1R b KQkq - 0 1",
-    "nearest": "b8d7"
-   }
+   "line": {
+    "id": "gh-nf3g6c4bg7d4d6bf4",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c4",
+     "f8g7",
+     "d2d4",
+     "d7d6",
+     "c1f4",
+     "c7c5",
+     "e2e3",
+     "g8f6"
+    ],
+    "steps": [
+     {
+      "uci": "c7c5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 4
+     },
+     {
+      "uci": "e2e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk2r/pp2ppbp/3p1np1/2p5/2PP1B2/2N1PN2/PP3PPP/R2QKB1R b KQkq - 0 1",
+     "nearest": "e8g8",
+     "after": {
+      "uci": "b1c3",
+      "src": "table",
+      "M": 0
+     }
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1|e2e3",
@@ -9815,12 +10765,111 @@
     "n": 2,
     "M": 60
    },
-   "skip": "band",
-   "stop": {
-    "kind": "band",
-    "key": "rnbqk1nr/ppppppbp/6p1/8/2P5/3P1N2/PP2PPPP/RNBQKB1R b KQkq - 0 1",
-    "nearest": "e7e6"
-   }
+   "line": {
+    "id": "gh-nf3g6c4bg7d3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c4",
+     "f8g7",
+     "d2d3",
+     "g8f6",
+     "e2e4",
+     "e8g8",
+     "b1c3",
+     "d7d6",
+     "d3d4",
+     "b8d7",
+     "f1d3",
+     "a7a6",
+     "e1g1",
+     "b7b6"
+    ],
+    "steps": [
+     {
+      "uci": "g8f6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e4",
+      "who": "opp",
+      "src": "table",
+      "M": 2
+     },
+     {
+      "uci": "e8g8",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 25,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d3d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 18,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   },
+   "semi": "rescued"
   },
   {
    "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1|h2h3",
@@ -10150,7 +11199,8 @@
       "M": 0
      }
     }
-   }
+   },
+   "semi": "unchanged"
   },
   {
    "id": "rnbqkb1r/pp2pppp/2p2n2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|g7g6",

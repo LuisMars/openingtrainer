@@ -1719,7 +1719,7 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
         const r = document.querySelector('[data-sq="' + s + '"]').getBoundingClientRect();
         return Math.abs(br.left + x / 8 * br.width - (r.left + r.width / 2)) < 1.5 && Math.abs(br.top + y / 8 * br.height - (r.top + r.height / 2)) < 1.5;
       };
-      geo.push({ u: g.dataset.u, from: at(g.dataset.u.slice(0, 2), +ln.getAttribute("x1"), +ln.getAttribute("y1")), to: at(g.dataset.u.slice(2, 4), tip[0], tip[1]) });
+      geo.push({ u: g.dataset.u, off: +g.dataset.off || 0, from: at(g.dataset.u.slice(0, 2), +ln.getAttribute("x1"), +ln.getAttribute("y1")), to: at(g.dataset.u.slice(2, 4), tip[0], tip[1]) });
     }
     out.geo = geo;
     const w = parseFloat(getComputedStyle(document.querySelector("#arrows g.ar.best line.body") || document.body).strokeWidth);
@@ -1754,7 +1754,9 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     ar.wrongThenRight.some((a) => a.c === "bad" && a.u === ar.wrong.u) && ar.wrongThenRight.some((a) => a.c === "best"),
     JSON.stringify(ar.wrongThenRight));
   check("flipped board: every arrow runs from its origin square's centre to its destination's",
-    ar.flip === true && ar.geo.length > 1 && ar.geo.every((g) => g.from && g.to), JSON.stringify(ar.geo));
+    // Two arrows along one ray (...d6 and ...d5, both in the system here since the
+    // semi-Hippo) are offset on purpose; the check after this one covers them.
+    ar.flip === true && ar.geo.filter((g) => !g.off).length > 1 && ar.geo.filter((g) => !g.off).every((g) => g.from && g.to), JSON.stringify(ar.geo));
   check("no two arrows share a start square and a direction without distinct offsets",
     Object.keys(ar.rays).length === 2 && Object.values(ar.rays).every((o) => new Set(o).size === o.length), JSON.stringify(ar.rays));
   check("arrows are drawn in board units, so they scale with the board",
@@ -2002,6 +2004,49 @@ check("no request leaves the page origin", external.length === 0, external.join(
   });
   check("a Hippo line without its own targets falls back to the Hippo formation, never for mistake lines",
     fb.own === 0 && fb.fallback && fb.reason !== "no-targets" && fb.credited > 0 && fb.bad.length === 0, JSON.stringify(fb));
+}
+// The semi-Hippo: ...Nf6, ...c5, ...c6 and ...d5 are the Hippo's own moves only where
+// the table grades them best or equal. After 1.e4 the table has ...c5 first and ...d5
+// as a concession: Shuffle credits ...c5 and names it, and grades ...d5 as today.
+// syn-hipdown shows the setup failing: ...c5 there is never in the system.
+{
+  const semi = await page.evaluate(() => {
+    const li = LINES.findIndex((l) => l.id === "hip-e4"), l = LINES[li], pos = posAt(l, 1), row = evalFor(pos);
+    const mv = (s) => legal(pos).find((m) => san(pos, m) === s), k = key(l, 1);
+    const grades = { c5: gradeMove(row, pos, mv("c5")).verdict, d5: gradeMove(row, pos, mv("d5")).verdict };
+    const flags = { c5: inSystem(l, pos, "c7c5", l.moves[1][0], row), d5: inSystem(l, pos, "d7d5", l.moves[1][0], row),
+      alt: !!altAt(pos, "c7c5", l), gate: setupGate(row, pos, mv("c5"), tgtOf(l)).credit };
+    const put = (i, mode) => { S.mode = mode; S.li = i; S.ply = 1; S.flip = true; S.sel = null; S.tries = 0; S.hint = 0;
+      S.missAt = null; S.ans = null; stats.pos = {}; clearFree(); go("board"); };
+    put(li, "shuffle");
+    playMove(pos, "c5", mv("c5"));
+    const credit = { msg: el("nMsg").textContent, ok: (stats.pos[k] || {}).ok || 0, a: (stats.pos[k] || {}).a || [] };
+    if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll();
+    put(li, "shuffle");
+    playMove(pos, "d5", mv("d5"));
+    const refuse = { msg: el("nMsg").textContent, ok: (stats.pos[k] || {}).ok || 0, no: (stats.pos[k] || {}).no || 0 };
+    if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll();
+    const hi = LINES.findIndex((x) => x.id === "syn-hipdown"), h = LINES[hi], hp = posAt(h, 1), hk = key(h, 1);
+    const hc = legal(hp).find((m) => san(hp, m) === "c5");
+    const mist = { accepted: GRADE.accept.indexOf(gradeMove(evalFor(hp), hp, hc).verdict) >= 0,
+      semi: semiHippo(h, hp, hc), inSys: inSystem(h, hp, "c7c5", h.moves[1][0], evalFor(hp)), own: h.moves[1][1] };
+    put(hi, "line");
+    playMove(hp, "c5", hc);
+    mist.msg = el("nMsg").textContent; mist.ok = (stats.pos[hk] || {}).ok || 0;
+    if (S.pending && S.pending !== 1) clearTimeout(S.pending); stopAll(); stats.pos = {}; S.run = 0; clearFree(); go("menu");
+    return { grades, flags, credit, refuse, mist };
+  });
+  check("semi-Hippo: after 1.e4 ...c5 is in band and in the system, not as a formation move; ...d5 is out of band and outside it",
+    semi.grades.c5 === "best" && semi.grades.d5 === "concession" && semi.flags.c5 && !semi.flags.d5 && !semi.flags.alt && !semi.flags.gate,
+    JSON.stringify([semi.grades, semi.flags]));
+  check("semi-Hippo: Shuffle credits ...c5 in band and names it a semi-Hippo move",
+    semi.credit.msg.includes("✓ Correct — c5, a semi-Hippo move: the table grades it inside the band here.") &&
+      semi.credit.ok === 1 && semi.credit.a.includes("c5"), JSON.stringify(semi.credit));
+  check("semi-Hippo: ...d5 out of band is not credited and gets no semi-Hippo wording",
+    semi.refuse.ok === 0 && !semi.refuse.msg.includes("semi-Hippo") && !semi.refuse.msg.includes("Correct"), JSON.stringify(semi.refuse));
+  check("semi-Hippo: a deliberate-mistake line never credits ...c5, even in band",
+    semi.mist.accepted && semi.mist.own !== "c5" && !semi.mist.semi && !semi.mist.inSys && semi.mist.ok === 0 &&
+      !semi.mist.msg.includes("semi-Hippo") && !semi.mist.msg.includes("Correct"), JSON.stringify(semi.mist));
 }
 check("no console or page errors", errors.length === 0, errors.join(" | "));
 await browser.close();

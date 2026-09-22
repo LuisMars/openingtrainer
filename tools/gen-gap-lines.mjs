@@ -4,6 +4,9 @@
 // every decision (built, or skipped with its reason) in research/gap-lines.json.
 //
 //   node tools/gen-gap-lines.mjs --plan 50   decide the next 50 undecided gaps
+//   node tools/gen-gap-lines.mjs --semi      rerun the Hippopotamus gaps that stopped or
+//                                            were skipped for want of an in-band move,
+//                                            with the semi-Hippo moves allowed
 //   node tools/gen-gap-lines.mjs --write     render research/gap-lines.json into
 //                                            src/data/lines.js (+ KIND), and the
 //                                            positions its prose cites into
@@ -27,6 +30,9 @@
 //            worker, cache and settings: tools/build-evals.mjs --worker); moves
 //            outside the top five are searched alone, as build-evals searches a
 //            drilled move. It is played only if gradeRow() grades it best or equal.
+//            For the Hippopotamus, where no such move is in the band, the semi-Hippo
+//            moves (isSemiHippoMove from src/engine.js, the rule the app's semiHippo
+//            reads: ...Nf6, ...c5, ...c6, ...d5) are tried the same way.
 //            Otherwise the line stops (or the gap is skipped if nothing was played).
 //   opponent the commonest move in the 1500-1899 band at that position (keyFen,
 //            so transpositions inside the subtree merge) when at least MIN_NODE
@@ -50,9 +56,9 @@ const js = html.slice(html.indexOf("<script>") + 8, html.lastIndexOf("</script>"
 const ctx = {};
 new Function("ctx", js.slice(0, js.indexOf("/* ================= state ================= */")) +
   "\nObject.assign(ctx,{LINES,KIND,START,startPos,fenPos,make,san,legal,uciOf,fenOf,findMove," +
-  "isSetupMove,gradeRow,cmpScore,COLLE_T,ZUK_T,HIPPO_T,EVL,ix,sq});")(ctx);
+  "isSetupMove,isSemiHippoMove,gradeRow,cmpScore,COLLE_T,ZUK_T,HIPPO_T,EVL,ix,sq});")(ctx);
 const { LINES, KIND, START, startPos, fenPos, make, san, legal, uciOf, fenOf, findMove,
-  isSetupMove, gradeRow, cmpScore, COLLE_T, ZUK_T, HIPPO_T, EVL, ix } = ctx;
+  isSetupMove, isSemiHippoMove, gradeRow, cmpScore, COLLE_T, ZUK_T, HIPPO_T, EVL, ix } = ctx;
 const keyFen = (p) => p.ep < 0 || legal(p).some((m) => m.ep)
   ? fenOf(p) : fenOf({ b: p.b, w: p.w, cr: p.cr, ep: -1 });
 
@@ -72,7 +78,7 @@ const arg = (n) => { const i = process.argv.indexOf("--" + n); return i < 0 ? nu
 
 // ---- what the repertoire already plays, by side ------------------------------
 const SEEN = { w: new Map(), b: new Map() };   // key -> Map(uci -> Set(id))
-const REACH = { w: new Map(), b: new Map() };  // key -> first id that reaches it
+const REACH = { w: new Map(), b: new Map() };  // key -> ids that reach it, in LINES order
 const OWN = { w: new Map(), b: new Map() };    // key -> Set(uci), learner moves of non-eco lines
 for (const l of LINES) {
   let p = startPos();
@@ -82,7 +88,8 @@ for (const l of LINES) {
     const at = SEEN[l.you].get(k);
     if (!at.has(uci)) at.set(uci, new Set());
     at.get(uci).add(l.id);
-    if (!REACH[l.you].has(k)) REACH[l.you].set(k, l.id);
+    if (!REACH[l.you].has(k)) REACH[l.you].set(k, []);
+    if (!REACH[l.you].get(k).includes(l.id)) REACH[l.you].get(k).push(l.id);
     if ((i % 2 === 0 ? "w" : "b") === l.you && KIND[l.id] !== "eco") {
       if (!OWN[l.you].has(k)) OWN[l.you].set(k, new Set());
       OWN[l.you].get(k).add(uci);
@@ -91,7 +98,8 @@ for (const l of LINES) {
   });
   const end = keyFen(p);
   if (!SEEN[l.you].has(end)) SEEN[l.you].set(end, new Map());
-  if (!REACH[l.you].has(end)) REACH[l.you].set(end, l.id);
+  if (!REACH[l.you].has(end)) REACH[l.you].set(end, []);
+  if (!REACH[l.you].get(end).includes(l.id)) REACH[l.you].get(end).push(l.id);
 }
 
 // ---- the gaps: tools/coverage-matrix.mjs's `missing` rows --------------------
@@ -313,26 +321,36 @@ function sysMoves(side, pos, prev) {
 // The depth-20 row the choice is made on: the position's own top five, plus
 // every system move outside them searched alone (the job build-evals runs for a
 // drilled move outside the five, so the number is the one that ships).
+// The formation moves are tried first, exactly as before the semi-Hippo, so a line
+// that had an in-band formation move plays the same move now. Only where none is
+// in the band are the semi-Hippo moves tried; a stop names the better of the two.
 async function ownChoice(side, pos, prev, cached) {
-  const key = keyFen(pos), cands = sysMoves(side, pos, prev);
-  if (!cands.length) return { stop: "none", key };
+  const key = keyFen(pos);
+  const sets = [sysMoves(side, pos, prev), side === "b" ? legal(pos).filter((m) => isSemiHippoMove(pos, m)) : []];
+  if (!sets[0].length && !sets[1].length) return { stop: "none", key };
   const run = cached ? (j) => pool.cached(j) : (j) => pool.run(j);
   const top = await run(key);
   if (!top) return { stop: "unsearched", key };
   const row = { d: top[0].depth, m: top.map((pv) => entry(pos, pv)) };
-  const cu = cands.map(uciOf);
-  let pick = row.m.find((e) => cu.includes(e[0]));
-  if (!pick) {
-    const alone = await Promise.all(cu.map((u) => run(key + "\t" + u)));
-    if (alone.some((a) => !a)) return { stop: "unsearched", key };
-    row.x = alone.map((pvs) => entry(pos, pvs[0]));
-    pick = [...row.x].sort((a, b) => -cmpScore(a, b))[0];
+  let near = null;
+  for (let s = 0; s < 2; s++) {
+    const cu = sets[s].map(uciOf);
+    if (!cu.length) continue;
+    let pick = row.m.find((e) => cu.includes(e[0]));
+    if (!pick) {
+      const alone = await Promise.all(cu.map((u) => run(key + "\t" + u)));
+      if (alone.some((a) => !a)) return { stop: "unsearched", key };
+      const xs = alone.map((pvs) => entry(pos, pvs[0]));
+      row.x = (row.x || []).concat(xs);
+      pick = [...xs].sort((a, b) => -cmpScore(a, b))[0];
+    }
+    const g = gradeRow(row, pos, pick[0]);
+    const out = { key, row, pick, grade: g.verdict, loss: g.lossCp, semi: s === 1 };
+    if (row.m[0][3] !== null || pick[3] !== null) return { ...out, stop: "mate" };
+    if (g.verdict === "best" || g.verdict === "equal") return out;
+    if (!near || cmpScore(pick, near.pick) > 0) near = out;
   }
-  const g = gradeRow(row, pos, pick[0]);
-  const out = { key, row, pick, grade: g.verdict, loss: g.lossCp };
-  if (row.m[0][3] !== null || pick[3] !== null) out.stop = "mate";
-  else if (g.verdict !== "best" && g.verdict !== "equal") out.stop = "band";
-  return out;
+  return { ...near, stop: "band" };
 }
 function counted(C, key, uci) {
   const at = C[key] || {};
@@ -353,10 +371,15 @@ async function oppChoice(C, pos) {
   const top = await pool.run(key);
   return { uci: top[0].moves[0], src: "table", M, key };
 }
-const sameSide = (side, key) => REACH[side].get(key) || null;
+// The first line of the side that reaches the board, other than the line being
+// extended (a line never transposes into itself).
+const sameSide = (side, key, self) => (REACH[side].get(key) || []).find((id) => id !== self) || null;
 
 // ---- one gap -------------------------------------------------------------------
-async function explore(g, C) {
+// resume: a built line to continue from its stop ({moves, steps, after}); the
+// opponent's move the stop was made after is replayed first, and checked for a
+// transposition as any opponent move is.
+async function explore(g, C, resume) {
   let pos = startPos(), prev = null;
   const path = [];
   for (const tok of g.path) {
@@ -367,6 +390,18 @@ async function explore(g, C) {
   if (keyFen(pos) !== g.child) return { skip: "path", why: "the ranked move order does not reach the counted position" };
   const steps = [];
   let own = 0, stop = null, pending = null;
+  if (resume) {
+    for (const st of resume.steps) {
+      const m = findMove(pos, st.uci);
+      prev = { t: m.t, cap: !!pos.b[m.t] || !!m.ep }; pos = make(pos, m);
+      steps.push(st); if (st.who === "own") own++;
+    }
+    const a = resume.after, om = findMove(pos, a.uci), next = make(pos, om);
+    const opp = { uci: a.uci, who: "opp", src: a.src, n: a.n, M: a.M, tie: a.tie };
+    const t2 = sameSide(g.side, keyFen(next), resume.id);
+    if (t2) { steps.push(opp); return { path, steps, stop: { kind: "transposes", id: t2, after: null } }; }
+    pending = opp; prev = { t: om.t, cap: !!pos.b[om.t] || !!om.ep }; pos = next;
+  }
   for (;;) {
     const c = await ownChoice(g.side, pos, prev);
     if (c.stop) { stop = { kind: c.stop, key: c.key, best: c.row?.m[0], nearest: c.pick, loss: c.loss, after: pending }; break; }
@@ -375,7 +410,7 @@ async function explore(g, C) {
     const human = counted(C, c.key, c.pick[0]);
     steps.push({ uci: c.pick[0], who: "own", grade: c.grade, loss: c.loss, n: human.n, M: human.M });
     pos = make(pos, m); own++;
-    const t1 = sameSide(g.side, keyFen(pos));
+    const t1 = sameSide(g.side, keyFen(pos), resume && resume.id);
     if (t1) { stop = { kind: "transposes", id: t1, after: null }; break; }
     if (own >= MAX_OWN) { stop = { kind: "length" }; break; }
     const o = await oppChoice(C, pos);
@@ -384,7 +419,7 @@ async function explore(g, C) {
     const cap = !!pos.b[om.t] || !!om.ep;
     const next = make(pos, om);
     const opp = { uci: o.uci, who: "opp", src: o.src, n: o.n, M: o.M, tie: o.tie };
-    const t2 = sameSide(g.side, keyFen(next));
+    const t2 = sameSide(g.side, keyFen(next), resume && resume.id);
     if (t2) { steps.push(opp); stop = { kind: "transposes", id: t2, after: null }; break; }
     pending = opp; prev = { t: om.t, cap }; pos = next;
   }
@@ -444,6 +479,61 @@ async function plan(n) {
   const t = tally(doc.gaps.slice(-todo.length));
   console.log(`decided ${todo.length}: ${JSON.stringify(t)} -> research/gap-lines.json`);
 }
+// ---- --semi ------------------------------------------------------------------------
+// The Hippopotamus gaps decided before the semi-Hippo existed that a missing in-band
+// move ended: built lines that stopped at the band (continued from their stop, their
+// moves kept) and gaps skipped at their own board (explored afresh). In decision
+// order; a line built or extended earlier in this pass is an existing line for every
+// later one. Each entry records what the pass did to it in `semi`.
+async function semiPass() {
+  const doc = JSON.parse(readFileSync(PLAN, "utf8"));
+  const C = await counts(ranked());
+  const todo = doc.gaps.filter((x) => x.side === "b" && ((x.line && x.line.stop.kind === "band") || x.skip === "band"));
+  console.log(`rerunning ${todo.length} Hippopotamus gaps with the semi-Hippo moves allowed`);
+  const res = await Promise.all(todo.map(async (gp) => {
+    let p = startPos();
+    for (const tok of gp.path) p = make(p, legal(p).find((x) => san(p, x) === tok));
+    const g = { side: "b", path: gp.path, child: keyFen(p) };
+    if (!gp.line) return explore(g, C);
+    return explore(g, C, { id: gp.line.id, steps: gp.line.steps, after: gp.line.stop.after });
+  }));
+  pool.close();
+  const NEW = new Map(); // key -> id, positions this pass added
+  const ids = new Set(LINES.map((l) => l.id).concat(doc.gaps.filter((x) => x.line).map((x) => x.line.id)));
+  const t = {};
+  todo.forEach((gp, j) => {
+    const r = res[j], old = gp.line ? gp.line.steps.length : 0;
+    let what;
+    if (r.skip) { gp.stop = slimStop(r.stop); what = "still-skipped"; }
+    else {
+      const by = !gp.line && NEW.get(keyFen(replay(r.path)));
+      if (by) { delete gp.stop; gp.skip = "new-line"; gp.by = by; what = "new-line"; }
+      else {
+        let p = replay(r.path.concat(r.steps.slice(0, old).map((x) => x.uci)));
+        for (let i = old; i < r.steps.length; i++) {
+          p = make(p, findMove(p, r.steps[i].uci));
+          const hit = NEW.get(keyFen(p));
+          if (hit && hit !== (gp.line && gp.line.id)) { r.steps = r.steps.slice(0, i + 1); r.stop = { kind: "transposes", id: hit, after: null }; break; }
+        }
+        let id = gp.line ? gp.line.id : "gh-" + gp.path.map((x) => x.replace(/[^A-Za-z0-9]/g, "")).join("").toLowerCase();
+        if (!gp.line) { while (ids.has(id)) id += "x"; ids.add(id); }
+        const ucis = r.path.concat(r.steps.map((x) => x.uci));
+        // every board of the line, the gap's own included, as --plan registers them
+        let q = startPos();
+        for (const u of ucis) { if (!NEW.has(keyFen(q))) NEW.set(keyFen(q), id); q = make(q, findMove(q, u)); }
+        if (!NEW.has(keyFen(q))) NEW.set(keyFen(q), id);
+        what = gp.line ? (r.steps.length > old ? "extended" : "unchanged") : "rescued";
+        delete gp.skip; delete gp.stop;
+        gp.line = { id, moves: ucis, steps: r.steps, stop: slimStop(r.stop) };
+      }
+    }
+    gp.semi = what;
+    t[what] = (t[what] || 0) + 1;
+  });
+  writeFileSync(PLAN, JSON.stringify(doc, null, 1) + "\n");
+  console.log(`semi pass: ${JSON.stringify(t)}; stops now ${JSON.stringify(tally(todo))} -> research/gap-lines.json`);
+}
+function replay(ucis) { let p = startPos(); for (const u of ucis) p = make(p, findMove(p, u)); return p; }
 function slimStop(s) {
   const o = { kind: s.kind };
   if (s.id) o.id = s.id;
@@ -494,13 +584,13 @@ function write() {
   const doc = JSON.parse(readFileSync(PLAN, "utf8"));
   const lines = [], extras = [], alone = [], problems = [];
   let unshipped = 0;
-  const grades = { best: 0, equal: 0 };
+  const grades = { best: 0, equal: 0, semi: 0 };
   for (const gp of doc.gaps.filter((x) => x.line)) {
     const L = gp.line, side = gp.side, nPath = gp.path.length;
     let p = startPos();
     const rows = [];
     const notes = [];
-    let lastOwn = null, firstOwn = null;
+    let lastOwn = null, firstOwn = null, semiN = 0;
     L.moves.forEach((u, i) => {
       const m = findMove(p, u), s = san(p, m), key = keyFen(p);
       const label = i % 2 === 0 ? `${i / 2 + 1}.${s}` : `${(i + 1) / 2}...${s}`; // unique per ply
@@ -525,6 +615,7 @@ function write() {
               : g.lossCp === 0 ? `${cpTxt(e)}, level with ${disp(p, row.m[0][1])} at the top of the table.`
               : `${cpTxt(e)}, ${g.lossCp} behind ${disp(p, row.m[0][1])}: inside the band.`;
           }
+          if (side === "b" && isSemiHippoMove(p, m)) { note += ` A semi-Hippo move, not a wall move.`; semiN++; grades.semi++; }
           if (st.M >= MIN_NODE) note += st.n ? ` ${games(st.n, st.M)} counted games in the band chose it.`
             : ` None of the ${st.M.toLocaleString("en-GB")} counted games in the band chose it.`;
           if (!firstOwn) firstOwn = disp(p, s);
@@ -556,7 +647,9 @@ function write() {
         q = make(p, om);
       }
       const k = keyFen(q);
-      if (st.kind === "none") stopTxt = `After ${why}, no move puts a piece on a ${SYS[side]} square, so the line stops.`;
+      if (st.kind === "none") stopTxt = side === "b"
+        ? `After ${why}, no move puts a piece on a ${SYS[side]} square and no semi-Hippo move is legal, so the line stops.`
+        : `After ${why}, no move puts a piece on a ${SYS[side]} square, so the line stops.`;
       else {
         extras.push(k);
         const { row, shipped } = shippedRow(q, k, st.nearest ? [st.nearest] : []);
@@ -568,14 +661,15 @@ function write() {
         else {
           const g = gradeRow(row, q, st.nearest);
           const nm = disp(q, e[1]);
-          stopTxt = `After ${why}, the nearest ${SYS[side]} move, ${nm}, is ${g.lossCp} behind ${disp(q, row.m[0][1])}, outside the band, so the line stops.`;
+          stopTxt = `After ${why}, the nearest ${SYS[side]}${side === "b" ? " or semi-Hippo" : ""} move, ${nm}, is ${g.lossCp} behind ${disp(q, row.m[0][1])}, outside the band, so the line stops.`;
           if (g.verdict === "best" || g.verdict === "equal") problems.push(`${L.id}: stop move ${nm} grades ${g.verdict} in the shipped row`);
         }
       }
     }
     const replyTxt = moveText(L.moves, 0, nPath);
     const plan = `Built from the stored analysis and the counted games, not from a book. ` +
-      `Every ${SYS[side]} move is the best-scoring ${SYS[side]} move the depth-20 table puts inside its 30-centipawn band; ` +
+      `Every ${SYS[side]} move is the best-scoring ${SYS[side]} move the depth-20 table puts inside its 30-centipawn band` +
+      (semiN ? `, and where there is none, a semi-Hippo move (...Nf6, ...c5, ...c6 or ...d5) inside that band; ` : "; ") +
       `every ${OPP[side]} move is the commonest in the 1500 to 1899 band, or the table's first choice where fewer than ${MIN_NODE} counted games continue. ` +
       stopTxt;
     lines.push({ id: L.id, ch: CH[side], you: side, name: `${replyTxt}: ${firstOwn}`, plan, rows });
@@ -615,7 +709,7 @@ function write() {
   const all = doc.gaps, t = tally(all);
   console.log(`lines.js: ${lines.length} generated lines ${before === src ? "(notes unchanged)" : "(rewritten)"}`);
   console.log(`decided ${all.length} gaps: ${JSON.stringify(t)}`);
-  console.log(`generated learner moves: best ${grades.best}, equal ${grades.equal}; ${unshipped} numbers not yet in the shipped table`);
+  console.log(`generated learner moves: best ${grades.best}, equal ${grades.equal}, semi-Hippo ${grades.semi}; ${unshipped} numbers not yet in the shipped table`);
   console.log(`cited positions: ${ex.length} extra, ${alone.length} moves alone`);
   for (const x of problems) console.log("PROBLEM " + x);
   if (problems.length) process.exitCode = 1;
@@ -635,6 +729,7 @@ function sectionReplace(file, marker, beforeMarker, body) {
 
 // ---- main ------------------------------------------------------------------------
 if (arg("plan") !== null) await plan(+arg("plan") || 50);
+else if (arg("semi") !== null) await semiPass();
 else if (arg("write") !== null) { write(); pool.close(); }
 else if (arg("rank") !== null) {
   const rows = ranked();
