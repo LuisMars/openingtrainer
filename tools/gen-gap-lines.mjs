@@ -507,7 +507,7 @@ function write() {
       let note = "";
       if (i === nPath - 1) {
         const pc = gp.parentCount;
-        note = pc.M >= MIN_NODE
+        note = pc.M >= MIN_NODE && pc.n > 0 // a reply no band game chose is cited from the pool
           ? `${games(pc.n, pc.M)} counted games at this position in the 1500 to 1899 band.`
           : `${games(gp.pool.games, gp.pool.parent)} games at this position in the player pool (average rating 1500 and over).`;
       } else if (i >= nPath) {

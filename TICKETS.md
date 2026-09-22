@@ -45,13 +45,4 @@ Files: none unless a check fails. Done when each check passes on a phone.
 
 ## Features
 
-**FEAT — The rest of the coverage gaps.** 157 replies in
-`research/COVERAGE-MATRIX.md` have no line. `tools/gen-gap-lines.mjs` ranks
-them and records each decision in `research/gap-lines.json`. Ranks 1–50 are
-decided (`research/W6-content-batch.md` §10). Next: `--plan 50`, the pipeline in
-§10, then `--write`. Of the 151 undecided rows, 76 are reached only through an `eco`
-line's move order and will be skipped. Files: `src/data/lines.js`,
-`research/gap-lines.json`, the generated data files. Verified by `npm test` and
-the field-by-field check of the stored rows. Done when every row is built or
-skipped with a recorded reason.
-
+None open.

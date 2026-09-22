@@ -32,16 +32,16 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| d5 | 41.5% (52237) | 73.3% (12047) | 29.5% (50342) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `c-2nc6` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic), `c-2c6` (synthetic), `c-2bf5` (synthetic), `c-2c5` (synthetic), `c-2bg4` (synthetic), `c-bxf3` (synthetic), `c-qb6` (synthetic), `c-ne4c3` (synthetic), `c-nc6nf6` (synthetic), `c-nc6bf5` (synthetic), `gc-d5nf3nf6e3bf5c4e6` (synthetic), `gc-d5nf3e6e3nf6bd3bd6` (synthetic), `gc-d5nf3e6e3nf6bd3nc6` (synthetic), `gc-d5nf3e6e3nf6bd3nbd7` (synthetic), `gc-d5nf3nf6e3bf5bd3bg6` (synthetic), `gc-d5nf3e6e3nf6bd3c6` (synthetic) | yes |
-| Nf6 | 17.1% (21460) | 26.7% (4388) | 56.9% (97037) | covered | `anti` (theory), `cz-tab` (theory), `colle-kid` (model), `eco-kid` (eco), `eco-trad` (eco), `syn-qid` (synthetic), `c-kid-oo` (synthetic), `c-bb4` (synthetic), `gc-nf6nf3d6` (synthetic), `gc-nf6nf3c5` (synthetic), `gc-nf6nf3e6e3be7` (synthetic), `gc-nf6nf3b6` (synthetic) | yes |
+| d5 | 41.5% (52237) | 73.3% (12047) | 29.5% (50342) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `c-2nc6` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic), `c-2c6` (synthetic), `c-2bf5` (synthetic), `c-2c5` (synthetic), `c-2bg4` (synthetic), `c-bxf3` (synthetic), `c-qb6` (synthetic), `c-ne4c3` (synthetic), `c-nc6nf6` (synthetic), `c-nc6bf5` (synthetic), `gc-d5nf3nf6e3bf5c4e6` (synthetic), `gc-d5nf3e6e3nf6bd3bd6` (synthetic), `gc-d5nf3e6e3nf6bd3nc6` (synthetic), `gc-d5nf3e6e3nf6bd3nbd7` (synthetic), `gc-d5nf3nf6e3bf5bd3bg6` (synthetic), `gc-d5nf3e6e3nf6bd3c6` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3b6` (synthetic), `gc-d5nf3nf6e3bf5bd3bg4` (synthetic), `gc-d5nf3nf6e3bf5bd3ne4` (synthetic), `gc-d5nf3e6e3nf6bd3b6` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3be7` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3bd7` (synthetic), `gc-d5nf3nf6e3c6bd3g6` (synthetic), `gc-d5nf3nf6e3c6bd3nbd7` (synthetic), `gc-d5nf3nf6e3c6bd3qc7` (synthetic), `gc-d5nf3nf6e3c6bd3h6` (synthetic) | yes |
+| Nf6 | 17.1% (21460) | 26.7% (4388) | 56.9% (97037) | covered | `anti` (theory), `cz-tab` (theory), `colle-kid` (model), `eco-kid` (eco), `eco-trad` (eco), `syn-qid` (synthetic), `c-kid-oo` (synthetic), `c-bb4` (synthetic), `gc-nf6nf3d6` (synthetic), `gc-nf6nf3c5` (synthetic), `gc-nf6nf3e6e3be7` (synthetic), `gc-nf6nf3b6` (synthetic), `gc-nf6nf3g6e3c5` (synthetic) | yes |
 | e6 | 14.4% (18128) | 0 / 16435 | 3.7% (6327) | covered | `c-1e6` (theory), `c-e6bb4` (synthetic), `c-e6c5` (synthetic), `c-e6b6` (synthetic), `c-e6d6` (synthetic) | yes |
 | g6 | 5.0% (6240) | 0 / 16435 | 2.5% (4304) | covered | `eco-ptero` (eco) | yes |
 | d6 | 4.7% (5913) | 0 / 16435 | 2.5% (4325) | covered | `c-1d6` (synthetic) | yes |
-| c5 | 4.4% (5565) | 0 / 16435 | 1.1% (1818) | covered | `syn-benoni` (synthetic), `gc-c5e3e6` (synthetic), `gc-c5e3cxd4exd4nf6` (synthetic), `gc-c5e3cxd4exd4e6` (synthetic), `gc-c5e3d5` (synthetic), `gc-c5e3cxd4exd4g6` (synthetic) | yes |
+| c5 | 4.4% (5565) | 0 / 16435 | 1.1% (1818) | covered | `syn-benoni` (synthetic), `gc-c5e3e6` (synthetic), `gc-c5e3cxd4exd4nf6` (synthetic), `gc-c5e3cxd4exd4e6` (synthetic), `gc-c5e3d5` (synthetic), `gc-c5e3cxd4exd4g6` (synthetic), `gc-c5e3nf6` (synthetic), `gc-c5e3g6` (synthetic), `gc-c5e3cxd4exd4d6` (synthetic), `gc-c5e3cxd4exd4d5nf3bg4` (synthetic), `gc-c5e3cxd4exd4b6` (synthetic), `gc-c5e3cxd4exd4d5nf3bf5` (synthetic), `gc-c5e3cxd4exd4d5nf3e5` (synthetic), `gc-c5e3cxd4exd4d5nf3e6` (synthetic) | yes |
 | b6 | 3.7% (4679) | 0 / 16435 | 0.3% (567) | covered | `c-1b6` (synthetic) | yes |
 | c6 | 3.4% (4328) | 0 / 16435 | 0.4% (752) | covered | `c-1c6` (synthetic) | yes |
 | e5 | 2.4% (3045) | 0 / 16435 | 0.3% (546) | covered | `c-englund` (synthetic) | yes |
-| f5 | 1.8% (2242) | 0 / 16435 | 1.8% (3068) | covered | `syn-dutch` (synthetic), `gc-f5nf3nf6e3e6` (synthetic), `gc-f5nf3nf6e3d5` (synthetic) | yes |
+| f5 | 1.8% (2242) | 0 / 16435 | 1.8% (3068) | covered | `syn-dutch` (synthetic), `gc-f5nf3nf6e3e6` (synthetic), `gc-f5nf3nf6e3d5` (synthetic), `gc-f5nf3d5` (synthetic), `gc-f5nf3nf6e3d6` (synthetic), `gc-f5nf3g6` (synthetic), `gc-f5nf3e6` (synthetic), `gc-f5nf3d6` (synthetic), `gc-f5nf3nf6e3nc6` (synthetic) | yes |
 
 ### rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1
 
@@ -65,8 +65,8 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Nf6 | 26.9% (2499) | 100.0% (11638) | 74.2% (8016) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic), `c-bxf3` (synthetic), `c-qb6` (synthetic), `c-ne4c3` (synthetic), `gc-d5nf3nf6e3bf5c4e6` (synthetic), `gc-d5nf3nf6e3bf5bd3bg6` (synthetic) | yes |
-| e6 | 21.9% (2039) | 0 / 11638 | 12.9% (1397) | covered | `gc-d5nf3e6e3nf6bd3bd6` (synthetic), `gc-d5nf3e6e3nf6bd3nc6` (synthetic), `gc-d5nf3e6e3nf6bd3nbd7` (synthetic), `gc-d5nf3e6e3nf6bd3c6` (synthetic) | yes |
+| Nf6 | 26.9% (2499) | 100.0% (11638) | 74.2% (8016) | covered | `ck` (theory), `kolt` (game), `ohanlon` (game), `cz` (theory), `trap` (theory), `anti-bg4` (theory), `rudel` (book), `soltis` (book), `soltis-trap` (book), `eco-gru` (eco), `eco-torre` (eco), `eco-london` (eco), `syn-slav` (synthetic), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `syn-clamp` (synthetic), `syn-e5colle` (synthetic), `c-bxf3` (synthetic), `c-qb6` (synthetic), `c-ne4c3` (synthetic), `gc-d5nf3nf6e3bf5c4e6` (synthetic), `gc-d5nf3nf6e3bf5bd3bg6` (synthetic), `gc-d5nf3nf6e3bf5bd3bg4` (synthetic), `gc-d5nf3nf6e3bf5bd3ne4` (synthetic), `gc-d5nf3nf6e3c6bd3g6` (synthetic), `gc-d5nf3nf6e3c6bd3nbd7` (synthetic), `gc-d5nf3nf6e3c6bd3qc7` (synthetic), `gc-d5nf3nf6e3c6bd3h6` (synthetic) | yes |
+| e6 | 21.9% (2039) | 0 / 11638 | 12.9% (1397) | covered | `gc-d5nf3e6e3nf6bd3bd6` (synthetic), `gc-d5nf3e6e3nf6bd3nc6` (synthetic), `gc-d5nf3e6e3nf6bd3nbd7` (synthetic), `gc-d5nf3e6e3nf6bd3c6` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3b6` (synthetic), `gc-d5nf3e6e3nf6bd3b6` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3be7` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3bd7` (synthetic) | yes |
 | Nc6 | 15.8% (1472) | 0 / 11638 | 2.3% (251) | covered | `c-2nc6` (synthetic), `c-nc6nf6` (synthetic), `c-nc6bf5` (synthetic) | yes |
 | c6 | 11.5% (1065) | 0 / 11638 | 4.0% (431) | covered | `c-2c6` (synthetic) | yes |
 | Bf5 | 7.5% (699) | 0 / 11638 | 2.2% (239) | covered | `c-2bf5` (synthetic) | yes |
@@ -79,7 +79,7 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| g6 | 37.2% (1370) | 0 / 4228 | 32.8% (6907) | covered | `colle-kid` (model), `eco-kid` (eco), `c-kid-oo` (synthetic) | yes |
+| g6 | 37.2% (1370) | 0 / 4228 | 32.8% (6907) | covered | `colle-kid` (model), `eco-kid` (eco), `c-kid-oo` (synthetic), `gc-nf6nf3g6e3c5` (synthetic) | yes |
 | e6 | 25.9% (955) | 0 / 4228 | 31.2% (6568) | covered | `cz-tab` (theory), `eco-trad` (eco), `syn-qid` (synthetic), `c-bb4` (synthetic), `gc-nf6nf3e6e3be7` (synthetic) | yes |
 | d5 | 21.6% (794) | 100.0% (4228) | 21.4% (4504) | covered | `anti` (theory) | yes |
 | c5 | 5.7% (211) | 0 / 4228 | 7.0% (1474) | covered | `gc-nf6nf3c5` (synthetic) | yes |
@@ -103,9 +103,9 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 |---|---|---|---|---|---|---|
 | e6 | 27.8% (202) | 32.8% (5208) | 32.6% (589) | covered | `ck` (theory), `cz` (theory), `rudel` (book), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `c-be7` (synthetic), `syn-clamp` (synthetic), `c-qb6` (synthetic), `c-ne4c3` (synthetic) | yes |
 | Bg4 | 19.0% (138) | 9.8% (1553) | 5.6% (101) | covered | `anti-bg4` (theory), `c-bxf3` (synthetic) | yes |
-| Bf5 | 14.6% (106) | 14.9% (2371) | 13.1% (237) | covered | `anti` (theory), `trap` (theory), `soltis` (book), `soltis-trap` (book), `gc-d5nf3nf6e3bf5c4e6` (synthetic), `gc-d5nf3nf6e3bf5bd3bg6` (synthetic) | yes |
+| Bf5 | 14.6% (106) | 14.9% (2371) | 13.1% (237) | covered | `anti` (theory), `trap` (theory), `soltis` (book), `soltis-trap` (book), `gc-d5nf3nf6e3bf5c4e6` (synthetic), `gc-d5nf3nf6e3bf5bd3bg6` (synthetic), `gc-d5nf3nf6e3bf5bd3bg4` (synthetic), `gc-d5nf3nf6e3bf5bd3ne4` (synthetic) | yes |
 | Nc6 | 11.3% (82) | 0.7% (114) | 0.2% (3) | transposes | — | yes |
-| c6 | 9.6% (70) | 11.3% (1797) | 9.7% (174) | covered | `syn-slav` (synthetic) | yes |
+| c6 | 9.6% (70) | 11.3% (1797) | 9.7% (174) | covered | `syn-slav` (synthetic), `gc-d5nf3nf6e3c6bd3g6` (synthetic), `gc-d5nf3nf6e3c6bd3nbd7` (synthetic), `gc-d5nf3nf6e3c6bd3qc7` (synthetic), `gc-d5nf3nf6e3c6bd3h6` (synthetic) | yes |
 | g6 | 6.5% (47) | 7.8% (1238) | 5.8% (105) | covered | `eco-gru` (eco) | yes |
 | c5 | 6.0% (44) | 20.7% (3289) | 30.7% (554) | covered | `kolt` (game), `ohanlon` (game), `syn-e5colle` (synthetic) | yes |
 
@@ -115,11 +115,11 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| cxd4 | 64.5% (463) | — | 21.4% (30) | covered | `syn-benoni` (synthetic), `gc-c5e3cxd4exd4nf6` (synthetic), `gc-c5e3cxd4exd4e6` (synthetic), `gc-c5e3cxd4exd4g6` (synthetic) | yes |
+| cxd4 | 64.5% (463) | — | 21.4% (30) | covered | `syn-benoni` (synthetic), `gc-c5e3cxd4exd4nf6` (synthetic), `gc-c5e3cxd4exd4e6` (synthetic), `gc-c5e3cxd4exd4g6` (synthetic), `gc-c5e3cxd4exd4d6` (synthetic), `gc-c5e3cxd4exd4d5nf3bg4` (synthetic), `gc-c5e3cxd4exd4b6` (synthetic), `gc-c5e3cxd4exd4d5nf3bf5` (synthetic), `gc-c5e3cxd4exd4d5nf3e5` (synthetic), `gc-c5e3cxd4exd4d5nf3e6` (synthetic) | yes |
 | e6 | 20.1% (144) | — | 10.7% (15) | covered | `gc-c5e3e6` (synthetic) | yes |
 | d5 | 4.5% (32) | — | 12.9% (18) | covered | `gc-c5e3d5` (synthetic) | yes |
-| Nf6 | 4.0% (29) | — | 38.6% (54) | missing | — | no |
-| g6 | 2.5% (18) | — | 12.9% (18) | missing | — | no |
+| Nf6 | 4.0% (29) | — | 38.6% (54) | covered | `gc-c5e3nf6` (synthetic) | yes |
+| g6 | 2.5% (18) | — | 12.9% (18) | covered | `gc-c5e3g6` (synthetic) | yes |
 | Nc6 | 2.2% (16) | — | 0 / 140 | missing | — | no |
 
 ### rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1
@@ -142,14 +142,14 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| d5 | 42.3% (160) | — | 46.7% (14) | covered | `syn-benoni` (synthetic) | yes |
+| d5 | 42.3% (160) | — | 46.7% (14) | covered | `syn-benoni` (synthetic), `gc-c5e3cxd4exd4d5nf3bg4` (synthetic), `gc-c5e3cxd4exd4d5nf3bf5` (synthetic), `gc-c5e3cxd4exd4d5nf3e5` (synthetic), `gc-c5e3cxd4exd4d5nf3e6` (synthetic) | yes |
 | Nf6 | 11.4% (43) | — | 30.0% (9) | covered | `gc-c5e3cxd4exd4nf6` (synthetic) | yes |
 | Nc6 | 10.8% (41) | — | 0 / 30 | missing | — | no |
 | e6 | 10.6% (40) | — | 3.3% (1) | covered | `gc-c5e3cxd4exd4e6` (synthetic) | yes |
 | e5 | 8.2% (31) | — | 0 / 30 | missing | — | no |
 | g6 | 6.6% (25) | — | 13.3% (4) | covered | `gc-c5e3cxd4exd4g6` (synthetic) | yes |
-| d6 | 4.5% (17) | — | 6.7% (2) | missing | — | no |
-| b6 | 2.4% (9) | — | 0 / 30 | missing | — | no |
+| d6 | 4.5% (17) | — | 6.7% (2) | covered | `gc-c5e3cxd4exd4d6` (synthetic) | yes |
+| b6 | 2.4% (9) | — | 0 / 30 | covered | `gc-c5e3cxd4exd4b6` (synthetic) | yes |
 
 ### rnbqkbnr/ppppp1pp/8/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1
 
@@ -157,11 +157,11 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Nf6 | 76.0% (269) | — | 90.2% (513) | covered | `syn-dutch` (synthetic), `gc-f5nf3nf6e3e6` (synthetic), `gc-f5nf3nf6e3d5` (synthetic) | yes |
-| d5 | 7.1% (25) | — | 0.2% (1) | missing | — | no |
-| g6 | 6.2% (22) | — | 1.9% (11) | missing | — | no |
-| e6 | 5.7% (20) | — | 6.7% (38) | missing | — | no |
-| d6 | 2.5% (9) | — | 0.7% (4) | missing | — | no |
+| Nf6 | 76.0% (269) | — | 90.2% (513) | covered | `syn-dutch` (synthetic), `gc-f5nf3nf6e3e6` (synthetic), `gc-f5nf3nf6e3d5` (synthetic), `gc-f5nf3nf6e3d6` (synthetic), `gc-f5nf3nf6e3nc6` (synthetic) | yes |
+| d5 | 7.1% (25) | — | 0.2% (1) | covered | `gc-f5nf3d5` (synthetic) | yes |
+| g6 | 6.2% (22) | — | 1.9% (11) | covered | `gc-f5nf3g6` (synthetic) | yes |
+| e6 | 5.7% (20) | — | 6.7% (38) | covered | `gc-f5nf3e6` (synthetic) | yes |
+| d6 | 2.5% (9) | — | 0.7% (4) | covered | `gc-f5nf3d6` (synthetic) | yes |
 
 ### rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1
 
@@ -188,7 +188,7 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 |---|---|---|---|---|---|---|
 | Bg7 | 87.3% (185) | — | 96.3% (394) | covered | `colle-kid` (model), `eco-kid` (eco), `c-kid-oo` (synthetic) | yes |
 | d5 | 7.5% (16) | — | 1.5% (6) | transposes | — | yes |
-| c5 | 3.3% (7) | — | 1.5% (6) | missing | — | no |
+| c5 | 3.3% (7) | — | 1.5% (6) | covered | `gc-nf6nf3g6e3c5` (synthetic) | yes |
 
 ### rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1
 
@@ -232,11 +232,11 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| c5 | 36.9% (38) | 51.2% (2054) | 48.7% (326) | covered | `ck` (theory), `cz` (theory), `rudel` (book), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `syn-clamp` (synthetic), `c-qb6` (synthetic), `c-ne4c3` (synthetic) | yes |
+| c5 | 36.9% (38) | 51.2% (2054) | 48.7% (326) | covered | `ck` (theory), `cz` (theory), `rudel` (book), `syn-qf3` (synthetic), `syn-ne4` (synthetic), `syn-clamp` (synthetic), `c-qb6` (synthetic), `c-ne4c3` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3b6` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3be7` (synthetic), `gc-d5nf3e6e3nf6bd3c5c3bd7` (synthetic) | yes |
 | Bd6 | 23.3% (24) | 15.7% (628) | 18.5% (124) | covered | `gc-d5nf3e6e3nf6bd3bd6` (synthetic) | yes |
 | Be7 | 17.5% (18) | 16.6% (666) | 16.4% (110) | covered | `c-be7` (synthetic) | yes |
 | c6 | 4.9% (5) | 0.9% (37) | 0.4% (3) | covered | `gc-d5nf3e6e3nf6bd3c6` (synthetic) | yes |
-| b6 | 3.9% (4) | 7.0% (283) | 11.7% (78) | missing | — | no |
+| b6 | 3.9% (4) | 7.0% (283) | 11.7% (78) | covered | `gc-d5nf3e6e3nf6bd3b6` (synthetic) | yes |
 | Nbd7 | 3.9% (4) | 6.6% (265) | 2.2% (15) | covered | `gc-d5nf3e6e3nf6bd3nbd7` (synthetic) | yes |
 | Nc6 | 3.9% (4) | 0.6% (25) | 0.4% (3) | covered | `gc-d5nf3e6e3nf6bd3nc6` (synthetic) | yes |
 
@@ -262,10 +262,10 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 |---|---|---|---|---|---|---|
 | Nc6 | 67.3% (37) | — | — | covered | `c-2c5` (synthetic) | yes |
 | Nf6 | 10.9% (6) | — | — | covered | `syn-benoni` (synthetic) | yes |
-| Bg4 | 7.3% (4) | — | — | missing | — | no |
-| e6 | 3.6% (2) | — | — | missing | — | no |
-| e5 | 3.6% (2) | — | — | missing | — | no |
-| Bf5 | 3.6% (2) | — | — | missing | — | no |
+| Bg4 | 7.3% (4) | — | — | covered | `gc-c5e3cxd4exd4d5nf3bg4` (synthetic) | yes |
+| e6 | 3.6% (2) | — | — | covered | `gc-c5e3cxd4exd4d5nf3e6` (synthetic) | yes |
+| e5 | 3.6% (2) | — | — | covered | `gc-c5e3cxd4exd4d5nf3e5` (synthetic) | yes |
+| Bf5 | 3.6% (2) | — | — | covered | `gc-c5e3cxd4exd4d5nf3bf5` (synthetic) | yes |
 
 ### rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1
 
@@ -276,8 +276,8 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 | Bxd3 | 53.7% (22) | 54.7% (390) | 53.9% (48) | covered | `soltis` (book) | yes |
 | e6 | 17.1% (7) | 19.4% (138) | 19.1% (17) | covered | `soltis-trap` (book) | yes |
 | Bg6 | 14.6% (6) | 21.3% (152) | 22.5% (20) | covered | `gc-d5nf3nf6e3bf5bd3bg6` (synthetic) | yes |
-| Ne4 | 7.3% (3) | 2.0% (14) | 3.4% (3) | missing | — | no |
-| Bg4 | 7.3% (3) | 1.3% (9) | 1.1% (1) | missing | — | no |
+| Ne4 | 7.3% (3) | 2.0% (14) | 3.4% (3) | covered | `gc-d5nf3nf6e3bf5bd3ne4` (synthetic) | yes |
+| Bg4 | 7.3% (3) | 1.3% (9) | 1.1% (1) | covered | `gc-d5nf3nf6e3bf5bd3bg4` (synthetic) | yes |
 
 ### rnbqkb1r/ppppp1pp/5n2/5p2/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1
 
@@ -288,8 +288,8 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 | e6 | 50.0% (20) | — | 31.4% (11) | covered | `gc-f5nf3nf6e3e6` (synthetic) | yes |
 | g6 | 30.0% (12) | — | 54.3% (19) | covered | `syn-dutch` (synthetic) | yes |
 | d5 | 10.0% (4) | — | 2.9% (1) | covered | `gc-f5nf3nf6e3d5` (synthetic) | yes |
-| d6 | 7.5% (3) | — | 8.6% (3) | missing | — | no |
-| Nc6 | 2.5% (1) | — | 2.9% (1) | missing | — | no |
+| d6 | 7.5% (3) | — | 8.6% (3) | covered | `gc-f5nf3nf6e3d6` (synthetic) | yes |
+| Nc6 | 2.5% (1) | — | 2.9% (1) | covered | `gc-f5nf3nf6e3nc6` (synthetic) | yes |
 
 ### rnbqkb1r/ppp2ppp/4pn2/3p2B1/3P4/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1
 
@@ -330,7 +330,7 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Bb7 | 95.8% (23) | — | 97.7% (378) | covered | `syn-qid` (synthetic) | yes |
-| d5 | 4.2% (1) | — | 0.3% (1) | missing | — | no |
+| d5 | 4.2% (1) | — | 0.3% (1) | transposes | — | yes |
 
 ### rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R b KQkq - 0 1
 
@@ -340,9 +340,9 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 |---|---|---|---|---|---|---|
 | Nc6 | 43.5% (10) | 64.2% (635) | 64.0% (87) | covered | `ck` (theory), `kolt` (game) | yes |
 | c4 | 34.8% (8) | 2.8% (28) | 0.7% (1) | covered | `syn-clamp` (synthetic) | yes |
-| b6 | 8.7% (2) | 4.5% (45) | 9.6% (13) | missing | — | no |
-| Be7 | 8.7% (2) | 5.3% (52) | 5.1% (7) | missing | — | no |
-| Bd7 | 4.3% (1) | 0.2% (2) | 0 / 136 | missing | — | no |
+| b6 | 8.7% (2) | 4.5% (45) | 9.6% (13) | covered | `gc-d5nf3e6e3nf6bd3c5c3b6` (synthetic) | yes |
+| Be7 | 8.7% (2) | 5.3% (52) | 5.1% (7) | covered | `gc-d5nf3e6e3nf6bd3c5c3be7` (synthetic) | yes |
+| Bd7 | 4.3% (1) | 0.2% (2) | 0 / 136 | covered | `gc-d5nf3e6e3nf6bd3c5c3bd7` (synthetic) | yes |
 
 ### rnbqkb1r/pp2pppp/2p2n2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1
 
@@ -351,11 +351,11 @@ Player pool: 495,101 games read, 137,678 entered the tree, 27 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Bg4 | 54.5% (12) | 74.0% (671) | 81.0% (64) | covered | `syn-slav` (synthetic) | yes |
-| g6 | 18.2% (4) | 7.5% (68) | 5.1% (4) | missing | — | no |
+| g6 | 18.2% (4) | 7.5% (68) | 5.1% (4) | covered | `gc-d5nf3nf6e3c6bd3g6` (synthetic) | yes |
 | e6 | 13.6% (3) | 12.2% (111) | 10.1% (8) | transposes | — | yes |
-| h6 | 4.5% (1) | 0 / 907 | 0 / 79 | missing | — | no |
-| Qc7 | 4.5% (1) | 0.1% (1) | 0 / 79 | missing | — | no |
-| Nbd7 | 4.5% (1) | 5.3% (48) | 2.5% (2) | missing | — | no |
+| h6 | 4.5% (1) | 0 / 907 | 0 / 79 | covered | `gc-d5nf3nf6e3c6bd3h6` (synthetic) | yes |
+| Qc7 | 4.5% (1) | 0.1% (1) | 0 / 79 | covered | `gc-d5nf3nf6e3c6bd3qc7` (synthetic) | yes |
+| Nbd7 | 4.5% (1) | 5.3% (48) | 2.5% (2) | covered | `gc-d5nf3nf6e3c6bd3nbd7` (synthetic) | yes |
 
 ### rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1
 
@@ -379,10 +379,10 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| e4 | 58.9% (291474) | 73.1% (112838) | 48.1% (256028) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-bg5` (synthetic), `h-2nf3` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `h-bc4` (synthetic), `h-f4` (synthetic), `h-nf3bc4` (synthetic), `h-d6nf3` (synthetic), `h-d6f4` (synthetic), `h-d6bc4` (synthetic), `h-d6bd3` (synthetic), `h-d6d3` (synthetic), `h-d6nc3` (synthetic), `h-pircbd3` (synthetic), `h-nf3nc3` (synthetic), `h-4bc4` (synthetic), `h-pircbe3` (synthetic), `gh-e4g6d3` (synthetic), `gh-e4g6nc3` (synthetic), `gh-e4g6d4bg7c3` (synthetic), `gh-e4g6d4bg7be3` (synthetic), `gh-e4d6d4nf6f3` (synthetic), `gh-e4g6d4bg7nc3b6nf3` (synthetic), `gh-e4d6d4nf6nc3g6f3` (synthetic), `gh-e4d6d4nf6nc3g6bc4` (synthetic), `gh-e4g6nf3bg7d4d6c4` (synthetic), `gh-e4g6nf3bg7d4d6be3` (synthetic), `gh-e4g6nf3bg7d4d6h3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6bd3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6be3` (synthetic), `gh-e4g6nf3bg7d4d6bd3` (synthetic), `gh-e4d6d4nf6nc3g6h3` (synthetic), `gh-e4d6d4nf6nc3g6be2` (synthetic), `gh-e4g6d4bg7nc3b6f4` (synthetic), `gh-e4g6d4bg7nc3d6bg5` (synthetic) | yes |
-| d4 | 25.4% (125718) | 21.4% (32987) | 32.1% (170669) | covered | `def-ohanlon` (synthetic), `def-kolt` (synthetic), `hip-g16` (game), `eco-averb` (eco), `eco-psam` (eco), `eco-rat` (eco), `syn-london` (synthetic), `h-d4nf3` (synthetic), `gh-d4g6e3` (synthetic), `gh-d4g6c3` (synthetic), `gh-d4g6nc3` (synthetic), `gh-d4g6bg5` (synthetic), `gh-d4g6bf4bg7nf3` (synthetic) | yes |
-| c4 | 3.2% (15627) | 1.9% (2955) | 5.9% (31592) | covered | `syn-english` (synthetic), `gh-c4g6e3` (synthetic), `gh-c4g6g3` (synthetic) | yes |
-| Nf3 | 2.4% (11962) | 3.3% (5154) | 10.1% (53785) | covered | `hip66` (game), `gh-nf3g6g3` (synthetic) | yes |
+| e4 | 58.9% (291474) | 73.1% (112838) | 48.1% (256028) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-bg5` (synthetic), `h-2nf3` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-austrian` (eco), `eco-pircclass` (eco), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `h-bc4` (synthetic), `h-f4` (synthetic), `h-nf3bc4` (synthetic), `h-d6nf3` (synthetic), `h-d6f4` (synthetic), `h-d6bc4` (synthetic), `h-d6bd3` (synthetic), `h-d6d3` (synthetic), `h-d6nc3` (synthetic), `h-pircbd3` (synthetic), `h-nf3nc3` (synthetic), `h-4bc4` (synthetic), `h-pircbe3` (synthetic), `gh-e4g6d3` (synthetic), `gh-e4g6nc3` (synthetic), `gh-e4g6d4bg7c3` (synthetic), `gh-e4g6d4bg7be3` (synthetic), `gh-e4d6d4nf6f3` (synthetic), `gh-e4g6d4bg7nc3b6nf3` (synthetic), `gh-e4d6d4nf6nc3g6f3` (synthetic), `gh-e4d6d4nf6nc3g6bc4` (synthetic), `gh-e4g6nf3bg7d4d6c4` (synthetic), `gh-e4g6nf3bg7d4d6be3` (synthetic), `gh-e4g6nf3bg7d4d6h3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6bd3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6be3` (synthetic), `gh-e4g6nf3bg7d4d6bd3` (synthetic), `gh-e4d6d4nf6nc3g6h3` (synthetic), `gh-e4d6d4nf6nc3g6be2` (synthetic), `gh-e4g6d4bg7nc3b6f4` (synthetic), `gh-e4g6d4bg7nc3d6bg5` (synthetic), `gh-e4g6d4bg7nc3b6bg5` (synthetic), `gh-e4g6d4bg7nc3b6be2` (synthetic), `gh-e4g6d4bg7nc3d6f3` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6e5` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6a4` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6h3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6d5` (synthetic), `gh-e4g6d4bg7nc3d6be2` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6nf3oobe3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7bd3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7qf3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f4` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7nf3` (synthetic) | yes |
+| d4 | 25.4% (125718) | 21.4% (32987) | 32.1% (170669) | covered | `def-ohanlon` (synthetic), `def-kolt` (synthetic), `hip-g16` (game), `eco-averb` (eco), `eco-psam` (eco), `eco-rat` (eco), `syn-london` (synthetic), `h-d4nf3` (synthetic), `gh-d4g6e3` (synthetic), `gh-d4g6c3` (synthetic), `gh-d4g6nc3` (synthetic), `gh-d4g6bg5` (synthetic), `gh-d4g6bf4bg7nf3` (synthetic), `gh-d4g6bf4bg7e3d6c3` (synthetic), `gh-d4g6bf4bg7e3d6be2` (synthetic), `gh-d4g6bf4bg7e3d6c4` (synthetic), `gh-d4g6bf4bg7c3` (synthetic), `gh-d4g6bf4bg7e3d6bc4` (synthetic), `gh-d4g6bf4bg7e3d6bd3` (synthetic), `gh-d4g6bf4bg7e3d6h3` (synthetic), `gh-d4g6bf4bg7e3d6nc3` (synthetic) | yes |
+| c4 | 3.2% (15627) | 1.9% (2955) | 5.9% (31592) | covered | `syn-english` (synthetic), `gh-c4g6e3` (synthetic), `gh-c4g6g3` (synthetic), `gh-c4g6nc3bg7d3` (synthetic), `gh-c4g6b3` (synthetic), `gh-c4g6d3` (synthetic), `gh-c4g6e4` (synthetic) | yes |
+| Nf3 | 2.4% (11962) | 3.3% (5154) | 10.1% (53785) | covered | `hip66` (game), `gh-nf3g6g3` (synthetic), `gh-nf3g6b3` (synthetic), `gh-nf3g6c3` (synthetic), `gh-nf3g6c4bg7g3` (synthetic), `gh-nf3g6h4` (synthetic), `gh-nf3g6c4bg7d4d6e3` (synthetic), `gh-nf3g6c4bg7e3` (synthetic), `gh-nf3g6c4bg7d4d6h3` (synthetic), `gh-nf3g6c4bg7d4d6b3` (synthetic) | yes |
 | g3 | 2.3% (11511) | 0.0% (1) | 0.5% (2935) | covered | `h-g3` (synthetic) | yes |
 | e3 | 2.3% (11454) | 0 / 154370 | 0.1% (521) | covered | `gh-e3` (synthetic) | yes |
 
@@ -419,8 +419,8 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| d4 | 42.2% (4284) | 95.8% (28996) | 88.9% (5979) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `h-4bc4` (synthetic), `gh-e4g6d4bg7c3` (synthetic), `gh-e4g6d4bg7be3` (synthetic), `gh-e4g6d4bg7nc3b6nf3` (synthetic), `gh-e4g6d4bg7nc3b6f4` (synthetic), `gh-e4g6d4bg7nc3d6bg5` (synthetic) | yes |
-| Nf3 | 24.0% (2433) | 3.6% (1087) | 2.9% (193) | covered | `h-2nf3` (synthetic), `h-nf3bc4` (synthetic), `h-nf3nc3` (synthetic), `gh-e4g6nf3bg7d4d6c4` (synthetic), `gh-e4g6nf3bg7d4d6be3` (synthetic), `gh-e4g6nf3bg7d4d6h3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6bd3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6be3` (synthetic), `gh-e4g6nf3bg7d4d6bd3` (synthetic) | yes |
+| d4 | 42.2% (4284) | 95.8% (28996) | 88.9% (5979) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-mong` (eco), `eco-bish` (eco), `eco-paus` (eco), `h-3e5` (synthetic), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `eco-3pawn` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `h-4bc4` (synthetic), `gh-e4g6d4bg7c3` (synthetic), `gh-e4g6d4bg7be3` (synthetic), `gh-e4g6d4bg7nc3b6nf3` (synthetic), `gh-e4g6d4bg7nc3b6f4` (synthetic), `gh-e4g6d4bg7nc3d6bg5` (synthetic), `gh-e4g6d4bg7nc3b6bg5` (synthetic), `gh-e4g6d4bg7nc3b6be2` (synthetic), `gh-e4g6d4bg7nc3d6f3` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6e5` (synthetic), `gh-e4g6d4bg7nc3d6be2` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6nf3oobe3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7bd3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7qf3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f4` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7nf3` (synthetic) | yes |
+| Nf3 | 24.0% (2433) | 3.6% (1087) | 2.9% (193) | covered | `h-2nf3` (synthetic), `h-nf3bc4` (synthetic), `h-nf3nc3` (synthetic), `gh-e4g6nf3bg7d4d6c4` (synthetic), `gh-e4g6nf3bg7d4d6be3` (synthetic), `gh-e4g6nf3bg7d4d6h3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6bd3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6be3` (synthetic), `gh-e4g6nf3bg7d4d6bd3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6a4` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6h3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6d5` (synthetic) | yes |
 | Bc4 | 8.9% (906) | 0.1% (34) | 0.3% (18) | covered | `h-bc4` (synthetic) | yes |
 | f4 | 8.1% (819) | 0.1% (16) | 0.3% (20) | covered | `h-f4` (synthetic) | yes |
 | Nc3 | 4.9% (495) | 0.2% (70) | 3.0% (201) | covered | `gh-e4g6nc3` (synthetic) | yes |
@@ -436,7 +436,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | e4 | 14.9% (927) | 43.1% (7527) | 31.8% (1364) | covered | `hip-g16` (game) | yes |
 | Nf3 | 14.1% (876) | 5.9% (1022) | 16.5% (708) | covered | `h-d4nf3` (synthetic) | yes |
 | e3 | 8.3% (517) | 0 / 17461 | 0.6% (27) | covered | `gh-d4g6e3` (synthetic) | yes |
-| Bf4 | 4.8% (301) | 0 / 17461 | 3.1% (135) | covered | `syn-london` (synthetic), `gh-d4g6bf4bg7nf3` (synthetic) | yes |
+| Bf4 | 4.8% (301) | 0 / 17461 | 3.1% (135) | covered | `syn-london` (synthetic), `gh-d4g6bf4bg7nf3` (synthetic), `gh-d4g6bf4bg7e3d6c3` (synthetic), `gh-d4g6bf4bg7e3d6be2` (synthetic), `gh-d4g6bf4bg7e3d6c4` (synthetic), `gh-d4g6bf4bg7c3` (synthetic), `gh-d4g6bf4bg7e3d6bc4` (synthetic), `gh-d4g6bf4bg7e3d6bd3` (synthetic), `gh-d4g6bf4bg7e3d6h3` (synthetic), `gh-d4g6bf4bg7e3d6nc3` (synthetic) | yes |
 | c3 | 3.5% (219) | 0.3% (51) | 0.9% (41) | covered | `gh-d4g6c3` (synthetic) | yes |
 | Nc3 | 2.7% (166) | 0.6% (106) | 4.3% (187) | covered | `gh-d4g6nc3` (synthetic) | yes |
 | Bg5 | 2.1% (132) | 0 / 17461 | 0.4% (15) | covered | `gh-d4g6bg5` (synthetic) | yes |
@@ -449,7 +449,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 |---|---|---|---|---|---|---|
 | Nf3 | 26.0% (1177) | 49.6% (17669) | 24.7% (1622) | covered | `hip-g16` (game), `eco-mong` (eco), `h-4bc4` (synthetic) | yes |
 | e5 | 15.2% (689) | 0 / 35588 | 0.0% (1) | covered | `h-3e5` (synthetic) | yes |
-| Nc3 | 13.8% (623) | 18.4% (6556) | 60.9% (4002) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-paus` (eco), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `gh-e4g6d4bg7nc3b6nf3` (synthetic), `gh-e4g6d4bg7nc3b6f4` (synthetic), `gh-e4g6d4bg7nc3d6bg5` (synthetic) | yes |
+| Nc3 | 13.8% (623) | 18.4% (6556) | 60.9% (4002) | covered | `hip-e4` (model), `hip-e5` (model), `hip-f4` (theory), `hip-150` (theory), `eco-mong3` (eco), `eco-paus` (eco), `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipc5` (synthetic), `syn-hiph5` (synthetic), `eco-std` (eco), `syn-e5punish` (synthetic), `syn-hipdown` (synthetic), `syn-h4` (synthetic), `gh-e4g6d4bg7nc3b6nf3` (synthetic), `gh-e4g6d4bg7nc3b6f4` (synthetic), `gh-e4g6d4bg7nc3d6bg5` (synthetic), `gh-e4g6d4bg7nc3b6bg5` (synthetic), `gh-e4g6d4bg7nc3b6be2` (synthetic), `gh-e4g6d4bg7nc3d6f3` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6e5` (synthetic), `gh-e4g6d4bg7nc3d6be2` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6nf3oobe3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7bd3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7qf3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f4` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7nf3` (synthetic) | yes |
 | c3 | 11.3% (513) | 9.7% (3444) | 3.3% (219) | covered | `gh-e4g6d4bg7c3` (synthetic) | yes |
 | c4 | 10.1% (457) | 9.6% (3425) | 4.9% (319) | transposes | — | yes |
 | f4 | 9.4% (425) | 5.7% (2027) | 1.5% (101) | covered | `eco-3pawn` (eco) | no |
@@ -484,14 +484,14 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Nc3 | 54.3% (516) | 35.6% (1002) | 41.4% (710) | covered | `syn-english` (synthetic) | yes |
+| Nc3 | 54.3% (516) | 35.6% (1002) | 41.4% (710) | covered | `syn-english` (synthetic), `gh-c4g6nc3bg7d3` (synthetic) | yes |
 | d4 | 17.3% (164) | 35.1% (989) | 12.5% (215) | transposes | — | yes |
 | e3 | 9.0% (86) | 0 / 2816 | 0.1% (1) | covered | `gh-c4g6e3` (synthetic) | yes |
 | g3 | 6.4% (61) | 0 / 2816 | 29.8% (511) | covered | `gh-c4g6g3` (synthetic) | yes |
-| b3 | 3.4% (32) | 0 / 2816 | 0.2% (3) | missing | — | no |
+| b3 | 3.4% (32) | 0 / 2816 | 0.2% (3) | covered | `gh-c4g6b3` (synthetic) | yes |
 | Nf3 | 3.0% (29) | 0 / 2816 | 11.1% (191) | transposes | — | yes |
-| d3 | 2.9% (28) | 0 / 2816 | 0.4% (6) | missing | — | no |
-| e4 | 2.4% (23) | 29.3% (825) | 3.1% (54) | missing | — | no |
+| d3 | 2.9% (28) | 0 / 2816 | 0.4% (6) | covered | `gh-c4g6d3` (synthetic) | yes |
+| e4 | 2.4% (23) | 29.3% (825) | 3.1% (54) | covered | `gh-c4g6e4` (synthetic) | yes |
 
 ### rnbqkb1r/ppp1pp1p/3p1np1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1
 
@@ -518,12 +518,12 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 |---|---|---|---|---|---|---|
 | d4 | 34.3% (197) | 29.8% (1433) | 25.8% (563) | transposes | — | yes |
 | g3 | 25.6% (147) | 0 / 4814 | 33.0% (721) | covered | `gh-nf3g6g3` (synthetic) | yes |
-| c4 | 9.9% (57) | 0 / 4814 | 15.3% (335) | covered | `hip66` (game) | yes |
+| c4 | 9.9% (57) | 0 / 4814 | 15.3% (335) | covered | `hip66` (game), `gh-nf3g6c4bg7g3` (synthetic), `gh-nf3g6c4bg7d4d6e3` (synthetic), `gh-nf3g6c4bg7e3` (synthetic), `gh-nf3g6c4bg7d4d6h3` (synthetic), `gh-nf3g6c4bg7d4d6b3` (synthetic) | yes |
 | e4 | 9.7% (56) | 70.2% (3381) | 19.5% (425) | transposes | — | yes |
 | Nc3 | 5.2% (30) | 0 / 4814 | 0.2% (4) | missing | — | no |
-| b3 | 4.3% (25) | 0 / 4814 | 2.0% (44) | missing | — | no |
-| c3 | 4.2% (24) | 0 / 4814 | 0.3% (6) | missing | — | no |
-| h4 | 2.4% (14) | 0 / 4814 | 1.4% (31) | missing | — | no |
+| b3 | 4.3% (25) | 0 / 4814 | 2.0% (44) | covered | `gh-nf3g6b3` (synthetic) | yes |
+| c3 | 4.2% (24) | 0 / 4814 | 0.3% (6) | covered | `gh-nf3g6c3` (synthetic) | yes |
+| h4 | 2.4% (14) | 0 / 4814 | 1.4% (31) | covered | `gh-nf3g6h4` (synthetic) | yes |
 
 ### rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1
 
@@ -531,7 +531,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Nc3 | 26.6% (136) | 23.6% (3133) | 18.4% (201) | covered | `gh-e4g6nf3bg7d4d6nc3a6bd3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6be3` (synthetic) | yes |
+| Nc3 | 26.6% (136) | 23.6% (3133) | 18.4% (201) | covered | `gh-e4g6nf3bg7d4d6nc3a6bd3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6be3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6a4` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6h3` (synthetic), `gh-e4g6nf3bg7d4d6nc3a6d5` (synthetic) | yes |
 | Bc4 | 22.1% (113) | 26.9% (3568) | 25.8% (281) | covered | `h-4bc4` (synthetic) | yes |
 | h3 | 14.4% (74) | 8.0% (1065) | 8.5% (93) | covered | `gh-e4g6nf3bg7d4d6h3` (synthetic) | yes |
 | Bd3 | 8.2% (42) | 7.2% (959) | 11.9% (130) | covered | `gh-e4g6nf3bg7d4d6bd3` (synthetic) | yes |
@@ -550,8 +550,8 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | g3 | 28.6% (135) | 0 / 996 | 47.6% (284) | covered | `syn-english` (synthetic) | yes |
 | Nf3 | 15.5% (73) | 0 / 996 | 14.4% (86) | missing | — | no |
 | e4 | 8.7% (41) | 13.4% (133) | 5.0% (30) | missing | — | no |
-| d3 | 7.0% (33) | 0 / 996 | 1.0% (6) | missing | — | no |
-| b3 | 2.5% (12) | 0 / 996 | 0 / 596 | missing | — | no |
+| d3 | 7.0% (33) | 0 / 996 | 1.0% (6) | covered | `gh-c4g6nc3bg7d3` (synthetic) | yes |
+| b3 | 2.5% (12) | 0 / 996 | 0 / 596 | transposes | — | yes |
 
 ### rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 1
 
@@ -584,11 +584,11 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| e3 | 53.3% (139) | — | 49.6% (61) | covered | `syn-london` (synthetic) | yes |
+| e3 | 53.3% (139) | — | 49.6% (61) | covered | `syn-london` (synthetic), `gh-d4g6bf4bg7e3d6c3` (synthetic), `gh-d4g6bf4bg7e3d6be2` (synthetic), `gh-d4g6bf4bg7e3d6c4` (synthetic), `gh-d4g6bf4bg7e3d6bc4` (synthetic), `gh-d4g6bf4bg7e3d6bd3` (synthetic), `gh-d4g6bf4bg7e3d6h3` (synthetic), `gh-d4g6bf4bg7e3d6nc3` (synthetic) | yes |
 | Nf3 | 15.3% (40) | — | 13.8% (17) | covered | `gh-d4g6bf4bg7nf3` (synthetic) | yes |
 | Be5 | 11.5% (30) | — | 0 / 123 | missing | — | no |
 | Nc3 | 10.0% (26) | — | 21.9% (27) | missing | — | no |
-| c3 | 3.8% (10) | — | 5.7% (7) | missing | — | no |
+| c3 | 3.8% (10) | — | 5.7% (7) | covered | `gh-d4g6bf4bg7c3` (synthetic) | yes |
 | e4 | 3.5% (9) | — | 6.5% (8) | missing | — | no |
 
 ### rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1
@@ -599,11 +599,11 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 |---|---|---|---|---|---|---|
 | Be3 | 35.8% (91) | — | 47.1% (976) | covered | `h-h4storm` (synthetic), `h-g4storm` (synthetic), `h-g4b5` (synthetic), `syn-hipdown` (synthetic) | yes |
 | Nf3 | 20.9% (53) | — | 14.0% (290) | covered | `hip-e4` (model), `hip-e5` (model), `syn-hipc5` (synthetic) | yes |
-| f4 | 18.1% (46) | — | 22.2% (459) | covered | `hip-f4` (theory), `eco-paus` (eco), `syn-e5punish` (synthetic) | yes |
+| f4 | 18.1% (46) | — | 22.2% (459) | covered | `hip-f4` (theory), `eco-paus` (eco), `syn-e5punish` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6e5` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6nf3oobe3` (synthetic) | yes |
 | Bg5 | 7.1% (18) | — | 3.2% (67) | covered | `gh-e4g6d4bg7nc3d6bg5` (synthetic) | yes |
 | Bc4 | 4.3% (11) | — | 1.9% (40) | missing | — | no |
-| f3 | 3.9% (10) | — | 0.9% (18) | missing | — | no |
-| Be2 | 3.9% (10) | — | 1.5% (30) | missing | — | no |
+| f3 | 3.9% (10) | — | 0.9% (18) | covered | `gh-e4g6d4bg7nc3d6f3` (synthetic) | yes |
+| Be2 | 3.9% (10) | — | 1.5% (30) | covered | `gh-e4g6d4bg7nc3d6be2` (synthetic) | yes |
 | h4 | 0.4% (1) | — | 2.4% (49) | covered | `syn-h4` (synthetic) | yes |
 
 ### rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1
@@ -656,8 +656,8 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| Nf3 | 71.2% (79) | 91.5% (8516) | 89.7% (428) | covered | `hip-f4` (theory), `eco-austrian` (eco), `syn-e5punish` (synthetic) | yes |
-| e5 | 20.7% (23) | 3.0% (280) | 3.4% (16) | missing | — | no |
+| Nf3 | 71.2% (79) | 91.5% (8516) | 89.7% (428) | covered | `hip-f4` (theory), `eco-austrian` (eco), `syn-e5punish` (synthetic), `gh-e4g6d4bg7nc3d6f4nf6nf3oobe3` (synthetic) | yes |
+| e5 | 20.7% (23) | 3.0% (280) | 3.4% (16) | covered | `gh-e4g6d4bg7nc3d6f4nf6e5` (synthetic) | yes |
 
 ### rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1
 
@@ -665,10 +665,10 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
-| d4 | 39.0% (32) | — | 24.3% (120) | covered | `hip66` (game) | yes |
+| d4 | 39.0% (32) | — | 24.3% (120) | covered | `hip66` (game), `gh-nf3g6c4bg7d4d6e3` (synthetic), `gh-nf3g6c4bg7d4d6h3` (synthetic), `gh-nf3g6c4bg7d4d6b3` (synthetic) | yes |
 | Nc3 | 29.3% (24) | — | 39.1% (193) | missing | — | no |
-| g3 | 20.7% (17) | — | 30.0% (148) | missing | — | no |
-| e3 | 7.3% (6) | — | 2.6% (13) | missing | — | no |
+| g3 | 20.7% (17) | — | 30.0% (148) | covered | `gh-nf3g6c4bg7g3` (synthetic) | yes |
+| e3 | 7.3% (6) | — | 2.6% (13) | covered | `gh-nf3g6c4bg7e3` (synthetic) | yes |
 | d3 | 2.4% (2) | — | 0 / 493 | missing | — | no |
 
 ### rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1
@@ -678,12 +678,12 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Nc3 | 32.0% (24) | — | 54.1% (185) | covered | `hip66` (game) | yes |
-| g3 | 20.0% (15) | — | 35.7% (122) | missing | — | no |
+| g3 | 20.0% (15) | — | 35.7% (122) | transposes | — | yes |
 | e4 | 16.0% (12) | — | 5.9% (20) | transposes | — | yes |
-| e3 | 13.3% (10) | — | 1.2% (4) | missing | — | no |
+| e3 | 13.3% (10) | — | 1.2% (4) | covered | `gh-nf3g6c4bg7d4d6e3` (synthetic) | yes |
 | Bf4 | 6.7% (5) | — | 0.3% (1) | missing | — | no |
-| h3 | 4.0% (3) | — | 1.5% (5) | missing | — | no |
-| b3 | 2.7% (2) | — | 0 / 342 | missing | — | no |
+| h3 | 4.0% (3) | — | 1.5% (5) | covered | `gh-nf3g6c4bg7d4d6h3` (synthetic) | yes |
+| b3 | 2.7% (2) | — | 0 / 342 | covered | `gh-nf3g6c4bg7d4d6b3` (synthetic) | yes |
 
 ### rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1
 
@@ -692,10 +692,10 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Nf3 | 40.0% (28) | — | 23.8% (5) | covered | `gh-e4g6d4bg7nc3b6nf3` (synthetic) | yes |
-| Be3 | 35.7% (25) | — | 28.6% (6) | covered | `hip-150` (theory), `syn-hiph5` (synthetic) | yes |
+| Be3 | 35.7% (25) | — | 28.6% (6) | covered | `hip-150` (theory), `syn-hiph5` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7bd3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7qf3` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7f4` (synthetic), `gh-e4g6d4bg7nc3b6be3bb7nf3` (synthetic) | yes |
 | f4 | 10.0% (7) | — | 23.8% (5) | covered | `gh-e4g6d4bg7nc3b6f4` (synthetic) | yes |
-| Be2 | 4.3% (3) | — | 0 / 21 | missing | — | no |
-| Bg5 | 2.9% (2) | — | 4.8% (1) | missing | — | no |
+| Be2 | 4.3% (3) | — | 0 / 21 | covered | `gh-e4g6d4bg7nc3b6be2` (synthetic) | yes |
+| Bg5 | 2.9% (2) | — | 4.8% (1) | covered | `gh-e4g6d4bg7nc3b6bg5` (synthetic) | yes |
 
 ### rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1
 
@@ -704,13 +704,13 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Nf3 | 21.8% (12) | — | 60.0% (15) | covered | `syn-london` (synthetic) | yes |
-| c4 | 20.0% (11) | — | 4.0% (1) | missing | — | no |
-| Be2 | 16.4% (9) | — | 4.0% (1) | missing | — | no |
-| c3 | 16.4% (9) | — | 12.0% (3) | missing | — | no |
-| Bd3 | 5.5% (3) | — | 0 / 25 | missing | — | no |
-| h3 | 5.5% (3) | — | 4.0% (1) | missing | — | no |
-| Bc4 | 5.5% (3) | — | 0 / 25 | missing | — | no |
-| Nc3 | 3.6% (2) | — | 4.0% (1) | missing | — | no |
+| c4 | 20.0% (11) | — | 4.0% (1) | covered | `gh-d4g6bf4bg7e3d6c4` (synthetic) | yes |
+| Be2 | 16.4% (9) | — | 4.0% (1) | covered | `gh-d4g6bf4bg7e3d6be2` (synthetic) | yes |
+| c3 | 16.4% (9) | — | 12.0% (3) | covered | `gh-d4g6bf4bg7e3d6c3` (synthetic) | yes |
+| Bd3 | 5.5% (3) | — | 0 / 25 | covered | `gh-d4g6bf4bg7e3d6bd3` (synthetic) | yes |
+| h3 | 5.5% (3) | — | 4.0% (1) | covered | `gh-d4g6bf4bg7e3d6h3` (synthetic) | yes |
+| Bc4 | 5.5% (3) | — | 0 / 25 | covered | `gh-d4g6bf4bg7e3d6bc4` (synthetic) | yes |
+| Nc3 | 3.6% (2) | — | 4.0% (1) | covered | `gh-d4g6bf4bg7e3d6nc3` (synthetic) | yes |
 
 ### rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1
 
@@ -719,7 +719,7 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Bd3 | 45.8% (22) | 57.2% (3211) | 61.1% (176) | covered | `hip-f4` (theory), `syn-e5punish` (synthetic) | yes |
-| Be3 | 16.7% (8) | 11.3% (637) | 8.7% (25) | missing | — | no |
+| Be3 | 16.7% (8) | 11.3% (637) | 8.7% (25) | covered | `gh-e4g6d4bg7nc3d6f4nf6nf3oobe3` (synthetic) | yes |
 | Be2 | 14.6% (7) | 12.1% (677) | 6.3% (18) | missing | — | no |
 | Bc4 | 14.6% (7) | 2.6% (149) | 1.0% (3) | missing | — | no |
 | e5 | 8.3% (4) | 14.9% (837) | 19.8% (57) | missing | — | no |
@@ -732,11 +732,11 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 |---|---|---|---|---|---|---|
 | Bd3 | 30.8% (8) | 4.4% (45) | 3.7% (9) | covered | `gh-e4g6nf3bg7d4d6nc3a6bd3` (synthetic) | yes |
 | Be3 | 26.9% (7) | 18.1% (185) | 18.7% (46) | covered | `gh-e4g6nf3bg7d4d6nc3a6be3` (synthetic) | yes |
-| a4 | 11.5% (3) | 52.2% (535) | 48.8% (120) | missing | — | no |
+| a4 | 11.5% (3) | 52.2% (535) | 48.8% (120) | covered | `gh-e4g6nf3bg7d4d6nc3a6a4` (synthetic) | yes |
 | Be2 | 11.5% (3) | 13.9% (142) | 12.2% (30) | covered | `syn-hipc5` (synthetic) | yes |
-| h3 | 7.7% (2) | 2.4% (25) | 3.7% (9) | missing | — | no |
+| h3 | 7.7% (2) | 2.4% (25) | 3.7% (9) | covered | `gh-e4g6nf3bg7d4d6nc3a6h3` (synthetic) | yes |
 | Bc4 | 7.7% (2) | 4.8% (49) | 6.5% (16) | covered | `hip-e4` (model), `hip-e5` (model) | yes |
-| d5 | 3.9% (1) | 0 / 1025 | 0 / 246 | missing | — | no |
+| d5 | 3.9% (1) | 0 / 1025 | 0 / 246 | covered | `gh-e4g6nf3bg7d4d6nc3a6d5` (synthetic) | yes |
 
 ### rnbqk1nr/pppp1pbp/4p1p1/8/2P5/2N3P1/PP1PPP1P/R1BQKBNR w KQkq - 0 1
 
@@ -753,12 +753,12 @@ Player pool: 495,101 games read, 495,101 entered the tree, 29 positions at or ab
 | reply | player share | pgnmentor share | twic share | coverage | answered in | eval |
 |---|---|---|---|---|---|---|
 | Qd2 | 50.0% (10) | — | — | covered | `hip-150` (theory), `syn-hiph5` (synthetic) | yes |
-| Bd3 | 20.0% (4) | — | — | missing | — | no |
-| f3 | 15.0% (3) | — | — | missing | — | no |
-| Nf3 | 5.0% (1) | — | — | missing | — | no |
-| Qf3 | 5.0% (1) | — | — | missing | — | no |
-| f4 | 5.0% (1) | — | — | missing | — | no |
+| Bd3 | 20.0% (4) | — | — | covered | `gh-e4g6d4bg7nc3b6be3bb7bd3` (synthetic) | yes |
+| f3 | 15.0% (3) | — | — | covered | `gh-e4g6d4bg7nc3b6be3bb7f3` (synthetic) | yes |
+| Nf3 | 5.0% (1) | — | — | covered | `gh-e4g6d4bg7nc3b6be3bb7nf3` (synthetic) | yes |
+| Qf3 | 5.0% (1) | — | — | covered | `gh-e4g6d4bg7nc3b6be3bb7qf3` (synthetic) | yes |
+| f4 | 5.0% (1) | — | — | covered | `gh-e4g6d4bg7nc3b6be3bb7f4` (synthetic) | yes |
 
 ## Totals
 
-156 counted replies are played somewhere in `LINES` from the same position, 24 lead to a position a line reaches by another order, and 157 are neither. A "missing" row is a candidate for coverage, not an obligation: the plan stops at a teachable decision rather than expanding an unlimited game tree.
+215 counted replies are played somewhere in `LINES` from the same position, 27 lead to a position a line reaches by another order, and 95 are neither. A "missing" row is a candidate for coverage, not an obligation: the plan stops at a teachable decision rather than expanding an unlimited game tree.

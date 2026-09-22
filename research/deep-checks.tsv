@@ -2,8 +2,8 @@
 # engine: lila-stockfish-web 0.0.11 sf16-7 (Stockfish 16, small NNUE net nn-ecb35f70ff2a, sha256 ecb35f70ff2aa4492caec6b552a1628e24319fbe1cc2aaf95eaebabdd92a1e37)
 # settings: Threads 1, Hash 64 MB, ucinewgame before each position, MultiPV 5, go depth 28; drilled moves outside the top five searched with searchmoves
 # baseline: src/data/evals.js (depth 20, same engine and settings); scores side-to-move centipawns, #n = mate in n
-# selection: 139 of 564 drilled positions (narrow = one move within 30 cp of best; demanding = setupGate "demanding"; tactical = best is mate, capture or check)
-# only_move: narrow claim 45 hold, 11 fail; demanding: 58 hold, 10 fail; drilled-move accept/reject changed at depth: 11
+# selection: 149 of 790 drilled positions (narrow = one move within 30 cp of best; demanding = setupGate "demanding"; tactical = best is mate, capture or check)
+# only_move: narrow claim 46 hold, 11 fail; demanding: 58 hold, 10 fail; drilled-move accept/reject changed at depth: 11
 key	lines	flags	d20_best	d20_second	d20_gap	d20_ways	d28_best	d28_second	d28_gap	d28_ways	only_move	demanding	drilled	drilled_d20	drilled_d28	reached_depth
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1	ck:0 kolt:0 ohanlon:0 …	demanding	Nf3 31	e4 31	0	5	d4 32	e4 32	0	5	n/a	fails	d4 Nf3	equal best	best equal	28
 rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1	ck:2 kolt:2 ohanlon:2 …	demanding	c4 30	Nf3 28	2	5	c4 31	Nf3 24	7	4	n/a	holds	Nf3	equal	equal	28
@@ -58,8 +58,8 @@ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1	hip-e4:1 hip-e5:1 hip
 rnbqk1nr/1pp1ppbp/p2p2p1/8/2BPP3/2N2N2/PPP2PPP/R1BQK2R b KQkq - 0 1	hip-e4:9 hip-e5:9	demanding	b5 -33	Nc6 -41	8	5	b5 -36	Nf6 -50	14	5	n/a	holds	e6	equal	equal	28
 rnbqk1nr/1pp2pbp/p2pp1p1/8/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 b kq - 0 1	hip-e4:11 hip-e5:11	demanding	b5 -37	Ne7 -42	5	5	b5 -38	Ne7 -47	9	5	n/a	holds	b6	equal	equal	28
 r2qk1nr/1bpn1pbp/pp1pp1p1/6B1/P1BPP3/2N2N2/1PP1QPPP/R4RK1 b kq - 0 1	hip-e4:17	narrow	Ne7 -21	Qc8 -53	32	1	Ne7 -37	Qc8 -56	19	3	fails	n/a	Ne7	best	best	28
-rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1	hip66:1 gh-nf3g6g3:1	demanding	c5 -21	c6 -29	8	5	e6 -14	c6 -27	13	5	n/a	fails	g6	equal	equal	28
-rnbqk1nr/ppppppbp/6p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R b KQkq - 0 1	hip66:5	demanding	Nf6 -28	d6 -44	16	5	Nf6 -36	c5 -47	11	5	n/a	holds	d6	equal	equal	28
+rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1	hip66:1 gh-nf3g6g3:1 gh-nf3g6b3:1 …	demanding	c5 -21	c6 -29	8	5	e6 -14	c6 -27	13	5	n/a	fails	g6	equal	equal	28
+rnbqk1nr/ppppppbp/6p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R b KQkq - 0 1	hip66:5 gh-nf3g6c4bg7d4d6e3:5 gh-nf3g6c4bg7d4d6h3:5 …	demanding	Nf6 -28	d6 -44	16	5	Nf6 -36	c5 -47	11	5	n/a	holds	d6	equal	equal	28
 rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 0 1	hip66:7	demanding	e5 -45	Nf6 -49	4	5	Nf6 -43	c5 -46	3	5	n/a	holds	Nd7	equal	equal	28
 r1bqk1nr/pppnppbp/3p2p1/8/2PPP3/2N2N2/PP3PPP/R1BQKB1R b KQkq - 0 1	hip66:9	demanding	e5 -62	Ngf6 -63	1	5	Ngf6 -62	e5 -62	0	5	n/a	holds	e6	equal	equal	28
 r2qk2r/pbpnnpbp/1p1pp1p1/8/2PPP3/2N1BN2/PPQ1BPPP/R4RK1 b kq - 0 1	hip66:17	demanding	O-O -63	h6 -83	20	4	O-O -63	d5 -72	9	4	n/a	holds	h6	equal	equal	28
@@ -144,3 +144,13 @@ rnbq1rk1/ppp1ppbp/3p1np1/8/2BPP3/2N2N1P/PPP2PP1/R1BQK2R b KQ - 0 1	gh-e4d6d4nf6n
 rn1qkb1r/pp3ppp/4pnb1/2pp4/3P4/1P1BPN2/P1P2PPP/RNBQ1RK1 w kq - 0 1	gc-d5nf3nf6e3bf5bd3bg6:12	tactical	dxc5 0	Bxg6 -2	2	5	dxc5 2	Ba3 0	2	5	n/a	n/a	Bb2	equal	equal	28
 rn1qkb1r/pp3ppp/4pnb1/3p4/3p4/1P1BPN2/PBP2PPP/RN1Q1RK1 w kq - 0 1	gc-d5nf3nf6e3bf5bd3bg6:14	tactical	Nxd4 3	Bxd4 -8	11	5	Nxd4 0	Bb5+ -3	3	5	n/a	n/a	Nxd4	best	best	28
 rnbqkb1r/pp2p1pp/5n2/3p1p2/3p4/1P1BPN2/P1P2PPP/RNBQK2R w KQkq - 0 1	gc-f5nf3nf6e3d5:10	narrow,tactical	exd4 49	Nxd4 5	44	1	exd4 34	Nxd4 15	19	2	fails	n/a	exd4	best	best	28
+rnbqkbnr/pp2p1pp/8/3p1p2/3p4/1P2PN2/P1P2PPP/RNBQKB1R w KQkq - 0 1	gc-f5nf3d5:8	tactical	exd4 42	Bb5+ 39	3	3	Bb5+ 51	exd4 42	9	3	n/a	n/a	exd4	best	equal	28
+rnbqk2r/p3ppbp/1p1p1np1/8/3P4/2PB1N2/PP3PPP/RNBQ1RK1 w kq - 0 1	gc-c5e3cxd4exd4d6:14	tactical	Bb5+ 28	c4 19	9	5	c4 36	Bb5+ 35	1	5	n/a	n/a	Nbd2	equal	equal	28
+r2qk1nr/1bpnppbp/pp1p2p1/8/2PP1B2/2N1PN1P/PPQ2PP1/R3KB1R b KQkq - 0 1	gh-d4g6bf4bg7e3d6c4:15	tactical	Bxf3 -25	e5 -27	2	5	Bxf3 -25	e5 -27	2	5	n/a	n/a	e6	equal	equal	28
+rnbqk2r/pp2bppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R w KQkq - 0 1	gc-d5nf3e6e3nf6bd3c5c3be7:10	tactical	dxc5 4	Nbd2 1	3	5	dxc5 2	Nbd2 0	2	5	n/a	n/a	Nbd2	equal	equal	28
+r2q1rk1/pb1nbppp/1p2p3/2ppN3/3Pn3/1PPBP3/PB1N1PPP/R2Q1RK1 w - - 0 1	gc-d5nf3e6e3nf6bd3c5c3be7:20	tactical	Nxe4 -6	Ndf3 -10	4	5	Nxe4 -1	Ndf3 -12	11	5	n/a	n/a	Nef3	equal	equal	28
+r2qkb1r/pp2nppp/2n1p3/3pNb2/3P4/2PB4/PP3PPP/RNBQK2R w KQkq - 0 1	gc-c5e3cxd4exd4d5nf3bf5:14	tactical	Nxc6 -16	O-O -26	10	5	Nxc6 -15	Bxf5 -24	9	5	n/a	n/a	O-O	equal	equal	28
+r1bqk1nr/2pn1pbp/pp1pp1p1/4P3/P1BP1B2/2N2N2/1PP2PPP/R2QK2R b KQkq - 0 1	gh-e4g6nf3bg7d4d6nc3a6a4:15	tactical	dxe5 -42	Bb7 -52	10	2	dxe5 -38	Bb7 -55	17	2	n/a	n/a	Bb7	equal	equal	28
+r2qk1nr/1bpn1pbp/pp1Pp1p1/8/P1BP1B2/2N2N2/1PP2PPP/R2QK2R b KQkq - 0 1	gh-e4g6nf3bg7d4d6nc3a6a4:17	narrow,tactical	cxd6 -66	c6 -172	106	1	cxd6 -51	Qf6 -150	99	1	holds	n/a	cxd6	best	best	28
+r3kb1r/ppqb1ppp/2n2n2/2ppp3/3P4/1PPBPN2/P2N1PPP/R1BQ1RK1 w kq - 0 1	gc-d5nf3e6e3nf6bd3c5c3bd7:16	tactical	Nxe5 15	dxe5 13	2	4	e4 10	Nxe5 2	8	4	n/a	n/a	Nxe5	best	equal	28
+rnbqkbnr/pp3ppp/8/3pp3/3P4/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1	gc-c5e3cxd4exd4d5nf3e5:8	tactical	Nxe5 142	Bb5+ 141	1	3	Bb5+ 151	Nxe5 147	4	2	n/a	n/a	Nxe5	best	equal	28

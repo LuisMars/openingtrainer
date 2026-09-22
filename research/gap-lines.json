@@ -4645,6 +4645,7938 @@
      "kind": "length"
     }
    }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 0 1|e2e4",
+   "rank": 6,
+   "side": "b",
+   "reply": "e4",
+   "path": [
+    "c4",
+    "g6",
+    "Nc3",
+    "Bg7",
+    "e4"
+   ],
+   "reach": {
+    "1900": 0.0014746732,
+    "pool": 0.0014900013040000002,
+    "u1500": 0.0007507800300000001,
+    "1500-1899": 0.001507586418
+   },
+   "pool": {
+    "games": 41,
+    "parent": 472
+   },
+   "parentCount": {
+    "n": 36,
+    "M": 337
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqk1nr/ppppppbp/6p1/8/2P1P3/2N5/PP1P1PPP/R1BQKBNR b KQkq - 0 1",
+    "nearest": "d7d6"
+   }
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1|b1c3",
+   "rank": 7,
+   "side": "b",
+   "reply": "Nc3",
+   "path": [
+    "Nf3",
+    "g6",
+    "Nc3"
+   ],
+   "reach": {
+    "1900": 0.00053013,
+    "pool": 0.0012632400000000001,
+    "u1500": 0.00337176,
+    "1500-1899": 0.0014756
+   },
+   "pool": {
+    "games": 30,
+    "parent": 575
+   },
+   "parentCount": {
+    "n": 28,
+    "M": 411
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqkbnr/pppppp1p/6p1/8/8/2N2N2/PPPPPPPP/R1BQKB1R b KQkq - 0 1",
+    "nearest": "f8g7"
+   }
+  },
+  {
+   "id": "rnbqkbnr/ppppp1pp/8/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1|d7d5",
+   "rank": 8,
+   "side": "w",
+   "reply": "d5",
+   "path": [
+    "d4",
+    "f5",
+    "Nf3",
+    "d5"
+   ],
+   "reach": {
+    "1900": 0.00035432,
+    "pool": 0.0012566799999999998,
+    "u1500": 0.00167958,
+    "1500-1899": 0.00141114
+   },
+   "pool": {
+    "games": 25,
+    "parent": 354
+   },
+   "parentCount": {
+    "n": 31,
+    "M": 319
+   },
+   "line": {
+    "id": "gc-f5nf3d5",
+    "moves": [
+     "d2d4",
+     "f7f5",
+     "g1f3",
+     "d7d5",
+     "b2b3",
+     "c7c5",
+     "e2e3",
+     "c5d4",
+     "e3d4",
+     "b8c6",
+     "f1d3",
+     "e7e6",
+     "e1g1",
+     "g8f6"
+    ],
+    "steps": [
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 22,
+      "n": 0,
+      "M": 155
+     },
+     {
+      "uci": "c7c5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e2e3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c5d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e3d4",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b8c6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g8f6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gc-f5nf3nf6e3d5"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1|b1c3",
+   "rank": 9,
+   "side": "b",
+   "reply": "Nc3",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "Nc3"
+   ],
+   "reach": {
+    "pool": 0.001221431652,
+    "u1500": 0.0006955649999999999,
+    "1500-1899": 0.00139470984
+   },
+   "pool": {
+    "games": 26,
+    "parent": 261
+   },
+   "parentCount": {
+    "n": 26,
+    "M": 244
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqk1nr/ppppppbp/6p1/8/3P1B2/2N5/PPP1PPPP/R2QKBNR b KQkq - 0 1",
+    "nearest": "d7d6"
+   }
+  },
+  {
+   "id": "rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R b KQkq - 0 1|b7b6",
+   "rank": 10,
+   "side": "w",
+   "reply": "b6",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "e6",
+    "e3",
+    "Nf6",
+    "Bd3",
+    "c5",
+    "c3",
+    "b6"
+   ],
+   "reach": {
+    "pool": 0.0009953904989717008,
+    "1500-1899": 0.001368647974848
+   },
+   "pool": {
+    "games": 2,
+    "parent": 23
+   },
+   "parentCount": {
+    "n": 5,
+    "M": 95
+   },
+   "line": {
+    "id": "gc-d5nf3e6e3nf6bd3c5c3b6",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "e7e6",
+     "e2e3",
+     "g8f6",
+     "f1d3",
+     "c7c5",
+     "c2c3",
+     "b7b6",
+     "e1g1",
+     "f8e7",
+     "b1d2",
+     "c8b7",
+     "b2b3",
+     "d8c7",
+     "c1b2"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 4
+     },
+     {
+      "uci": "f8e7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d8c7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r3k2r/pbqnbppp/1p2pn2/2pp4/3P4/1PPBPN2/PB1N1PPP/R2Q1RK1 w kq - 0 1",
+     "nearest": "f3e5",
+     "after": {
+      "uci": "b8d7",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|c1g5",
+   "rank": 11,
+   "side": "b",
+   "reply": "Bg5",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "b6",
+    "Bg5"
+   ],
+   "reach": {
+    "pool": 0.0009781303435904,
+    "1500-1899": 0.001367645382936
+   },
+   "pool": {
+    "games": 2,
+    "parent": 70
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 54
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3b6bg5",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "c1g5",
+     "c8b7",
+     "g1f3",
+     "d7d6",
+     "f1c4",
+     "h7h6",
+     "g5h4",
+     "a7a6",
+     "e1g1",
+     "b8d7"
+    ],
+    "steps": [
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 2,
+      "M": 2
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1c4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g5h4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 5,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r2qk1nr/1bpnppb1/pp1p2pp/8/P1BPP2B/2N2N2/1PP2PPP/R2Q1RK1 b kq - 0 1",
+     "nearest": "e7e6",
+     "after": {
+      "uci": "a2a4",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/3P4/4P3/PPP2PPP/RNBQKBNR b KQkq - 0 1|g8f6",
+   "rank": 12,
+   "side": "w",
+   "reply": "Nf6",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "Nf6"
+   ],
+   "reach": {
+    "1900": 0.00445341,
+    "pool": 0.0017897199999999999,
+    "u1500": 0.00110142,
+    "1500-1899": 0.001344
+   },
+   "pool": {
+    "games": 29,
+    "parent": 718
+   },
+   "parentCount": {
+    "n": 19,
+    "M": 670
+   },
+   "line": {
+    "id": "gc-c5e3nf6",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "g8f6",
+     "g1f3"
+    ],
+    "steps": [
+     {
+      "uci": "g1f3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 18,
+      "M": 109
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gc-nf6nf3c5"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|c2c3",
+   "rank": 13,
+   "side": "b",
+   "reply": "c3",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e3",
+    "d6",
+    "c3"
+   ],
+   "reach": {
+    "pool": 0.0010685486330232,
+    "1500-1899": 0.001315301210145
+   },
+   "pool": {
+    "games": 9,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 17,
+    "M": 76
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7e3d6c3",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "c2c3",
+     "b8d7",
+     "h2h3",
+     "b7b6",
+     "g1f3",
+     "c8b7",
+     "f4h2",
+     "a7a6",
+     "f1e2",
+     "e7e6",
+     "e1g1",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 4,
+      "M": 20
+     },
+     {
+      "uci": "h2h3",
+      "who": "opp",
+      "src": "table",
+      "M": 3
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f4h2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 27,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 16,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|f5g4",
+   "rank": 14,
+   "side": "w",
+   "reply": "Bg4",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "Bf5",
+    "Bd3",
+    "Bg4"
+   ],
+   "reach": {
+    "pool": 0.001191092915448,
+    "1500-1899": 0.0012544868710962
+   },
+   "pool": {
+    "games": 3,
+    "parent": 41
+   },
+   "parentCount": {
+    "n": 5,
+    "M": 68
+   },
+   "line": {
+    "id": "gc-d5nf3nf6e3bf5bd3bg4",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "c8f5",
+     "f1d3",
+     "f5g4",
+     "e1g1",
+     "e7e6",
+     "b1d2",
+     "b8d7",
+     "b2b3",
+     "f8b4",
+     "c1b2",
+     "g4f5",
+     "f3e5"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 8,
+      "n": 0,
+      "M": 2
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8b4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g4f5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f3e5",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r2qk2r/pppn1ppp/4p3/3pNb2/1b1Pn3/1P1BP3/PBPN1PPP/R2Q1RK1 w kq - 0 1",
+     "nearest": "e5f3",
+     "after": {
+      "uci": "f6e4",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|f6e4",
+   "rank": 15,
+   "side": "w",
+   "reply": "Ne4",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "Bf5",
+    "Bd3",
+    "Ne4"
+   ],
+   "reach": {
+    "pool": 0.001191092915448,
+    "1500-1899": 0.0012544868710962
+   },
+   "pool": {
+    "games": 3,
+    "parent": 41
+   },
+   "parentCount": {
+    "n": 5,
+    "M": 68
+   },
+   "line": {
+    "id": "gc-d5nf3nf6e3bf5bd3ne4",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "c8f5",
+     "f1d3",
+     "f6e4",
+     "e1g1"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 5,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rn1qkb1r/ppp2ppp/4p3/3p1b2/3Pn3/3BPN2/PPP2PPP/RNBQ1RK1 w kq - 0 1",
+     "nearest": "b2b3",
+     "after": {
+      "uci": "e7e6",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/ppppp1pp/5n2/5p2/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|d7d6",
+   "rank": 16,
+   "side": "w",
+   "reply": "d6",
+   "path": [
+    "d4",
+    "f5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "d6"
+   ],
+   "reach": {
+    "pool": 0.0010144665,
+    "1500-1899": 0.00120205638
+   },
+   "pool": {
+    "games": 3,
+    "parent": 40
+   },
+   "parentCount": {
+    "n": 4,
+    "M": 60
+   },
+   "line": {
+    "id": "gc-f5nf3nf6e3d6",
+    "moves": [
+     "d2d4",
+     "f7f5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "d7d6",
+     "b2b3",
+     "a7a5",
+     "c1b2",
+     "g7g6",
+     "f1d3",
+     "e7e6",
+     "e1g1",
+     "f8g7",
+     "b1d2"
+    ],
+    "steps": [
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 22,
+      "n": 0,
+      "M": 5
+     },
+     {
+      "uci": "a7a5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g7g6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8g7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 8,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r1bqk2r/1pp3bp/2nppnp1/p4p2/3P4/1P1BPN2/PBPN1PPP/R2Q1RK1 w kq - 0 1",
+     "nearest": "c2c3",
+     "after": {
+      "uci": "b8c6",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|f1e2",
+   "rank": 17,
+   "side": "b",
+   "reply": "Be2",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e3",
+    "d6",
+    "Be2"
+   ],
+   "reach": {
+    "pool": 0.0010685486330232,
+    "1500-1899": 0.0011690039998259998
+   },
+   "pool": {
+    "games": 9,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 13,
+    "M": 76
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7e3d6be2",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "f1e2",
+     "b8d7",
+     "h2h3",
+     "b7b6",
+     "g1f3",
+     "c8b7",
+     "f4h2",
+     "a7a6",
+     "e1g1",
+     "h7h6",
+     "c2c4",
+     "e7e6"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 12,
+      "n": 0,
+      "M": 7
+     },
+     {
+      "uci": "h2h3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f4h2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 23,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c2c4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 10,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/3P4/4P3/PPP2PPP/RNBQKBNR b KQkq - 0 1|g7g6",
+   "rank": 18,
+   "side": "w",
+   "reply": "g6",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "g6"
+   ],
+   "reach": {
+    "1900": 0.00121524,
+    "pool": 0.00111193,
+    "u1500": 0.00015825,
+    "1500-1899": 0.0011200000000000001
+   },
+   "pool": {
+    "games": 18,
+    "parent": 718
+   },
+   "parentCount": {
+    "n": 17,
+    "M": 670
+   },
+   "line": {
+    "id": "gc-c5e3g6",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "g7g6",
+     "g1f3"
+    ],
+    "steps": [
+     {
+      "uci": "g1f3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 12,
+      "M": 20
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "eco-rham"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/ppppp1pp/8/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1|g7g6",
+   "rank": 19,
+   "side": "w",
+   "reply": "g6",
+   "path": [
+    "d4",
+    "f5",
+    "Nf3",
+    "g6"
+   ],
+   "reach": {
+    "1900": 0.00106502,
+    "pool": 0.00110538,
+    "u1500": 0.0008404199999999999,
+    "1500-1899": 0.00111708
+   },
+   "pool": {
+    "games": 22,
+    "parent": 354
+   },
+   "parentCount": {
+    "n": 20,
+    "M": 319
+   },
+   "line": {
+    "id": "gc-f5nf3g6",
+    "moves": [
+     "d2d4",
+     "f7f5",
+     "g1f3",
+     "g7g6",
+     "b2b3",
+     "f8g7",
+     "c1b2",
+     "g8f6",
+     "e2e3"
+    ],
+    "steps": [
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 17,
+      "n": 0,
+      "M": 22
+     },
+     {
+      "uci": "f8g7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g8f6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e2e3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "syn-dutch"
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/ppp2ppp/4pn2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|b7b6",
+   "rank": 20,
+   "side": "w",
+   "reply": "b6",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "e6",
+    "e3",
+    "Nf6",
+    "Bd3",
+    "b6"
+   ],
+   "reach": {
+    "1900": 0.0007610019896304001,
+    "pool": 0.001203364814316,
+    "1500-1899": 0.0010848090482460002
+   },
+   "pool": {
+    "games": 4,
+    "parent": 103
+   },
+   "parentCount": {
+    "n": 7,
+    "M": 295
+   },
+   "line": {
+    "id": "gc-d5nf3e6e3nf6bd3b6",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "e7e6",
+     "e2e3",
+     "g8f6",
+     "f1d3",
+     "b7b6",
+     "e1g1",
+     "c8b7"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 5,
+      "n": 5,
+      "M": 9
+     },
+     {
+      "uci": "c8b7",
+      "who": "opp",
+      "src": "table",
+      "M": 3
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gc-nf6nf3b6"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/8/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 1|d7d6",
+   "rank": 21,
+   "side": "w",
+   "reply": "d6",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "cxd4",
+    "exd4",
+    "d6"
+   ],
+   "reach": {
+    "1900": 0.002533037364,
+    "pool": 0.0012854088,
+    "u1500": 0.0007474358499999999,
+    "1500-1899": 0.001074024
+   },
+   "pool": {
+    "games": 17,
+    "parent": 378
+   },
+   "parentCount": {
+    "n": 16,
+    "M": 312
+   },
+   "line": {
+    "id": "gc-c5e3cxd4exd4d6",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "c5d4",
+     "e3d4",
+     "d7d6",
+     "g1f3",
+     "g8f6",
+     "f1d3",
+     "g7g6",
+     "e1g1",
+     "f8g7",
+     "c2c3",
+     "b7b6",
+     "b1d2",
+     "e8g8",
+     "b2b3"
+    ],
+    "steps": [
+     {
+      "uci": "g1f3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 6,
+      "M": 12
+     },
+     {
+      "uci": "g8f6",
+      "who": "opp",
+      "src": "table",
+      "M": 6
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 3
+     },
+     {
+      "uci": "g7g6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8g7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 17,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 23,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1|b2b3",
+   "rank": 22,
+   "side": "b",
+   "reply": "b3",
+   "path": [
+    "Nf3",
+    "g6",
+    "b3"
+   ],
+   "reach": {
+    "1900": 0.00132317,
+    "pool": 0.0010527,
+    "u1500": 0.00144396,
+    "1500-1899": 0.0010524500000000001
+   },
+   "pool": {
+    "games": 25,
+    "parent": 575
+   },
+   "parentCount": {
+    "n": 20,
+    "M": 411
+   },
+   "line": {
+    "id": "gh-nf3g6b3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "b2b3",
+     "f8g7"
+    ],
+    "steps": [
+     {
+      "uci": "f8g7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 19,
+      "M": 19
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk1nr/ppppppbp/6p1/8/8/1PP2N2/P2PPPPP/RNBQKB1R b KQkq - 0 1",
+     "nearest": "b7b6",
+     "after": {
+      "uci": "c2c3",
+      "src": "count",
+      "n": 9,
+      "M": 17,
+      "tie": []
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 0 1|d2d3",
+   "rank": 23,
+   "side": "b",
+   "reply": "d3",
+   "path": [
+    "c4",
+    "g6",
+    "Nc3",
+    "Bg7",
+    "d3"
+   ],
+   "reach": {
+    "1900": 0.0023556468,
+    "pool": 0.001198516584,
+    "u1500": 0.00014987973000000002,
+    "1500-1899": 0.001046577086
+   },
+   "pool": {
+    "games": 33,
+    "parent": 472
+   },
+   "parentCount": {
+    "n": 25,
+    "M": 337
+   },
+   "line": {
+    "id": "gh-c4g6nc3bg7d3",
+    "moves": [
+     "c2c4",
+     "g7g6",
+     "b1c3",
+     "f8g7",
+     "d2d3",
+     "e7e6",
+     "g1f3",
+     "d7d6",
+     "d3d4",
+     "g8e7",
+     "h2h4",
+     "h7h6",
+     "e2e4",
+     "b8d7",
+     "c1e3",
+     "b7b6"
+    ],
+    "steps": [
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 28,
+      "n": 3,
+      "M": 24
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 30,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d3d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c1e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 16,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|c2c4",
+   "rank": 24,
+   "side": "b",
+   "reply": "c4",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e3",
+    "d6",
+    "c4"
+   ],
+   "reach": {
+    "pool": 0.0013062941724,
+    "1500-1899": 0.0010227067895069999
+   },
+   "pool": {
+    "games": 11,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 15,
+    "M": 76
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7e3d6c4",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "c2c4",
+     "b8d7",
+     "h2h3",
+     "b7b6",
+     "b1c3",
+     "c8b7",
+     "d1c2",
+     "a7a6",
+     "g1f3",
+     "e7e6",
+     "f1e2",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 3,
+      "M": 11
+     },
+     {
+      "uci": "h2h3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1c2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 23,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 21,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1|c2c3",
+   "rank": 25,
+   "side": "b",
+   "reply": "c3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c3"
+   ],
+   "reach": {
+    "1900": 0.00132317,
+    "pool": 0.00100914,
+    "u1500": 0.00048132,
+    "1500-1899": 0.00100037
+   },
+   "pool": {
+    "games": 24,
+    "parent": 575
+   },
+   "parentCount": {
+    "n": 19,
+    "M": 411
+   },
+   "line": {
+    "id": "gh-nf3g6c3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c3",
+     "d7d6",
+     "d1c2",
+     "f8g7",
+     "e2e4",
+     "b8d7",
+     "f1e2",
+     "b7b6",
+     "d2d4",
+     "c8b7",
+     "e1g1",
+     "e7e6"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 13,
+      "n": 0,
+      "M": 16
+     },
+     {
+      "uci": "d1c2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f8g7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 24,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 12,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d2d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 8,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/ppppp1pp/8/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1|e7e6",
+   "rank": 26,
+   "side": "w",
+   "reply": "e6",
+   "path": [
+    "d4",
+    "f5",
+    "Nf3",
+    "e6"
+   ],
+   "reach": {
+    "1900": 0.00106502,
+    "pool": 0.0010057,
+    "u1500": 0.00104958,
+    "1500-1899": 0.00099876
+   },
+   "pool": {
+    "games": 20,
+    "parent": 354
+   },
+   "parentCount": {
+    "n": 17,
+    "M": 319
+   },
+   "line": {
+    "id": "gc-f5nf3e6",
+    "moves": [
+     "d2d4",
+     "f7f5",
+     "g1f3",
+     "e7e6",
+     "e2e3",
+     "g8f6"
+    ],
+    "steps": [
+     {
+      "uci": "e2e3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 6,
+      "M": 60
+     },
+     {
+      "uci": "g8f6",
+      "who": "opp",
+      "src": "count",
+      "n": 12,
+      "M": 12,
+      "tie": []
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gc-f5nf3nf6e3e6"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/3P4/4P3/PPP2PPP/RNBQKBNR b KQkq - 0 1|b8c6",
+   "rank": 27,
+   "side": "w",
+   "reply": "Nc6",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "Nc6"
+   ],
+   "reach": {
+    "1900": 0.00121524,
+    "pool": 0.00098789,
+    "u1500": 0.00110142,
+    "1500-1899": 0.000972
+   },
+   "pool": {
+    "games": 16,
+    "parent": 718
+   },
+   "parentCount": {
+    "n": 29,
+    "M": 670
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "r1bqkbnr/pp1ppppp/2n5/2p5/3P4/4P3/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+    "nearest": "g1f3"
+   }
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1|b2b3",
+   "rank": 28,
+   "side": "b",
+   "reply": "b3",
+   "path": [
+    "c4",
+    "g6",
+    "b3"
+   ],
+   "reach": {
+    "1900": 0.0019552,
+    "pool": 0.0010617600000000001,
+    "u1500": 0.00025575,
+    "1500-1899": 0.0009450299999999999
+   },
+   "pool": {
+    "games": 32,
+    "parent": 951
+   },
+   "parentCount": {
+    "n": 25,
+    "M": 762
+   },
+   "line": {
+    "id": "gh-c4g6b3",
+    "moves": [
+     "c2c4",
+     "g7g6",
+     "b2b3",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "d2d4",
+     "c8b7",
+     "e2e4",
+     "a7a6",
+     "g1f3",
+     "d7d6",
+     "c1b2",
+     "e7e6"
+    ],
+    "steps": [
+     {
+      "uci": "f8g7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 25,
+      "M": 25
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "count",
+      "n": 12,
+      "M": 24,
+      "tie": [
+       "d2d4"
+      ]
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 2,
+      "M": 14
+     },
+     {
+      "uci": "d2d4",
+      "who": "opp",
+      "src": "table",
+      "M": 2
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 23,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 12,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1|d2d3",
+   "rank": 29,
+   "side": "b",
+   "reply": "d3",
+   "path": [
+    "c4",
+    "g6",
+    "d3"
+   ],
+   "reach": {
+    "1900": 0.0008372,
+    "pool": 0.00092904,
+    "u1500": 0.00025575,
+    "1500-1899": 0.0009450299999999999
+   },
+   "pool": {
+    "games": 28,
+    "parent": 951
+   },
+   "parentCount": {
+    "n": 25,
+    "M": 762
+   },
+   "line": {
+    "id": "gh-c4g6d3",
+    "moves": [
+     "c2c4",
+     "g7g6",
+     "d2d3",
+     "f8g7",
+     "e2e4",
+     "e7e6",
+     "b1c3",
+     "g8e7",
+     "h2h4",
+     "h7h6"
+    ],
+    "steps": [
+     {
+      "uci": "f8g7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 27,
+      "M": 33
+     },
+     {
+      "uci": "e2e4",
+      "who": "opp",
+      "src": "count",
+      "n": 10,
+      "M": 25,
+      "tie": []
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 13,
+      "M": 45
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "count",
+      "n": 10,
+      "M": 10,
+      "tie": []
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 7,
+      "M": 9
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 3
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 19,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk2r/ppppnpb1/4p1pp/7P/2P1P3/2NP4/PP3PP1/R1BQKBNR b KQkq - 0 1",
+     "nearest": "d7d6",
+     "after": {
+      "uci": "h4h5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp2pppp/8/3p4/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 1|c8g4",
+   "rank": 30,
+   "side": "w",
+   "reply": "Bg4",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "cxd4",
+    "exd4",
+    "d5",
+    "Nf3",
+    "Bg4"
+   ],
+   "reach": {
+    "pool": 0.0008790456605424,
+    "1500-1899": 0.00091811074884
+   },
+   "pool": {
+    "games": 4,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 480,
+    "M": 2070
+   },
+   "line": {
+    "id": "gc-c5e3cxd4exd4d5nf3bg4",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "c5d4",
+     "e3d4",
+     "d7d5",
+     "g1f3",
+     "c8g4",
+     "c2c3"
+    ],
+    "steps": [
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 20,
+      "M": 481
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rn1qkbnr/pp3ppp/4p3/3p4/3P2b1/2P2N2/PP3PPP/RNBQKB1R w KQkq - 0 1",
+     "nearest": "b1d2",
+     "after": {
+      "uci": "e7e6",
+      "src": "count",
+      "n": 11,
+      "M": 17,
+      "tie": []
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1|e2e4",
+   "rank": 31,
+   "side": "b",
+   "reply": "e4",
+   "path": [
+    "c4",
+    "g6",
+    "e4"
+   ],
+   "reach": {
+    "pool": 0.0007647200000000001,
+    "u1500": 0.0011517,
+    "1500-1899": 0.0008698899999999999
+   },
+   "pool": {
+    "games": 23,
+    "parent": 951
+   },
+   "parentCount": {
+    "n": 23,
+    "M": 762
+   },
+   "line": {
+    "id": "gh-c4g6e4",
+    "moves": [
+     "c2c4",
+     "g7g6",
+     "e2e4",
+     "f8g7",
+     "d2d4"
+    ],
+    "steps": [
+     {
+      "uci": "f8g7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 30,
+      "n": 71,
+      "M": 75
+     },
+     {
+      "uci": "d2d4",
+      "who": "opp",
+      "src": "count",
+      "n": 35,
+      "M": 70,
+      "tie": []
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "eco-psam"
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R b KQkq - 0 1|f8e7",
+   "rank": 32,
+   "side": "w",
+   "reply": "Be7",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "e6",
+    "e3",
+    "Nf6",
+    "Bd3",
+    "c5",
+    "c3",
+    "Be7"
+   ],
+   "reach": {
+    "pool": 0.0009953904989717008,
+    "1500-1899": 0.000684323987424
+   },
+   "pool": {
+    "games": 2,
+    "parent": 23
+   },
+   "parentCount": {
+    "n": 3,
+    "M": 95
+   },
+   "line": {
+    "id": "gc-d5nf3e6e3nf6bd3c5c3be7",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "e7e6",
+     "e2e3",
+     "g8f6",
+     "f1d3",
+     "c7c5",
+     "c2c3",
+     "f8e7",
+     "b1d2",
+     "b8d7",
+     "e1g1",
+     "b7b6",
+     "b2b3",
+     "e8g8",
+     "c1b2",
+     "c8b7",
+     "f3e5",
+     "f6e4",
+     "e5f3"
+    ],
+    "steps": [
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 5,
+      "M": 5
+     },
+     {
+      "uci": "b8d7",
+      "who": "opp",
+      "src": "table",
+      "M": 2
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f3e5",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f6e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e5f3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 19,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|f1e2",
+   "rank": 33,
+   "side": "b",
+   "reply": "Be2",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "b6",
+    "Be2"
+   ],
+   "reach": {
+    "1900": 0.005482200607348799,
+    "pool": 0.0014671955153856,
+    "1500-1899": 0.000683822691468
+   },
+   "pool": {
+    "games": 3,
+    "parent": 70
+   },
+   "parentCount": {
+    "n": 1,
+    "M": 54
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3b6be2",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "f1e2",
+     "d7d6"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 1
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk1nr/p1p1ppbp/1p1p2p1/8/3PP2P/2N5/PPP1BPP1/R1BQK1NR b KQkq - 0 1",
+     "nearest": "h7h6",
+     "after": {
+      "uci": "h2h4",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/8/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 1|b7b6",
+   "rank": 34,
+   "side": "w",
+   "reply": "b6",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "cxd4",
+    "exd4",
+    "b6"
+   ],
+   "reach": {
+    "1900": 0.0008427126239999999,
+    "pool": 0.0006798384320000001,
+    "u1500": 0.000249502225,
+    "1500-1899": 0.0006827724
+   },
+   "pool": {
+    "games": 9,
+    "parent": 378
+   },
+   "parentCount": {
+    "n": 7,
+    "M": 312
+   },
+   "line": {
+    "id": "gc-c5e3cxd4exd4b6",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "c5d4",
+     "e3d4",
+     "b7b6",
+     "g1f3",
+     "g8f6",
+     "f1d3",
+     "e7e6",
+     "e1g1",
+     "f8e7",
+     "f3e5"
+    ],
+    "steps": [
+     {
+      "uci": "g1f3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 28,
+      "n": 3,
+      "M": 5
+     },
+     {
+      "uci": "g8f6",
+      "who": "opp",
+      "src": "table",
+      "M": 3
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8e7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f3e5",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rn1qk2r/p2pbppp/bp2pn2/4N3/3P4/3B4/PPP2PPP/RNBQ1RK1 w kq - 0 1",
+     "nearest": "c2c3",
+     "after": {
+      "uci": "c8a6",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/pppppp1p/5np1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|c7c5",
+   "rank": 35,
+   "side": "w",
+   "reply": "c5",
+   "path": [
+    "d4",
+    "Nf6",
+    "Nf3",
+    "g6",
+    "e3",
+    "c5"
+   ],
+   "reach": {
+    "1900": 0.011485180951999999,
+    "pool": 0.00209720313,
+    "1500-1899": 0.00068187735
+   },
+   "pool": {
+    "games": 7,
+    "parent": 212
+   },
+   "parentCount": {
+    "n": 3,
+    "M": 322
+   },
+   "line": {
+    "id": "gc-nf6nf3g6e3c5",
+    "moves": [
+     "d2d4",
+     "g8f6",
+     "g1f3",
+     "g7g6",
+     "e2e3",
+     "c7c5",
+     "c2c3",
+     "b7b6",
+     "b1d2",
+     "c8b7",
+     "b2b3",
+     "f8g7",
+     "c1b2",
+     "e8g8",
+     "f1d3",
+     "b8c6",
+     "e1g1"
+    ],
+    "steps": [
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 24,
+      "n": 0,
+      "M": 3
+     },
+     {
+      "uci": "b7b6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 20,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8g7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b8c6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|f2f3",
+   "rank": 36,
+   "side": "b",
+   "reply": "f3",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "f3"
+   ],
+   "reach": {
+    "1900": 0.0050976577589916,
+    "pool": 0.0013474942495616,
+    "1500-1899": 0.0006745189813800001
+   },
+   "pool": {
+    "games": 10,
+    "parent": 254
+   },
+   "parentCount": {
+    "n": 15,
+    "M": 435
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3d6f3",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "d7d6",
+     "f2f3",
+     "b8d7",
+     "h2h4",
+     "h7h6",
+     "c1e3",
+     "a7a6",
+     "d1d2",
+     "e7e6",
+     "e1c1",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 5,
+      "M": 13
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 5
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 8,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c1e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 10,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1d2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 5,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1c1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 19,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r1bqk2r/1ppnnpb1/p2pp1pp/7P/3PP3/2N1BP2/PPPQ2P1/2KR1BNR b kq - 0 1",
+     "nearest": "b7b6",
+     "after": {
+      "uci": "h4h5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PPP2/2N5/PPP3PP/R1BQKBNR w KQkq - 0 1|e4e5",
+   "rank": 37,
+   "side": "b",
+   "reply": "e5",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "f4",
+    "Nf6",
+    "e5"
+   ],
+   "reach": {
+    "1900": 0.004822676098167883,
+    "pool": 0.0012833316350510029,
+    "1500-1899": 0.0006621645847541448
+   },
+   "pool": {
+    "games": 23,
+    "parent": 111
+   },
+   "parentCount": {
+    "n": 21,
+    "M": 117
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3d6f4nf6e5",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "d7d6",
+     "f2f4",
+     "g8f6",
+     "e4e5",
+     "f6d7"
+    ],
+    "steps": [
+     {
+      "uci": "f6d7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 18
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk2r/pppnppbp/3p2p1/4P3/3P1P2/2N2N2/PPP3PP/R1BQKB1R b KQkq - 0 1",
+     "nearest": "e8g8",
+     "after": {
+      "uci": "g1f3",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp2pppp/8/3p4/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 1|c8f5",
+   "rank": 38,
+   "side": "w",
+   "reply": "Bf5",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "cxd4",
+    "exd4",
+    "d5",
+    "Nf3",
+    "Bf5"
+   ],
+   "reach": {
+    "pool": 0.0004401274008768,
+    "1500-1899": 0.00061245119004
+   },
+   "pool": {
+    "games": 2,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 143,
+    "M": 2070
+   },
+   "line": {
+    "id": "gc-c5e3cxd4exd4d5nf3bf5",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "c5d4",
+     "e3d4",
+     "d7d5",
+     "g1f3",
+     "c8f5",
+     "f3e5",
+     "b8c6",
+     "c2c3",
+     "e7e6",
+     "f1d3",
+     "g8e7",
+     "e1g1"
+    ],
+    "steps": [
+     {
+      "uci": "f3e5",
+      "who": "own",
+      "grade": "equal",
+      "loss": 13,
+      "n": 0,
+      "M": 136
+     },
+     {
+      "uci": "b8c6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 18,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 10,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r2qkb1r/pp2nppp/4p3/3pnb2/3P4/2PB4/PP3PPP/RNBQ1RK1 w kq - 0 1",
+     "nearest": "b1d2",
+     "after": {
+      "uci": "c6e5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rn1qkb1r/ppp1pppp/5n2/3p1b2/2PP4/4PN2/PP3PPP/RNBQKB1R b KQkq - 0 1|b8a6",
+   "rank": 39,
+   "side": "w",
+   "reply": "Na6",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "Bf5",
+    "c4",
+    "Na6"
+   ],
+   "reach": {
+    "pool": 0.000452354959692,
+    "1500-1899": 0.000612138714033
+   },
+   "pool": {
+    "games": 1,
+    "parent": 36
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 101
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "r2qkb1r/ppp1pppp/n4n2/3p1b2/2PP4/4PN2/PP3PPP/RNBQKB1R w KQkq - 0 1",
+    "nearest": "f3e5"
+   }
+  },
+  {
+   "id": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1|f1c4",
+   "rank": 40,
+   "side": "b",
+   "reply": "Bc4",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "f4",
+    "Nf6",
+    "Nf3",
+    "O-O",
+    "Bc4"
+   ],
+   "reach": {
+    "1900": 0.00065820246516537,
+    "pool": 0.0006426931022020921,
+    "1500-1899": 0.0006112247748879373
+   },
+   "pool": {
+    "games": 7,
+    "parent": 48
+   },
+   "parentCount": {
+    "n": 21,
+    "M": 79
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbq1rk1/ppp1ppbp/3p1np1/8/2BPPP2/2N2N2/PPP3PP/R1BQK2R b KQ - 0 1",
+    "nearest": "f6d7"
+   }
+  },
+  {
+   "id": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1|f1e2",
+   "rank": 41,
+   "side": "b",
+   "reply": "Be2",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "f4",
+    "Nf6",
+    "Nf3",
+    "O-O",
+    "Be2"
+   ],
+   "reach": {
+    "1900": 0.00065820246516537,
+    "pool": 0.0006426931022020921,
+    "1500-1899": 0.0006112247748879373
+   },
+   "pool": {
+    "games": 7,
+    "parent": 48
+   },
+   "parentCount": {
+    "n": 8,
+    "M": 79
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP1B1PP/R1BQK2R b KQ - 0 1",
+    "nearest": "a7a6"
+   }
+  },
+  {
+   "id": "rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|a2a4",
+   "rank": 42,
+   "side": "b",
+   "reply": "a4",
+   "path": [
+    "e4",
+    "g6",
+    "Nf3",
+    "Bg7",
+    "d4",
+    "d6",
+    "Nc3",
+    "a6",
+    "a4"
+   ],
+   "reach": {
+    "pool": 0.0019814654152056155,
+    "1500-1899": 0.0005953824684502697
+   },
+   "pool": {
+    "games": 3,
+    "parent": 26
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 55
+   },
+   "line": {
+    "id": "gh-e4g6nf3bg7d4d6nc3a6a4",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "g1f3",
+     "f8g7",
+     "d2d4",
+     "d7d6",
+     "b1c3",
+     "a7a6",
+     "a2a4",
+     "e7e6",
+     "c1f4",
+     "b7b6",
+     "f1c4",
+     "b8d7",
+     "e4e5",
+     "c8b7",
+     "e5d6",
+     "c7d6",
+     "f4d6",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 0,
+      "M": 1
+     },
+     {
+      "uci": "c1f4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 8,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1c4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e4e5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 10,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e5d6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c7d6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f4d6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|h2h3",
+   "rank": 43,
+   "side": "b",
+   "reply": "h3",
+   "path": [
+    "e4",
+    "g6",
+    "Nf3",
+    "Bg7",
+    "d4",
+    "d6",
+    "Nc3",
+    "a6",
+    "h3"
+   ],
+   "reach": {
+    "pool": 0.0013204045964411771,
+    "1500-1899": 0.0005953824684502697
+   },
+   "pool": {
+    "games": 2,
+    "parent": 26
+   },
+   "parentCount": {
+    "n": 3,
+    "M": 55
+   },
+   "line": {
+    "id": "gh-e4g6nf3bg7d4d6nc3a6h3",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "g1f3",
+     "f8g7",
+     "d2d4",
+     "d7d6",
+     "b1c3",
+     "a7a6",
+     "h2h3",
+     "b7b6",
+     "c1e3",
+     "c8b7",
+     "f1c4",
+     "h7h6",
+     "e1g1",
+     "b8d7",
+     "f1e1",
+     "e7e6",
+     "d1d2",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 0,
+      "M": 5
+     },
+     {
+      "uci": "c1e3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1c4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1e1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1d2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/1pp1ppbp/p2p2p1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|d4d5",
+   "rank": 44,
+   "side": "b",
+   "reply": "d5",
+   "path": [
+    "e4",
+    "g6",
+    "Nf3",
+    "Bg7",
+    "d4",
+    "d6",
+    "Nc3",
+    "a6",
+    "d5"
+   ],
+   "reach": {
+    "pool": 0.0006610608187644384,
+    "1500-1899": 0.0005953824684502697
+   },
+   "pool": {
+    "games": 1,
+    "parent": 26
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 55
+   },
+   "line": {
+    "id": "gh-e4g6nf3bg7d4d6nc3a6d5",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "g1f3",
+     "f8g7",
+     "d2d4",
+     "d7d6",
+     "b1c3",
+     "a7a6",
+     "d4d5",
+     "b8d7"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 28,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r1bqk1nr/1ppnppbp/p2p2p1/3P4/4P3/2N2N2/PPP1BPPP/R1BQK2R b KQkq - 0 1",
+     "nearest": "h7h6",
+     "after": {
+      "uci": "f1e2",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/8/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 1|e7e5",
+   "rank": 45,
+   "side": "w",
+   "reply": "e5",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "cxd4",
+    "exd4",
+    "e5"
+   ],
+   "reach": {
+    "1900": 0.010558405259999999,
+    "pool": 0.00234230048,
+    "u1500": 0.000249502225,
+    "1500-1899": 0.0005855988000000001
+   },
+   "pool": {
+    "games": 31,
+    "parent": 378
+   },
+   "parentCount": {
+    "n": 6,
+    "M": 312
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqkbnr/pp1p1ppp/8/4p3/3P4/8/PPP2PPP/RNBQKBNR w KQkq - 0 1",
+    "nearest": "f1d3"
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1|g2g3",
+   "rank": 46,
+   "side": "b",
+   "reply": "g3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "g3"
+   ],
+   "reach": {
+    "1900": 0.00036043667999999994,
+    "pool": 0.000497151006,
+    "1500-1899": 0.0005528075000000001
+   },
+   "pool": {
+    "games": 17,
+    "parent": 82
+   },
+   "parentCount": {
+    "n": 15,
+    "M": 60
+   },
+   "line": {
+    "id": "gh-nf3g6c4bg7g3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c4",
+     "f8g7",
+     "g2g3",
+     "d7d6",
+     "d2d4",
+     "b8d7",
+     "f1g2",
+     "a7a6",
+     "e1g1",
+     "e7e6",
+     "d1c2",
+     "g8e7",
+     "a2a3",
+     "e8g8"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 28,
+      "n": 4,
+      "M": 11
+     },
+     {
+      "uci": "d2d4",
+      "who": "opp",
+      "src": "table",
+      "M": 4
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 10,
+      "n": 0,
+      "M": 17
+     },
+     {
+      "uci": "f1g2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1c2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 6,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "a2a3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e8g8",
+      "who": "own",
+      "grade": "equal",
+      "loss": 5,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1|c2c3",
+   "rank": 47,
+   "side": "b",
+   "reply": "c3",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "c3"
+   ],
+   "reach": {
+    "pool": 0.00046968707100000003,
+    "u1500": 0.00017417399999999998,
+    "1500-1899": 0.00053632449
+   },
+   "pool": {
+    "games": 10,
+    "parent": 261
+   },
+   "parentCount": {
+    "n": 10,
+    "M": 244
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7c3",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "c2c3",
+     "d7d6",
+     "e2e3"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 17,
+      "M": 37
+     },
+     {
+      "uci": "e2e3",
+      "who": "opp",
+      "src": "count",
+      "n": 9,
+      "M": 17,
+      "tie": []
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gh-d4g6bf4bg7e3d6c3"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/ppppp1pp/8/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1|d7d6",
+   "rank": 48,
+   "side": "w",
+   "reply": "d6",
+   "path": [
+    "d4",
+    "f5",
+    "Nf3",
+    "d6"
+   ],
+   "reach": {
+    "pool": 0.00045212,
+    "u1500": 0.00147042,
+    "1500-1899": 0.00052896
+   },
+   "pool": {
+    "games": 9,
+    "parent": 354
+   },
+   "parentCount": {
+    "n": 9,
+    "M": 319
+   },
+   "line": {
+    "id": "gc-f5nf3d6",
+    "moves": [
+     "d2d4",
+     "f7f5",
+     "g1f3",
+     "d7d6",
+     "e2e3",
+     "e7e6",
+     "f1d3",
+     "g8f6",
+     "e1g1",
+     "b8c6",
+     "b1d2",
+     "f8e7",
+     "c2c3"
+    ],
+    "steps": [
+     {
+      "uci": "e2e3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 3,
+      "n": 1,
+      "M": 16
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 1
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g8f6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 18,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b8c6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8e7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r1bqk2r/1pp1b1pp/2nppn2/p4p2/3P4/2PBPN2/PP1N1PPP/R1BQ1RK1 w kq - 0 1",
+     "nearest": "b2b3",
+     "after": {
+      "uci": "a7a5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1|b1c3",
+   "rank": 49,
+   "side": "b",
+   "reply": "Nc3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "Nc3"
+   ],
+   "reach": {
+    "1900": 0.0018021833999999999,
+    "pool": 0.0007019589940000001,
+    "1500-1899": 0.0005158799590000001
+   },
+   "pool": {
+    "games": 24,
+    "parent": 82
+   },
+   "parentCount": {
+    "n": 14,
+    "M": 60
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N2N2/PP1PPPPP/R1BQKB1R b KQkq - 0 1",
+    "nearest": "d7d6"
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|f1c4",
+   "rank": 50,
+   "side": "b",
+   "reply": "Bc4",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "Bc4"
+   ],
+   "reach": {
+    "1900": 0.006803450394012,
+    "pool": 0.0014808756600511999,
+    "1500-1899": 0.000504726272274
+   },
+   "pool": {
+    "games": 11,
+    "parent": 254
+   },
+   "parentCount": {
+    "n": 22,
+    "M": 435
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/2BPP3/2N5/PPP2PPP/R1BQK1NR b KQkq - 0 1",
+    "nearest": "e7e6"
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1|f1e2",
+   "rank": 51,
+   "side": "b",
+   "reply": "Be2",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "Be2"
+   ],
+   "reach": {
+    "1900": 0.0059456240399843995,
+    "pool": 0.0013474942495616,
+    "1500-1899": 0.000504726272274
+   },
+   "pool": {
+    "games": 10,
+    "parent": 254
+   },
+   "parentCount": {
+    "n": 5,
+    "M": 435
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3d6be2",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "d7d6",
+     "f1e2",
+     "a7a6",
+     "g1f3"
+    ],
+    "steps": [
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 3
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "syn-hipc5"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1|e2e4",
+   "rank": 52,
+   "side": "b",
+   "reply": "e4",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e4"
+   ],
+   "reach": {
+    "pool": 0.00042308626500000006,
+    "u1500": 0.00034834799999999995,
+    "1500-1899": 0.0004830912899999999
+   },
+   "pool": {
+    "games": 9,
+    "parent": 261
+   },
+   "parentCount": {
+    "n": 9,
+    "M": 244
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqk1nr/ppppppbp/6p1/8/3PPB2/8/PPP2PPP/RN1QKBNR b KQkq - 0 1",
+    "nearest": "d7d6"
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|f1c4",
+   "rank": 53,
+   "side": "b",
+   "reply": "Bc4",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e3",
+    "d6",
+    "Bc4"
+   ],
+   "reach": {
+    "pool": 0.000355965161979,
+    "1500-1899": 0.0004382047895939999
+   },
+   "pool": {
+    "games": 3,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 3,
+    "M": 76
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7e3d6bc4",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "f1c4",
+     "b8d7",
+     "g1f3",
+     "h7h6",
+     "b1c3",
+     "a7a6",
+     "a2a4",
+     "b7b6",
+     "e3e4",
+     "e7e6",
+     "d1e2",
+     "c8b7"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 5,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 26,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "a2a4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e3e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|f1d3",
+   "rank": 54,
+   "side": "b",
+   "reply": "Bd3",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e3",
+    "d6",
+    "Bd3"
+   ],
+   "reach": {
+    "pool": 0.000355965161979,
+    "1500-1899": 0.0004382047895939999
+   },
+   "pool": {
+    "games": 3,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 4,
+    "M": 76
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7e3d6bd3",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "f1d3",
+     "b8d7",
+     "g1f3",
+     "b7b6",
+     "c2c4",
+     "c8b7",
+     "b1c3",
+     "a7a6",
+     "e3e4",
+     "e7e6",
+     "d3c2",
+     "h7h6"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 20,
+      "n": 0,
+      "M": 2
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 19,
+      "n": 0,
+      "M": 3
+     },
+     {
+      "uci": "c2c4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 23,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e3e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d3c2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 6,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1|c1e3",
+   "rank": 55,
+   "side": "b",
+   "reply": "Be3",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "f4",
+    "Nf6",
+    "Nf3",
+    "O-O",
+    "Be3"
+   ],
+   "reach": {
+    "1900": 0.0026299166630124014,
+    "pool": 0.0007348212629429955,
+    "1500-1899": 0.0004073066307528802
+   },
+   "pool": {
+    "games": 8,
+    "parent": 48
+   },
+   "parentCount": {
+    "n": 14,
+    "M": 79
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3d6f4nf6nf3oobe3",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "d7d6",
+     "f2f4",
+     "g8f6",
+     "g1f3",
+     "e8g8",
+     "c1e3",
+     "b7b6",
+     "d1d2",
+     "c8b7"
+    ],
+    "steps": [
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 10
+     },
+     {
+      "uci": "d1d2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rn1q1rk1/pbp1ppbp/1p1p1np1/4P3/3P1P2/2N1BN2/PPPQ2PP/R3KB1R b KQ - 0 1",
+     "nearest": "f6d7",
+     "after": {
+      "uci": "e4e5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/ppppp1pp/5n2/5p2/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|b8c6",
+   "rank": 56,
+   "side": "w",
+   "reply": "Nc6",
+   "path": [
+    "d4",
+    "f5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "Nc6"
+   ],
+   "reach": {
+    "pool": 0.00033815550000000004,
+    "1500-1899": 0.00040111263
+   },
+   "pool": {
+    "games": 1,
+    "parent": 40
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 60
+   },
+   "line": {
+    "id": "gc-f5nf3nf6e3nc6",
+    "moves": [
+     "d2d4",
+     "f7f5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "b8c6",
+     "b2b3",
+     "e7e6",
+     "c1b2",
+     "b7b6",
+     "f1d3",
+     "c8b7",
+     "e1g1",
+     "g7g6",
+     "b1d2",
+     "f8g7",
+     "c2c3"
+    ],
+    "steps": [
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 28,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 23,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g7g6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8g7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 16,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 0 1|b2b3",
+   "rank": 57,
+   "side": "b",
+   "reply": "b3",
+   "path": [
+    "c4",
+    "g6",
+    "Nc3",
+    "Bg7",
+    "b3"
+   ],
+   "reach": {
+    "1900": 0.00088480392,
+    "pool": 0.000435512464,
+    "u1500": 0.00014987973000000002,
+    "1500-1899": 0.000376538678
+   },
+   "pool": {
+    "games": 12,
+    "parent": 472
+   },
+   "parentCount": {
+    "n": 9,
+    "M": 337
+   },
+   "skip": "new-line",
+   "by": "gh-c4g6b3"
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1|h2h4",
+   "rank": 58,
+   "side": "b",
+   "reply": "h4",
+   "path": [
+    "Nf3",
+    "g6",
+    "h4"
+   ],
+   "reach": {
+    "1900": 0.00184899,
+    "pool": 0.00058806,
+    "u1500": 0.00032004,
+    "1500-1899": 0.0003689
+   },
+   "pool": {
+    "games": 14,
+    "parent": 575
+   },
+   "parentCount": {
+    "n": 7,
+    "M": 411
+   },
+   "line": {
+    "id": "gh-nf3g6h4",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "h2h4",
+     "f8g7"
+    ],
+    "steps": [
+     {
+      "uci": "f8g7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 17,
+      "n": 5,
+      "M": 6
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rnbqk1nr/ppppppbp/6p1/7P/8/5N2/PPPPPPP1/RNBQKB1R b KQkq - 0 1",
+     "nearest": "a7a6",
+     "after": {
+      "uci": "h4h5",
+      "src": "table",
+      "M": 5
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R b KQkq - 0 1|c8d7",
+   "rank": 59,
+   "side": "w",
+   "reply": "Bd7",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "e6",
+    "e3",
+    "Nf6",
+    "Bd3",
+    "c5",
+    "c3",
+    "Bd7"
+   ],
+   "reach": {
+    "pool": 0.0004976952494858504,
+    "1500-1899": 0.000342161993712
+   },
+   "pool": {
+    "games": 1,
+    "parent": 23
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 95
+   },
+   "line": {
+    "id": "gc-d5nf3e6e3nf6bd3c5c3bd7",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "e7e6",
+     "e2e3",
+     "g8f6",
+     "f1d3",
+     "c7c5",
+     "c2c3",
+     "c8d7",
+     "b1d2",
+     "b8c6",
+     "e1g1",
+     "d8c7",
+     "b2b3",
+     "e6e5",
+     "f3e5"
+    ],
+    "steps": [
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b8c6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 3,
+      "M": 3
+     },
+     {
+      "uci": "d8c7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e6e5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f3e5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r3kb1r/ppqb1ppp/5n2/2ppn3/3P4/1PPBP3/P2N1PPP/R1BQ1RK1 w kq - 0 1",
+     "nearest": "c1b2",
+     "after": {
+      "uci": "c6e5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|h2h3",
+   "rank": 60,
+   "side": "b",
+   "reply": "h3",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e3",
+    "d6",
+    "h3"
+   ],
+   "reach": {
+    "pool": 0.000355965161979,
+    "1500-1899": 0.000292594420638
+   },
+   "pool": {
+    "games": 3,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 4,
+    "M": 76
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7e3d6h3",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "h2h3",
+     "b8d7",
+     "g1f3",
+     "b7b6",
+     "f4h2",
+     "c8b7",
+     "f1e2"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 8,
+      "n": 2,
+      "M": 5
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 6,
+      "n": 0,
+      "M": 1
+     },
+     {
+      "uci": "f4h2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gh-d4g6bf4bg7e3d6be2"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1|b1c3",
+   "rank": 61,
+   "side": "b",
+   "reply": "Nc3",
+   "path": [
+    "d4",
+    "g6",
+    "Bf4",
+    "Bg7",
+    "e3",
+    "d6",
+    "Nc3"
+   ],
+   "reach": {
+    "pool": 0.00023774553937680001,
+    "1500-1899": 0.000292594420638
+   },
+   "pool": {
+    "games": 2,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 76
+   },
+   "line": {
+    "id": "gh-d4g6bf4bg7e3d6nc3",
+    "moves": [
+     "d2d4",
+     "g7g6",
+     "c1f4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "b1c3",
+     "b8d7",
+     "g1f3",
+     "a7a6",
+     "f1c4",
+     "h7h6"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 2,
+      "M": 2
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 18,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1c4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 13,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gh-d4g6bf4bg7e3d6bc4"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1|g2g3",
+   "rank": 62,
+   "side": "b",
+   "reply": "g3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "d4",
+    "d6",
+    "g3"
+   ],
+   "reach": {
+    "pool": 0.00018715708879999998,
+    "1500-1899": 0.00014677039125
+   },
+   "pool": {
+    "games": 15,
+    "parent": 75
+   },
+   "parentCount": {
+    "n": 20,
+    "M": 162
+   },
+   "skip": "new-line",
+   "by": "gh-nf3g6c4bg7g3"
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1|e2e3",
+   "rank": 63,
+   "side": "b",
+   "reply": "e3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "d4",
+    "d6",
+    "e3"
+   ],
+   "reach": {
+    "pool": 0.0001247401996852,
+    "1500-1899": 0.00013045151385
+   },
+   "pool": {
+    "games": 10,
+    "parent": 75
+   },
+   "parentCount": {
+    "n": 18,
+    "M": 162
+   },
+   "line": {
+    "id": "gh-nf3g6c4bg7d4d6e3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c4",
+     "f8g7",
+     "d2d4",
+     "d7d6",
+     "e2e3",
+     "b8d7",
+     "e3e4",
+     "b7b6",
+     "f1e2",
+     "c8b7",
+     "b1c3",
+     "e7e6",
+     "d1c2",
+     "g8e7",
+     "h2h4",
+     "h7h6"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 13,
+      "M": 103
+     },
+     {
+      "uci": "e3e4",
+      "who": "opp",
+      "src": "table",
+      "M": 9
+     },
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 17,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 8,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1c2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbq1rk1/ppp1ppbp/3p1np1/8/3PPP2/2N2N2/PPP3PP/R1BQKB1R w KQ - 0 1|e4e5",
+   "rank": 64,
+   "side": "b",
+   "reply": "e5",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "d6",
+    "f4",
+    "Nf6",
+    "Nf3",
+    "O-O",
+    "e5"
+   ],
+   "reach": {
+    "1900": 0.0019731607966715706,
+    "pool": 0.00036719022917307455,
+    "1500-1899": 0.00010195907206752853
+   },
+   "pool": {
+    "games": 4,
+    "parent": 48
+   },
+   "parentCount": {
+    "n": 8,
+    "M": 79
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbq1rk1/ppp1ppbp/3p1np1/4P3/3P1P2/2N2N2/PPP3PP/R1BQKB1R b KQ - 0 1",
+    "nearest": "f6d7"
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1|c1f4",
+   "rank": 65,
+   "side": "b",
+   "reply": "Bf4",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "d4",
+    "d6",
+    "Bf4"
+   ],
+   "reach": {
+    "pool": 0.0000624168891148,
+    "1500-1899": 0.000081594387
+   },
+   "pool": {
+    "games": 5,
+    "parent": 75
+   },
+   "parentCount": {
+    "n": 9,
+    "M": 162
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP1B2/5N2/PP2PPPP/RN1QKB1R b KQkq - 0 1",
+    "nearest": "b8d7"
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1|e2e3",
+   "rank": 66,
+   "side": "b",
+   "reply": "e3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "e3"
+   ],
+   "reach": {
+    "1900": 0.0007208733599999999,
+    "pool": 0.000175549704,
+    "1500-1899": 0.00007363395900000001
+   },
+   "pool": {
+    "games": 6,
+    "parent": 82
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 60
+   },
+   "line": {
+    "id": "gh-nf3g6c4bg7e3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c4",
+     "f8g7",
+     "e2e3",
+     "d7d6",
+     "d2d4"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 23,
+      "n": 0,
+      "M": 2
+     },
+     {
+      "uci": "d2d4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gh-nf3g6c4bg7d4d6e3"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 1|d2d3",
+   "rank": 67,
+   "side": "b",
+   "reply": "d3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "d3"
+   ],
+   "reach": {
+    "pool": 0.000058516568,
+    "1500-1899": 0.00007363395900000001
+   },
+   "pool": {
+    "games": 2,
+    "parent": 82
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 60
+   },
+   "skip": "band",
+   "stop": {
+    "kind": "band",
+    "key": "rnbqk1nr/ppppppbp/6p1/8/2P5/3P1N2/PP2PPPP/RNBQKB1R b KQkq - 0 1",
+    "nearest": "e7e6"
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1|h2h3",
+   "rank": 68,
+   "side": "b",
+   "reply": "h3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "d4",
+    "d6",
+    "h3"
+   ],
+   "reach": {
+    "pool": 0.000037431417759999995,
+    "1500-1899": 0.0000489566322
+   },
+   "pool": {
+    "games": 3,
+    "parent": 75
+   },
+   "parentCount": {
+    "n": 4,
+    "M": 162
+   },
+   "line": {
+    "id": "gh-nf3g6c4bg7d4d6h3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c4",
+     "f8g7",
+     "d2d4",
+     "d7d6",
+     "h2h3",
+     "b8d7",
+     "e2e4",
+     "a7a6"
+    ],
+    "steps": [
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gh-e4g6nf3bg7d4d6h3"
+    }
+   }
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 1|b2b3",
+   "rank": 69,
+   "side": "b",
+   "reply": "b3",
+   "path": [
+    "Nf3",
+    "g6",
+    "c4",
+    "Bg7",
+    "d4",
+    "d6",
+    "b3"
+   ],
+   "reach": {
+    "pool": 0.000024985471354799998,
+    "1500-1899": 0.0000326377548
+   },
+   "pool": {
+    "games": 2,
+    "parent": 75
+   },
+   "parentCount": {
+    "n": 9,
+    "M": 162
+   },
+   "line": {
+    "id": "gh-nf3g6c4bg7d4d6b3",
+    "moves": [
+     "g1f3",
+     "g7g6",
+     "c2c4",
+     "f8g7",
+     "d2d4",
+     "d7d6",
+     "b2b3",
+     "b7b6",
+     "c1b2",
+     "c8b7",
+     "b1c3",
+     "b8d7",
+     "e2e4",
+     "e7e6",
+     "g2g3",
+     "a7a6",
+     "d4d5",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "b7b6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 7
+     },
+     {
+      "uci": "c1b2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c8b7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b1c3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e2e4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 16,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g2g3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 6,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d4d5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 13,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rn1qk1nr/pbppppbp/1p4p1/8/3PP3/2N1B3/PPP2PPP/R2QKBNR w KQkq - 0 1|f1d3",
+   "rank": 70,
+   "side": "b",
+   "reply": "Bd3",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "b6",
+    "Be3",
+    "Bb7",
+    "Bd3"
+   ],
+   "reach": {
+    "pool": 0.00244258983004288
+   },
+   "pool": {
+    "games": 4,
+    "parent": 20
+   },
+   "parentCount": {
+    "n": 6,
+    "M": 40
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3b6be3bb7bd3",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "c1e3",
+     "c8b7",
+     "f1d3",
+     "d7d6",
+     "f2f4",
+     "a7a6",
+     "g1f3",
+     "b8d7",
+     "d1e2",
+     "e7e6",
+     "e1c1",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 11,
+      "M": 30
+     },
+     {
+      "uci": "f2f4",
+      "who": "opp",
+      "src": "table",
+      "M": 7
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 16,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d1e2",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 22,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1c1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 28,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r2qk2r/1bpnnpbp/pp1pp1p1/5P2/3PP3/2NBBN2/PPP1Q1PP/2KR3R b kq - 0 1",
+     "nearest": "h7h6",
+     "after": {
+      "uci": "f4f5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/2p2n2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|g7g6",
+   "rank": 71,
+   "side": "w",
+   "reply": "g6",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "c6",
+    "Bd3",
+    "g6"
+   ],
+   "reach": {
+    "pool": 0.001953876918222
+   },
+   "pool": {
+    "games": 4,
+    "parent": 22
+   },
+   "parentCount": {
+    "n": 4,
+    "M": 94
+   },
+   "line": {
+    "id": "gc-d5nf3nf6e3c6bd3g6",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "c7c6",
+     "f1d3",
+     "g7g6",
+     "e1g1",
+     "c8f5",
+     "b2b3"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 2,
+      "M": 3
+     },
+     {
+      "uci": "c8f5",
+      "who": "opp",
+      "src": "table",
+      "M": 1
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rn1qkb1r/pp2pp1p/2p2np1/3p4/3P4/1P1bPN2/P1P2PPP/RNBQ1RK1 w kq - 0 1",
+     "nearest": "c1b2",
+     "after": {
+      "uci": "f5d3",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rn1qk1nr/pbppppbp/1p4p1/8/3PP3/2N1B3/PPP2PPP/R2QKBNR w KQkq - 0 1|f2f3",
+   "rank": 72,
+   "side": "b",
+   "reply": "f3",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "b6",
+    "Be3",
+    "Bb7",
+    "f3"
+   ],
+   "reach": {
+    "pool": 0.0018319423725321597
+   },
+   "pool": {
+    "games": 3,
+    "parent": 20
+   },
+   "parentCount": {
+    "n": 9,
+    "M": 40
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3b6be3bb7f3",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "c1e3",
+     "c8b7",
+     "f2f3",
+     "d7d6",
+     "d1d2"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 20,
+      "n": 3,
+      "M": 11
+     },
+     {
+      "uci": "d1d2",
+      "who": "opp",
+      "src": "table",
+      "M": 2
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "hip-150"
+    }
+   }
+  },
+  {
+   "id": "rn1qk1nr/pbppppbp/1p4p1/8/3PP3/2N1B3/PPP2PPP/R2QKBNR w KQkq - 0 1|d1f3",
+   "rank": 73,
+   "side": "b",
+   "reply": "Qf3",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "b6",
+    "Be3",
+    "Bb7",
+    "Qf3"
+   ],
+   "reach": {
+    "pool": 0.00061064745751072
+   },
+   "pool": {
+    "games": 1,
+    "parent": 20
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 40
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3b6be3bb7qf3",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "c1e3",
+     "c8b7",
+     "d1f3",
+     "d7d6",
+     "g2g4",
+     "b8d7",
+     "h2h4",
+     "h7h6",
+     "e1c1",
+     "e7e6",
+     "f3g3",
+     "g8e7",
+     "g1h3",
+     "a7a6"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 3
+     },
+     {
+      "uci": "g2g4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 30,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1c1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f3g3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 27,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1h3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 5,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rn1qk1nr/pbppppbp/1p4p1/8/3PP3/2N1B3/PPP2PPP/R2QKBNR w KQkq - 0 1|f2f4",
+   "rank": 74,
+   "side": "b",
+   "reply": "f4",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "b6",
+    "Be3",
+    "Bb7",
+    "f4"
+   ],
+   "reach": {
+    "pool": 0.00061064745751072
+   },
+   "pool": {
+    "games": 1,
+    "parent": 20
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 40
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3b6be3bb7f4",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "c1e3",
+     "c8b7",
+     "f2f4",
+     "e7e6",
+     "f1d3",
+     "g8e7",
+     "g1f3"
+    ],
+    "steps": [
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 1,
+      "n": 4,
+      "M": 4
+     },
+     {
+      "uci": "f1d3",
+      "who": "opp",
+      "src": "table",
+      "M": 2
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "equal",
+      "loss": 7,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g1f3",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "transposes",
+     "id": "gh-e4g6d4bg7nc3b6f4"
+    }
+   }
+  },
+  {
+   "id": "rn1qk1nr/pbppppbp/1p4p1/8/3PP3/2N1B3/PPP2PPP/R2QKBNR w KQkq - 0 1|g1f3",
+   "rank": 75,
+   "side": "b",
+   "reply": "Nf3",
+   "path": [
+    "e4",
+    "g6",
+    "d4",
+    "Bg7",
+    "Nc3",
+    "b6",
+    "Be3",
+    "Bb7",
+    "Nf3"
+   ],
+   "reach": {
+    "pool": 0.00061064745751072
+   },
+   "pool": {
+    "games": 1,
+    "parent": 20
+   },
+   "parentCount": {
+    "n": 5,
+    "M": 40
+   },
+   "line": {
+    "id": "gh-e4g6d4bg7nc3b6be3bb7nf3",
+    "moves": [
+     "e2e4",
+     "g7g6",
+     "d2d4",
+     "f8g7",
+     "b1c3",
+     "b7b6",
+     "c1e3",
+     "c8b7",
+     "g1f3",
+     "d7d6",
+     "f1d3",
+     "b8d7",
+     "d1d2",
+     "a7a6",
+     "h2h4",
+     "h7h6",
+     "e1c1",
+     "e7e6",
+     "d4d5",
+     "g8e7"
+    ],
+    "steps": [
+     {
+      "uci": "d7d6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 33,
+      "M": 108
+     },
+     {
+      "uci": "f1d3",
+      "who": "opp",
+      "src": "count",
+      "n": 22,
+      "M": 29,
+      "tie": []
+     },
+     {
+      "uci": "b8d7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 14,
+      "M": 33
+     },
+     {
+      "uci": "d1d2",
+      "who": "opp",
+      "src": "count",
+      "n": 7,
+      "M": 12,
+      "tie": []
+     },
+     {
+      "uci": "a7a6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 5
+     },
+     {
+      "uci": "h2h4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "h7h6",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e1c1",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "d4d5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "g8e7",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/2p2n2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|b8d7",
+   "rank": 76,
+   "side": "w",
+   "reply": "Nbd7",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "c6",
+    "Bd3",
+    "Nbd7"
+   ],
+   "reach": {
+    "pool": 0.000489006599445
+   },
+   "pool": {
+    "games": 1,
+    "parent": 22
+   },
+   "parentCount": {
+    "n": 5,
+    "M": 94
+   },
+   "line": {
+    "id": "gc-d5nf3nf6e3c6bd3nbd7",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "c7c6",
+     "f1d3",
+     "b8d7",
+     "e1g1",
+     "a7a6",
+     "b2b3",
+     "g7g6",
+     "c1b2",
+     "c6c5",
+     "b1d2",
+     "f8g7",
+     "c2c3"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 2,
+      "M": 2
+     },
+     {
+      "uci": "a7a6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g7g6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 6,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c6c5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8g7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 29,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r1bqk2r/3nppbp/pp3np1/2pp4/3P4/1PPBPN2/PB1N1PPP/R2Q1RK1 w kq - 0 1",
+     "nearest": "f3e5",
+     "after": {
+      "uci": "b7b6",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/2p2n2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|d8c7",
+   "rank": 77,
+   "side": "w",
+   "reply": "Qc7",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "c6",
+    "Bd3",
+    "Qc7"
+   ],
+   "reach": {
+    "pool": 0.000489006599445
+   },
+   "pool": {
+    "games": 1,
+    "parent": 22
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 94
+   },
+   "line": {
+    "id": "gc-d5nf3nf6e3c6bd3qc7",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "c7c6",
+     "f1d3",
+     "d8c7",
+     "e1g1",
+     "c8g4",
+     "b1d2",
+     "g4h5",
+     "b2b3",
+     "e7e6",
+     "c1b2",
+     "f8e7",
+     "c2c3"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "c8g4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g4h5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8e7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "rn3rk1/ppq1bppp/2p1pn2/3p3b/3P4/1PPBPN2/PB1N1PPP/R2Q1RK1 w - - 0 1",
+     "nearest": "f3e5",
+     "after": {
+      "uci": "e8g8",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/2p2n2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|h7h6",
+   "rank": 78,
+   "side": "w",
+   "reply": "h6",
+   "path": [
+    "d4",
+    "d5",
+    "Nf3",
+    "Nf6",
+    "e3",
+    "c6",
+    "Bd3",
+    "h6"
+   ],
+   "reach": {
+    "pool": 0.000489006599445
+   },
+   "pool": {
+    "games": 1,
+    "parent": 22
+   },
+   "parentCount": {
+    "n": 3,
+    "M": 94
+   },
+   "line": {
+    "id": "gc-d5nf3nf6e3c6bd3h6",
+    "moves": [
+     "d2d4",
+     "d7d5",
+     "g1f3",
+     "g8f6",
+     "e2e3",
+     "c7c6",
+     "f1d3",
+     "h7h6",
+     "e1g1",
+     "c8g4",
+     "b1d2",
+     "e7e6",
+     "b2b3",
+     "g4f5",
+     "f3e5",
+     "b8d7",
+     "c1b2",
+     "a7a5",
+     "c2c3"
+    ],
+    "steps": [
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "equal",
+      "loss": 2,
+      "n": 3,
+      "M": 3
+     },
+     {
+      "uci": "c8g4",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 14,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "e7e6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "b2b3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 9,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "g4f5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f3e5",
+      "who": "own",
+      "grade": "equal",
+      "loss": 4,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b8d7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c1b2",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "a7a5",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 15,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "length"
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp2pppp/8/3p4/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 1|e7e5",
+   "rank": 79,
+   "side": "w",
+   "reply": "e5",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "cxd4",
+    "exd4",
+    "d5",
+    "Nf3",
+    "e5"
+   ],
+   "reach": {
+    "pool": 0.0004401274008768
+   },
+   "pool": {
+    "games": 2,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 2070
+   },
+   "line": {
+    "id": "gc-c5e3cxd4exd4d5nf3e5",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "c5d4",
+     "e3d4",
+     "d7d5",
+     "g1f3",
+     "e7e5",
+     "f3e5",
+     "d8b6",
+     "f1d3",
+     "f8e7",
+     "e1g1",
+     "b8c6",
+     "c2c3"
+    ],
+    "steps": [
+     {
+      "uci": "f3e5",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 3
+     },
+     {
+      "uci": "d8b6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 6,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "f8e7",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 0,
+      "M": 0
+     },
+     {
+      "uci": "b8c6",
+      "who": "opp",
+      "src": "table",
+      "M": 0
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 21,
+      "n": 0,
+      "M": 0
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r1b1k1nr/pp2bppp/1q6/3pn3/3P4/2PB4/PP3PPP/RNBQ1RK1 w kq - 0 1",
+     "nearest": "b2b3",
+     "after": {
+      "uci": "c6e5",
+      "src": "table",
+      "M": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkbnr/pp2pppp/8/3p4/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 1|e7e6",
+   "rank": 80,
+   "side": "w",
+   "reply": "e6",
+   "path": [
+    "d4",
+    "c5",
+    "e3",
+    "cxd4",
+    "exd4",
+    "d5",
+    "Nf3",
+    "e6"
+   ],
+   "reach": {
+    "pool": 0.0004401274008768
+   },
+   "pool": {
+    "games": 2,
+    "parent": 55
+   },
+   "parentCount": {
+    "n": 189,
+    "M": 2070
+   },
+   "line": {
+    "id": "gc-c5e3cxd4exd4d5nf3e6",
+    "moves": [
+     "d2d4",
+     "c7c5",
+     "e2e3",
+     "c5d4",
+     "e3d4",
+     "d7d5",
+     "g1f3",
+     "e7e6",
+     "f1d3",
+     "b8c6",
+     "e1g1",
+     "g8f6",
+     "c2c3",
+     "f8d6",
+     "b1d2"
+    ],
+    "steps": [
+     {
+      "uci": "f1d3",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 94,
+      "M": 347
+     },
+     {
+      "uci": "b8c6",
+      "who": "opp",
+      "src": "count",
+      "n": 46,
+      "M": 99,
+      "tie": []
+     },
+     {
+      "uci": "e1g1",
+      "who": "own",
+      "grade": "best",
+      "loss": 0,
+      "n": 17,
+      "M": 46
+     },
+     {
+      "uci": "g8f6",
+      "who": "opp",
+      "src": "count",
+      "n": 6,
+      "M": 12,
+      "tie": []
+     },
+     {
+      "uci": "c2c3",
+      "who": "own",
+      "grade": "equal",
+      "loss": 10,
+      "n": 8,
+      "M": 11
+     },
+     {
+      "uci": "f8d6",
+      "who": "opp",
+      "src": "count",
+      "n": 14,
+      "M": 30,
+      "tie": []
+     },
+     {
+      "uci": "b1d2",
+      "who": "own",
+      "grade": "equal",
+      "loss": 11,
+      "n": 0,
+      "M": 19
+     }
+    ],
+    "stop": {
+     "kind": "band",
+     "key": "r1bq1rk1/pp3ppp/2nbpn2/3p4/3P4/2PB1N2/PP1N1PPP/R1BQ1RK1 w - - 0 1",
+     "nearest": "b2b3",
+     "after": {
+      "uci": "e8g8",
+      "src": "table",
+      "M": 2
+     }
+    }
+   }
+  },
+  {
+   "id": "rnbqkb1r/p1pp1ppp/1p2pn2/8/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|d7d5",
+   "rank": 81,
+   "side": "w",
+   "reply": "d5",
+   "path": [
+    "d4",
+    "Nf6",
+    "Nf3",
+    "e6",
+    "e3",
+    "b6",
+    "Bd3",
+    "d5"
+   ],
+   "reach": {
+    "pool": 0.0004198618103265
+   },
+   "pool": {
+    "games": 1,
+    "parent": 24
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 14
+   },
+   "skip": "new-line",
+   "by": "gc-d5nf3e6e3nf6bd3b6"
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|c1d2",
+   "rank": 82,
+   "side": "b",
+   "reply": "Bd2",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 6,
+    "parent": 163
+   },
+   "parentCount": {
+    "n": 6,
+    "M": 283
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|c1e3",
+   "rank": 83,
+   "side": "b",
+   "reply": "Be3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 6,
+    "parent": 163
+   },
+   "parentCount": {
+    "n": 16,
+    "M": 283
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|c2c4",
+   "rank": 84,
+   "side": "b",
+   "reply": "c4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 17,
+    "parent": 163
+   },
+   "parentCount": {
+    "n": 31,
+    "M": 283
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|e4e5",
+   "rank": 85,
+   "side": "b",
+   "reply": "e5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 6,
+    "parent": 163
+   },
+   "parentCount": {
+    "n": 28,
+    "M": 283
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|f1c4",
+   "rank": 86,
+   "side": "b",
+   "reply": "Bc4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 33,
+    "parent": 163
+   },
+   "parentCount": {
+    "n": 47,
+    "M": 283
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|f1d3",
+   "rank": 87,
+   "side": "b",
+   "reply": "Bd3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 24,
+    "parent": 163
+   },
+   "parentCount": {
+    "n": 39,
+    "M": 283
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/p1ppppbp/1p4p1/8/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1|f1e2",
+   "rank": 88,
+   "side": "b",
+   "reply": "Be2",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 4,
+    "parent": 163
+   },
+   "parentCount": {
+    "n": 6,
+    "M": 283
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 1|c1f4",
+   "rank": 89,
+   "side": "b",
+   "reply": "Bf4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 10,
+    "parent": 428
+   },
+   "parentCount": {
+    "n": 17,
+    "M": 770
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 1|c1g5",
+   "rank": 90,
+   "side": "b",
+   "reply": "Bg5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 16,
+    "parent": 428
+   },
+   "parentCount": {
+    "n": 33,
+    "M": 770
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 1|e2e3",
+   "rank": 91,
+   "side": "b",
+   "reply": "e3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 35,
+    "parent": 428
+   },
+   "parentCount": {
+    "n": 55,
+    "M": 770
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 1|g2g3",
+   "rank": 92,
+   "side": "b",
+   "reply": "g3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 13,
+    "parent": 428
+   },
+   "parentCount": {
+    "n": 12,
+    "M": 770
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PPP3/8/PP3PPP/RNBQKBNR w KQkq - 0 1|d4d5",
+   "rank": 93,
+   "side": "b",
+   "reply": "d5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 8,
+    "parent": 312
+   },
+   "parentCount": {
+    "n": 14,
+    "M": 478
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppp1ppbp/3p2p1/8/2PPP3/8/PP3PPP/RNBQKBNR w KQkq - 0 1|f2f4",
+   "rank": 94,
+   "side": "b",
+   "reply": "f4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 47,
+    "parent": 312
+   },
+   "parentCount": {
+    "n": 59,
+    "M": 478
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|b7b6",
+   "rank": 95,
+   "side": "w",
+   "reply": "b6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 9,
+    "parent": 165
+   },
+   "parentCount": {
+    "n": 26,
+    "M": 313
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|b8c6",
+   "rank": 96,
+   "side": "w",
+   "reply": "Nc6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 4,
+    "parent": 165
+   },
+   "parentCount": {
+    "n": 9,
+    "M": 313
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|d7d5",
+   "rank": 97,
+   "side": "w",
+   "reply": "d5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 10,
+    "parent": 165
+   },
+   "parentCount": {
+    "n": 28,
+    "M": 313
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1|e7e6",
+   "rank": 98,
+   "side": "w",
+   "reply": "e6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 49,
+    "parent": 165
+   },
+   "parentCount": {
+    "n": 88,
+    "M": 313
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|c1e3",
+   "rank": 99,
+   "side": "b",
+   "reply": "Be3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 28,
+    "parent": 129
+   },
+   "parentCount": {
+    "n": 105,
+    "M": 622
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|c1f4",
+   "rank": 100,
+   "side": "b",
+   "reply": "Bf4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 7,
+    "parent": 129
+   },
+   "parentCount": {
+    "n": 15,
+    "M": 622
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|c1g5",
+   "rank": 101,
+   "side": "b",
+   "reply": "Bg5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 9,
+    "parent": 129
+   },
+   "parentCount": {
+    "n": 87,
+    "M": 622
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|e4e5",
+   "rank": 102,
+   "side": "b",
+   "reply": "e5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 4,
+    "parent": 129
+   },
+   "parentCount": {
+    "n": 62,
+    "M": 622
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|f1d3",
+   "rank": 103,
+   "side": "b",
+   "reply": "Bd3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 27,
+    "parent": 129
+   },
+   "parentCount": {
+    "n": 143,
+    "M": 622
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1|f1e2",
+   "rank": 104,
+   "side": "b",
+   "reply": "Be2",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 11,
+    "parent": 129
+   },
+   "parentCount": {
+    "n": 46,
+    "M": 622
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqk2r/ppppppbp/5np1/8/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|e8g8",
+   "rank": 105,
+   "side": "w",
+   "reply": "O-O",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 67,
+    "parent": 117
+   },
+   "parentCount": {
+    "n": 65,
+    "M": 127
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|c5d4",
+   "rank": 106,
+   "side": "w",
+   "reply": "cxd4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 2,
+    "parent": 21
+   },
+   "parentCount": {
+    "n": 1,
+    "M": 19
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|d8a5",
+   "rank": 107,
+   "side": "w",
+   "reply": "Qa5+",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 1,
+    "parent": 21
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 19
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|d8b6",
+   "rank": 108,
+   "side": "w",
+   "reply": "Qb6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 4,
+    "parent": 21
+   },
+   "parentCount": {
+    "n": 7,
+    "M": 19
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|e7e6",
+   "rank": 109,
+   "side": "w",
+   "reply": "e6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 1,
+    "parent": 21
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 19
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pp1p/5np1/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 0 1|c8g4",
+   "rank": 110,
+   "side": "w",
+   "reply": "Bg4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 1,
+    "parent": 24
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 36
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|b8c6",
+   "rank": 111,
+   "side": "w",
+   "reply": "Nc6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 28,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 25,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|b8d7",
+   "rank": 112,
+   "side": "w",
+   "reply": "Nbd7",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 17,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 11,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|c7c5",
+   "rank": 113,
+   "side": "w",
+   "reply": "c5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 8,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 2,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|c7c6",
+   "rank": 114,
+   "side": "w",
+   "reply": "c6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 13,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 8,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|c8f5",
+   "rank": 115,
+   "side": "w",
+   "reply": "Bf5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 22,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 24,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|c8g4",
+   "rank": 116,
+   "side": "w",
+   "reply": "Bg4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 14,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 14,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|f6e4",
+   "rank": 117,
+   "side": "w",
+   "reply": "Ne4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 43,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 37,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|g7g6",
+   "rank": 118,
+   "side": "w",
+   "reply": "g6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 7,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 8,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|h7h6",
+   "rank": 119,
+   "side": "w",
+   "reply": "h6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 27,
+    "parent": 306
+   },
+   "parentCount": {
+    "n": 29,
+    "M": 286
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|b8c6",
+   "rank": 120,
+   "side": "w",
+   "reply": "Nc6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 62,
+    "parent": 420
+   },
+   "parentCount": {
+    "n": 95,
+    "M": 589
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|c7c6",
+   "rank": 121,
+   "side": "w",
+   "reply": "c6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 36,
+    "parent": 420
+   },
+   "parentCount": {
+    "n": 48,
+    "M": 589
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|c8f5",
+   "rank": 122,
+   "side": "w",
+   "reply": "Bf5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 81,
+    "parent": 420
+   },
+   "parentCount": {
+    "n": 114,
+    "M": 589
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|c8g4",
+   "rank": 123,
+   "side": "w",
+   "reply": "Bg4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 25,
+    "parent": 420
+   },
+   "parentCount": {
+    "n": 39,
+    "M": 589
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|e7e6",
+   "rank": 124,
+   "side": "w",
+   "reply": "e6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 139,
+    "parent": 420
+   },
+   "parentCount": {
+    "n": 202,
+    "M": 589
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1|g7g6",
+   "rank": 125,
+   "side": "w",
+   "reply": "g6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 34,
+    "parent": 420
+   },
+   "parentCount": {
+    "n": 40,
+    "M": 589
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp2ppp/4pn2/3p2B1/3P4/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|a7a6",
+   "rank": 126,
+   "side": "w",
+   "reply": "a6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 1,
+    "parent": 38
+   },
+   "parentCount": {
+    "n": 0,
+    "M": 125
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp2ppp/4pn2/3p2B1/3P4/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|b8d7",
+   "rank": 127,
+   "side": "w",
+   "reply": "Nbd7",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 2,
+    "parent": 38
+   },
+   "parentCount": {
+    "n": 12,
+    "M": 125
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp2ppp/4pn2/3p2B1/3P4/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|c7c6",
+   "rank": 128,
+   "side": "w",
+   "reply": "c6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 1,
+    "parent": 38
+   },
+   "parentCount": {
+    "n": 5,
+    "M": 125
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp2ppp/4pn2/3p2B1/3P4/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|f8e7",
+   "rank": 129,
+   "side": "w",
+   "reply": "Be7",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 23,
+    "parent": 38
+   },
+   "parentCount": {
+    "n": 62,
+    "M": 125
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkb1r/ppp2ppp/4pn2/3p2B1/3P4/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1|h7h6",
+   "rank": 130,
+   "side": "w",
+   "reply": "h6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 8,
+    "parent": 38
+   },
+   "parentCount": {
+    "n": 21,
+    "M": 125
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/8/4PN2/PPPP1PPP/RNBQKB1R b KQkq - 0 1|a7a6",
+   "rank": 131,
+   "side": "w",
+   "reply": "a6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 2,
+    "parent": 67
+   },
+   "parentCount": {
+    "n": 3,
+    "M": 98
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/8/4PN2/PPPP1PPP/RNBQKB1R b KQkq - 0 1|b8c6",
+   "rank": 132,
+   "side": "w",
+   "reply": "Nc6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 29,
+    "parent": 67
+   },
+   "parentCount": {
+    "n": 43,
+    "M": 98
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/8/4PN2/PPPP1PPP/RNBQKB1R b KQkq - 0 1|d7d5",
+   "rank": 133,
+   "side": "w",
+   "reply": "d5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 12,
+    "parent": 67
+   },
+   "parentCount": {
+    "n": 15,
+    "M": 98
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/8/4PN2/PPPP1PPP/RNBQKB1R b KQkq - 0 1|d7d6",
+   "rank": 134,
+   "side": "w",
+   "reply": "d6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 3,
+    "parent": 67
+   },
+   "parentCount": {
+    "n": 12,
+    "M": 98
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/8/4PN2/PPPP1PPP/RNBQKB1R b KQkq - 0 1|e7e6",
+   "rank": 135,
+   "side": "w",
+   "reply": "e6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 10,
+    "parent": 67
+   },
+   "parentCount": {
+    "n": 16,
+    "M": 98
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pp1ppppp/8/2p5/8/4PN2/PPPP1PPP/RNBQKB1R b KQkq - 0 1|g8f6",
+   "rank": 136,
+   "side": "w",
+   "reply": "Nf6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 7,
+    "parent": 67
+   },
+   "parentCount": {
+    "n": 7,
+    "M": 98
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1|b1c3",
+   "rank": 137,
+   "side": "b",
+   "reply": "Nc3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 36,
+    "parent": 210
+   },
+   "parentCount": {
+    "n": 333,
+    "M": 2124
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1|c2c3",
+   "rank": 138,
+   "side": "b",
+   "reply": "c3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 5,
+    "parent": 210
+   },
+   "parentCount": {
+    "n": 77,
+    "M": 2124
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1|c2c4",
+   "rank": 139,
+   "side": "b",
+   "reply": "c4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 46,
+    "parent": 210
+   },
+   "parentCount": {
+    "n": 379,
+    "M": 2124
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1|d4d5",
+   "rank": 140,
+   "side": "b",
+   "reply": "d5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 10,
+    "parent": 210
+   },
+   "parentCount": {
+    "n": 69,
+    "M": 2124
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1|f1d3",
+   "rank": 141,
+   "side": "b",
+   "reply": "Bd3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 20,
+    "parent": 210
+   },
+   "parentCount": {
+    "n": 140,
+    "M": 2124
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1|f2f4",
+   "rank": 142,
+   "side": "b",
+   "reply": "f4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 22,
+    "parent": 210
+   },
+   "parentCount": {
+    "n": 269,
+    "M": 2124
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/ppp2ppp/3pp3/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 1|g1f3",
+   "rank": 143,
+   "side": "b",
+   "reply": "Nf3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 52,
+    "parent": 210
+   },
+   "parentCount": {
+    "n": 636,
+    "M": 2124
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppp1ppp/4p3/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1|b1c3",
+   "rank": 144,
+   "side": "b",
+   "reply": "Nc3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 375,
+    "parent": 18082
+   },
+   "parentCount": {
+    "n": 334,
+    "M": 16392
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppp1ppp/4p3/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1|c1f4",
+   "rank": 145,
+   "side": "b",
+   "reply": "Bf4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 903,
+    "parent": 18082
+   },
+   "parentCount": {
+    "n": 856,
+    "M": 16392
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppp1ppp/4p3/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1|c2c3",
+   "rank": 146,
+   "side": "b",
+   "reply": "c3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 522,
+    "parent": 18082
+   },
+   "parentCount": {
+    "n": 395,
+    "M": 16392
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppp1ppp/4p3/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1|c2c4",
+   "rank": 147,
+   "side": "b",
+   "reply": "c4",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 8037,
+    "parent": 18082
+   },
+   "parentCount": {
+    "n": 7295,
+    "M": 16392
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppp1ppp/4p3/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1|g1f3",
+   "rank": 148,
+   "side": "b",
+   "reply": "Nf3",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 2827,
+    "parent": 18082
+   },
+   "parentCount": {
+    "n": 2400,
+    "M": 16392
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppp1p/6p1/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 1|c7c6",
+   "rank": 149,
+   "side": "w",
+   "reply": "c6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 43,
+    "parent": 875
+   },
+   "parentCount": {
+    "n": 47,
+    "M": 857
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|b7b6",
+   "rank": 150,
+   "side": "w",
+   "reply": "b6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 518,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 390,
+    "M": 9499
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|b8c6",
+   "rank": 151,
+   "side": "w",
+   "reply": "Nc6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 964,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 885,
+    "M": 9499
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|c7c6",
+   "rank": 152,
+   "side": "w",
+   "reply": "c6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 391,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 295,
+    "M": 9499
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|d7d5",
+   "rank": 153,
+   "side": "w",
+   "reply": "d5",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 4034,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 3341,
+    "M": 9499
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|d7d6",
+   "rank": 154,
+   "side": "w",
+   "reply": "d6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 848,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 646,
+    "M": 9499
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|e7e6",
+   "rank": 155,
+   "side": "w",
+   "reply": "e6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 1464,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 1213,
+    "M": 9499
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|g7g6",
+   "rank": 156,
+   "side": "w",
+   "reply": "g6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 578,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 412,
+    "M": 9499
+   },
+   "skip": "eco-only"
+  },
+  {
+   "id": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1|g8f6",
+   "rank": 95,
+   "side": "w",
+   "reply": "Nf6",
+   "path": null,
+   "reach": {},
+   "pool": {
+    "games": 1442,
+    "parent": 11962
+   },
+   "parentCount": {
+    "n": 986,
+    "M": 9499
+   },
+   "skip": "eco-only"
   }
  ]
 }

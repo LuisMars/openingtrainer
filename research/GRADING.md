@@ -421,3 +421,10 @@ best 408, equal 501, concession 29, inferior 2 (best+equal 909). The 164
 generated moves after each gap are all best or equal at depth 20. The five new
 concessions are the repertoire's existing 2.e3 after 1.d4 c5, on the path of
 five generated lines. 139 positions are checked at depth 28.
+
+After the second generated batch (`W6-content-batch.md` §11): 1349 drilled
+moves, best 550, equal 759, concession 38, inferior 2 (best+equal 1309). The 226
+generated moves after each gap are all best or equal at depth 20. The nine new
+concessions are existing repertoire moves on the paths of generated lines: 2.e3
+after 1.d4 c5 (eight) and 2...Bg7 after 1.c4 g6 2.Nc3 (one). 149 positions are
+checked at depth 28.

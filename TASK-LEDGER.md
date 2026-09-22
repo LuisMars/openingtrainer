@@ -1380,3 +1380,27 @@ band 14, at six moves 17.
   every move is legal, every learner move is in the system and best or equal,
   every note number and count matches its source. Ten lines were also read by hand.
 `npm test`: exit 0.
+
+## Generated coverage lines, every remaining gap — 2026-09-22
+
+Details in `research/W6-content-batch.md` §11. `tools/gen-gap-lines.mjs --plan 151`,
+then `--plan 1` for the last undecided row. 152 rows decided: 59 `synthetic` lines
+built, 93 skipped: 76 reached only through an `eco` line's move order, 14 with no
+system move in the band at the gap's board, 3 reached by a line built earlier in
+the run. Built lines stop by transposition 15, outside the band 24, at six moves 20.
+Every matrix row is now decided; the coverage-gaps ticket is closed.
+
+- 409 new drilled moves: the 226 after the gap are best 73, equal 153 at depth 20.
+  Repertoire 1349: best 550, equal 759, concession 38, inferior 2. The nine new
+  concessions are existing repertoire moves on generated paths (2.e3 after 1.d4 c5
+  eight times, 2...Bg7 after 1.c4 g6 2.Nc3 once).
+- `evals.js` 717 -> 1155; all 717 unchanged field for field. `deep.js` 139 -> 149,
+  the 139 unchanged. Common choices 615 at 151 positions; 145 old positions
+  unchanged, 3 changed counts. Occurrence 166 / 256 / 178 of 1155; no old position
+  changed bucket. `eco.js`: 140 old entries unchanged. Coverage 156 / 24 / 157 ->
+  215 / 27 / 95.
+- Tool fix: a gap note no longer cites "0 of N counted games"; it cites the player
+  pool instead (six new lines).
+- The audit replayed all 103 generated lines against the built page with no
+  problem; thirteen new lines were also read by hand.
+`npm test`: exit 0.

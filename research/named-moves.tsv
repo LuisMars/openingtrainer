@@ -69,13 +69,29 @@ r1bq1rk1/3n1ppp/1p1bpn2/p1ppN3/3P4/1P1BP3/PBPN1PPP/R2Q1RK1 w - - 0 1	e5f3	alone
 r1bq1rk1/pp2ppbp/2np1np1/8/3P4/2PB1N2/PP1N1PPP/R1BQ1RK1 w - - 0 1	b2b3	alone
 r1bq1rk1/p2n1ppp/1p1bpn2/2pp4/3P4/1PPBPN2/PB1N1PPP/R2Q1RK1 w - - 0 1	f3e5	alone
 r2qk2r/pbpnnpbp/1p1pp1p1/5P2/3PP3/2NBBN2/PPP3PP/R2Q1RK1 b kq - 0 1	h7h6	alone
+r3k2r/pbqnbppp/1p2pn2/2pp4/3P4/1PPBPN2/PB1N1PPP/R2Q1RK1 w kq - 0 1	f3e5	alone
+r2qk1nr/1bpnppb1/pp1p2pp/8/P1BPP2B/2N2N2/1PP2PPP/R2Q1RK1 b kq - 0 1	e7e6	alone
+r2qk2r/pppn1ppp/4p3/3pNb2/1b1Pn3/1P1BP3/PBPN1PPP/R2Q1RK1 w kq - 0 1	e5f3	alone
+r1bqk2r/1pp3bp/2nppnp1/p4p2/3P4/1P1BPN2/PBPN1PPP/R2Q1RK1 w kq - 0 1	c2c3	alone
+rnbqk2r/ppppnpb1/4p1pp/7P/2P1P3/2NP4/PP3PP1/R1BQKBNR b KQkq - 0 1	d7d6	alone
+rn1qkbnr/pp3ppp/4p3/3p4/3P2b1/2P2N2/PP3PPP/RNBQKB1R w KQkq - 0 1	b1d2	alone
+r2qkb1r/pp2nppp/4p3/3pnb2/3P4/2PB4/PP3PPP/RNBQ1RK1 w kq - 0 1	b1d2	alone
+r1bqk2r/1pp1b1pp/2nppn2/p4p2/3P4/2PBPN2/PP1N1PPP/R1BQ1RK1 w kq - 0 1	b2b3	alone
+rn1q1rk1/pbp1ppbp/1p1p1np1/4P3/3P1P2/2N1BN2/PPPQ2PP/R3KB1R b KQ - 0 1	f6d7	alone
+rnbqk1nr/ppppppbp/6p1/7P/8/5N2/PPPPPPP1/RNBQKB1R b KQkq - 0 1	a7a6	alone
+r3kb1r/ppqb1ppp/5n2/2ppn3/3P4/1PPBP3/P2N1PPP/R1BQ1RK1 w kq - 0 1	c1b2	alone
+rn1qkb1r/pp2pp1p/2p2np1/3p4/3P4/1P1bPN2/P1P2PPP/RNBQ1RK1 w kq - 0 1	c1b2	alone
+r1bqk2r/3nppbp/pp3np1/2pp4/3P4/1PPBPN2/PB1N1PPP/R2Q1RK1 w kq - 0 1	f3e5	alone
+rn3rk1/ppq1bppp/2p1pn2/3p3b/3P4/1PPBPN2/PB1N1PPP/R2Q1RK1 w - - 0 1	f3e5	alone
+r1b1k1nr/pp2bppp/1q6/3pn3/3P4/2PB4/PP3PPP/RNBQ1RK1 w kq - 0 1	b2b3	alone
+r1bq1rk1/pp3ppp/2nbpn2/3p4/3P4/2PB1N2/PP1N1PPP/R1BQ1RK1 w - - 0 1	b2b3	alone
 
 # Counted player choices the ranked five do not contain (tools/count-choices.mjs
 # --tsv, from research/choices-player.json). Each was chosen in at least 5% of at least 30
 # games reaching the position in one rating band, and at least 10 times, so
 # the app may name it as a common choice; it needs a score before it may be
-# priced. 155 moves at 71 positions share one search per position. 42 more, at
-# 21 positions whose shared search is fixed by drilled or hand-named moves, or
+# priced. 155 moves at 71 positions share one search per position. 44 more, at
+# 22 positions whose shared search is fixed by drilled or hand-named moves, or
 # which already carry a committed line of their own, are marked alone: each move
 # gets a search of its own, so no stored score moves. Every line already committed
 # here is reprinted exactly as shipped, even if a move in it no longer clears the
@@ -118,6 +134,7 @@ rnbqk1nr/ppppppbp/6p1/8/2PP4/5N2/PP2PPPP/RNBQKB1R b KQkq - 0 1	b8c6	alone
 rnbqkb1r/ppppp1pp/5n2/5p2/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1	c1g5 b1c3
 rnbqk2r/ppppppbp/5np1/8/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 1	c2c3	alone
 rnbqk1nr/ppppppbp/6p1/8/8/5NP1/PPPPPPBP/RNBQK2R b KQkq - 0 1	e7e6	alone
+rnbqk1nr/ppppppbp/6p1/8/8/5NP1/PPPPPPBP/RNBQK2R b KQkq - 0 1	b7b6	alone
 rn1qkb1r/ppp1pppp/5n2/3p4/3P2b1/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 1	f1d3
 rnbqkb1r/ppp2ppp/4pn2/3p2B1/3P4/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 1	g5f6
 rnbqk1nr/ppp1ppbp/3p2p1/4P3/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 1	c8g4
@@ -143,6 +160,7 @@ rnbqk1nr/ppppppbp/6p1/8/2B1P3/5Q2/PPPP1PPP/RNB1K1NR b KQkq - 0 1	g8f6
 r1b1kbnr/ppppqppp/2n5/4P3/8/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1	e2e3
 rnbqkbnr/ppp1pp1p/3p2p1/8/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1	c1f4 c1g5	alone
 rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1	e7e6 b7b6
+rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1	c7c5	alone
 rnbqk1nr/pppp1pbp/4p1p1/8/2BPP3/5N2/PPP2PPP/RNBQK2R b KQkq - 0 1	c7c6 d7d6
 rn1qkbnr/ppp2ppp/4p3/3p1b2/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 1	a2a3
 rn1qkbnr/pp2pppp/2p5/3p4/3P2b1/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 1	f1d3
@@ -163,8 +181,6 @@ rnbqk1nr/ppppppbp/6p1/8/3PP3/2P5/PP3PPP/RNBQKBNR b KQkq - 0 1	e7e6 b7b6 c7c5 c7c
 rnbqkb1r/ppp1pppp/3p1n2/8/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1	c1f4 c1g5
 rnbqk1nr/ppppppbp/6p1/8/3PP3/4B3/PPP2PPP/RN1QKBNR b KQkq - 0 1	e7e6 b7b6 c7c5 b8c6
 rnbqk1nr/ppppppbp/6p1/8/2PP4/4P3/PP3PPP/RNBQKBNR b KQkq - 0 1	b7b6
-rnbqk1nr/ppppppbp/6p1/8/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 1	c7c5	alone
-rnbqk1nr/ppppppbp/6p1/8/8/5NP1/PPPPPPBP/RNBQK2R b KQkq - 0 1	b7b6	alone
 rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/2P2N2/PP3PPP/RNBQKB1R b KQkq - 0 1	b8c6 c8g4
 rnbqkbnr/pppppp1p/6p1/8/3P4/2P5/PP2PPPP/RNBQKBNR b KQkq - 0 1	c7c6
 rnbqk1nr/ppp1ppbp/3p2p1/8/2PPP3/5N2/PP3PPP/RNBQKB1R b KQkq - 0 1	c7c6 e7e6 a7a6
@@ -173,3 +189,4 @@ rnbqk1nr/ppppppbp/6p1/8/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1	e7e6
 rnbqkbnr/pp1p1ppp/4p3/2p5/3P4/4P3/PPP2PPP/RNBQKBNR w KQkq - 0 1	c2c3 d4c5
 rnbqk1nr/ppp1ppbp/3p2p1/8/3PP3/4BN2/PPP2PPP/RN1QKB1R b KQkq - 0 1	c8g4 b8c6
 rnbqk1nr/ppppppbp/6p1/6B1/3P4/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1	f7f6
+rnbqkbnr/ppp1p1pp/8/3p1p2/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1	e2e3 b1c3	alone

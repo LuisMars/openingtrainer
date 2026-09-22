@@ -563,3 +563,90 @@ build-evals and `--emit` until `--tsv` is identical; `tools/deep-check.mjs`;
 before each); `gen-gap-lines --write` again, which must print "notes unchanged";
 update the pins in `test/w2b-grading.mjs` and the counts in README and `src/html/`;
 `npm test`.
+
+## 11. Generated lines: every remaining gap
+
+The same tool, rules and pipeline as §10, run once over every undecided row:
+`node tools/gen-gap-lines.mjs --plan 151`, then `--plan 1` for the last row the
+first call left out. At the start 157 rows were `missing`, and 152 of them were
+undecided (the §10 skip at rank 17 is now covered, so 5 old skips were still in
+the list, not 6). Ranks in this section are the ranks of that run's list.
+
+**The batch: 152 rows.** 59 built, 93 skipped.
+
+- Built lines end by transposition into another line (15), because the next
+  system move is outside the band (24), or at the six-move limit (20).
+- Skipped, reached only through an `eco` line's move order (1.Nf3, Bf4, Bg5): 76.
+  The tool records no path for them.
+- Skipped, no system move in the band at the gap's own board (depth-20 worker,
+  not stored; first choice, then the nearest system move and its loss): rank 6,
+  1.c4 g6 2.Nc3 Bg7 3.e4 (...c5 21, ...d6 64 behind); rank 7, 1.Nf3 g6 2.Nc3
+  (...d5 3, ...Bg7 39 behind); rank 9, 1.d4 g6 2.Bf4 Bg7 3.Nc3 (...d5 -2, ...d6 43
+  behind); rank 27, 1.d4 c5 2.e3 Nc6 (d5 73, Nf3 58 behind); rank 39, 1.d4 d5 2.Nf3
+  Nf6 3.e3 Bf5 4.c4 Na6 (cxd5 133, Ne5 64 behind); rank 40, 1.e4 g6 2.d4 Bg7 3.Nc3
+  d6 4.f4 Nf6 5.Nf3 O-O 6.Bc4 (...Nxe4 -21, ...Nfd7 48 behind); rank 41, the same
+  with 6.Be2 (...c5 -21, ...a6 42 behind); rank 45, 1.d4 c5 2.e3 cxd4 3.exd4 e5
+  (dxe5 114, Bd3 75 behind); rank 49, 1.Nf3 g6 2.c4 Bg7 3.Nc3 (...c5 -8, ...d6 41
+  behind); rank 50, 1.e4 g6 2.d4 Bg7 3.Nc3 d6 4.Bc4 (...Nf6 -22, ...e6 33 behind);
+  rank 52, 1.d4 g6 2.Bf4 Bg7 3.e4 (...c5 3, ...d6 47 behind); rank 64, 1.e4 g6 2.d4
+  Bg7 3.Nc3 d6 4.f4 Nf6 5.Nf3 O-O 6.e5 (...dxe5 -14, ...Nfd7 48 behind); rank 65,
+  1.Nf3 g6 2.c4 Bg7 3.d4 d6 4.Bf4 (...c5 14, ...Nd7 31 behind); rank 67, 1.Nf3 g6
+  2.c4 Bg7 3.d3 (...Nf6 7, ...e6 33 behind).
+- Skipped, reached by a line built earlier in the same run: rank 57, 1.c4 g6
+  2.Nc3 Bg7 3.b3 (`gh-c4g6b3`); rank 62, 1.Nf3 g6 2.c4 Bg7 3.d4 d6 4.g3
+  (`gh-nf3g6c4bg7g3`); rank 81, 1.d4 Nf6 2.Nf3 e6 3.e3 b6 4.Bd3 d5
+  (`gc-d5nf3e6e3nf6bd3b6`).
+
+Every row of the matrix is now decided. The 95 rows it still lists as `missing`
+are the 76 `eco`-only rows and the 19 rows with no system move in the band (5
+from §10, 14 here); each has its reason in `research/gap-lines.json`.
+
+**One change to the tool.** A gap's first note cited "0 of N counted games" where
+the counting pass found the position but no band game playing the reply (six new
+lines). Such a note now cites the player pool's count for the reply, as it already
+did where fewer than ten band games reach the position. No line from §10 changed.
+
+**Checks.** The audit script (not shipped) replayed all 103 generated lines
+against the built page: every move is legal and matches its stored SAN; every
+learner move after the gap is a system move that grades best or equal on the
+shipped row (390: best 138, equal 252); every number in a note or plan matches the
+shipped row, `research/gap-lines.json` or the counting pass; every opponent move
+is the band's commonest (at least ten games) or the row's first move; every
+transposition stop is a board the named line reaches; at every band stop no
+system move grades best or equal. Thirteen new lines were read by hand:
+`gc-f5nf3d5`, `gh-e4g6d4bg7nc3b6bg5`, `gc-d5nf3nf6e3bf5bd3bg4`,
+`gc-c5e3cxd4exd4d6`, `gh-nf3g6h4`, `gh-e4g6nf3bg7d4d6nc3a6d5`,
+`gh-d4g6bf4bg7e3d6h3`, `gc-nf6nf3g6e3c5`, `gh-c4g6d3`,
+`gc-c5e3cxd4exd4d5nf3e5`, `gh-e4g6d4bg7nc3d6f4nf6nf3oobe3`,
+`gc-d5nf3nf6e3c6bd3h6` and `gh-nf3g6c4bg7d4d6b3`. The "0 of N" note above came
+from this reading. What the rules produce and a person may question, as in §10:
+the formation rule credits captures onto a formation square (5.Nxe5 in
+`gc-c5e3cxd4exd4d5nf3e5`, after the pawn offer 4...e5), and a band stop can come
+where the natural reply is a recapture outside the system (the same line stops
+before ...Nxe5, because dxe5 is not a Colle move). Nearly every opponent move
+after the gap is the table's choice: few counted games get that far.
+
+**Numbers after the batch.**
+
+- Lines 140 -> 199 (`synthetic` 103 -> 162).
+- Grading: 1349 drilled moves (was 940): best 550, equal 759, concession 38,
+  inferior 2. The 409 new drilled moves are 226 after the gap (73 best, 153 equal
+  at depth 20) and 183 on the way to it (174 best or equal). The other nine are
+  repertoire moves already drilled as concessions: 2.e3 after 1.d4 c5
+  (`syn-benoni`) on eight paths, and 2...Bg7 after 1.c4 g6 2.Nc3 (`syn-english`)
+  on one.
+- Evaluation table: 717 -> 1155 rows. All 717 existing rows unchanged, field for
+  field; none gained a field.
+- Depth 28: 139 -> 149 positions; the 139 existing `src/data/deep.js` rows
+  unchanged. Narrow claims 46 hold, 11 fail (was 45, 11). No generated move grades
+  lower than equal at depth 28.
+- Common choices: 615 moves at 151 positions (was 607 at 148). 145 of the 148
+  existing positions unchanged; 3 changed counts, because more games stay in the
+  tree. At 1.c4 g6 2.d4 Bg7 3.e4, ...e5 now crosses the floor. `--tsv`: the second
+  pass added one line (e3 and Nc3 after 1.d4 d5 2.Nf3 f5), the third was identical.
+- Occurrence buckets: 166 / 256 / 178 of 1155 positions; no existing position
+  changed bucket; `FRQ_SHARP` 12.
+- Coverage matrix: covered 156 -> 215, transposes 24 -> 27, missing 157 -> 95.
+
+The pipeline is §10's, in the same order; the second `--write` printed "notes
+unchanged".
