@@ -1397,7 +1397,7 @@ const MAT_SRC=(()=>{
   }catch(e){return "";}
 })();
 const MAT_BOOT=8000; // ms for the worker to parse the script and say it is ready
-let matW=null,matWDead=false,matWReady=false,matWSeq=0,matWSeen=0,matVia="";
+let matW=null,matWDead=false,matWReady=false,matWLate=false,matWSeq=0,matWSeen=0,matVia="";
 const matWQ=new Map();
 function matWorker(){
   if(matW||matWDead)return matW;
@@ -1412,7 +1412,10 @@ function matWorker(){
     // A worker that never starts (a policy can block it without an error event)
     // must not leave the "checking" line up for good. Bare setTimeout, like
     // flash(): this has to run whatever session is open by then.
-    setTimeout(()=>{if(!matWReady)matFail();},MAT_BOOT);
+    // A slow start (a loaded machine) is not a failure: past MAT_BOOT the
+    // requests answer here until the worker says it is ready, then it takes over.
+    const w=matW;matWLate=false;
+    setTimeout(()=>{if(matW===w)matLate();},MAT_BOOT);
   }catch(e){matWDead=true;matW=null;}
   return matW;
 }
@@ -1433,6 +1436,15 @@ function matFail(){
   matWDead=true;
   try{if(matW)matW.terminate();}catch(e){}
   matW=null;
+  matOwed();
+}
+// The worker is still not ready at MAT_BOOT: keep it, answer what it owes here.
+function matLate(){
+  if(matWReady||matWDead)return;
+  matWLate=true;
+  matOwed();
+}
+function matOwed(){
   const owed=[...matWQ.values()];
   matWQ.clear();
   for(const r of owed)if(r.ep===S.epoch)matMain(r.pos,r.m,r.live,r.cb);
@@ -1448,7 +1460,7 @@ function matMain(pos,m,live,cb){
 // live() still holds and the session it was asked in is still open.
 function matAsk(pos,m,live,cb){
   const w=matWorker();
-  if(!w){matMain(pos,m,live,cb);return;}
+  if(!w||matWLate&&!matWReady){matMain(pos,m,live,cb);return;}
   const id=++matWSeq;
   matWQ.set(id,{pos:pos,m:m,live:live,cb:cb,ep:S.epoch});
   w.postMessage({id:id,pos:pos,m:m});

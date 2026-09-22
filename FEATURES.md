@@ -113,7 +113,8 @@ its review interval is over. A *level* is a group of positions by move number.
 - The material search blames the move only when at least one pawn of material does not come back, or when it finds a forced mate.
 - A refutation names only the opponent's reply. The trainer hides a refutation that names the wanted move or its squares.
 - The material search runs in a Web Worker that the page builds from its own script. The page fetches nothing for it.
-- When a worker cannot start within 8 s, the search runs on the page's own thread with a smaller node budget.
+- When a worker is not ready after 8 s, the search runs on the page's own thread with a smaller node budget.
+- A worker that starts slowly stays alive. When it is ready, the material search runs in it again (`matLate` in `src/app.js`).
 - After a miss, the correct answer shows the table's first choice, the score of the line's move and the table's line.
 - A common mistake is a move that players at the selected rating band often chose, that no line plays, and that the table grades a concession or worse.
 - A refused common mistake shows how often players chose it.

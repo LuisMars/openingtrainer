@@ -738,7 +738,30 @@ const deferred = await page.evaluate(async () => {
   const q = fenPos("r1bq3r/pp1n1pp1/3bp1k1/6N1/3p3P/2P5/PP3PP1/R1BQR1K1 w - - 0 1");
   const g4 = findMove(q, "g2g4");
   res.mainBudget = matVerdict(q, g4);
+  // A slow start-up: the worker's first message is held back past its boot window.
+  // What it owed is answered here, the worker is kept, and once ready it is used.
+  const Real = Worker, held = [];
+  let hold = true;
+  window.Worker = class extends Real {
+    set onmessage(f) { super.onmessage = (e) => (hold ? held.push(() => f(e)) : f(e)); }
+  };
   matWDead = false; matW = null; matWReady = false;
+  let early, late;
+  matAsk(q, g4, () => true, (v) => { early = { via: matVia, v }; });
+  const slowW = matW;
+  window.Worker = Real;
+  matLate();
+  await until(() => early);
+  hold = false; held.splice(0).forEach((f) => f());
+  while (!matWReady) await new Promise((r) => setTimeout(r, 20));
+  matAsk(fenPos("4k3/P7/8/8/8/8/8/4K3 w - -"), findMove(fenPos("4k3/P7/8/8/8/8/8/4K3 w - -"), "a7a8q"),
+    () => true, (v) => { late = { via: matVia }; });
+  await until(() => late);
+  res.slow = { early: early || null, late: late || null, kept: matW === slowW && !matWDead };
+  // No wall-clock limit on start-up here: a loaded machine is slow, not broken.
+  matWDead = false; matW = null; matWReady = false;
+  matWorker();
+  while (!matWReady) await new Promise((r) => setTimeout(r, 20));
   let got;
   matAsk(q, g4, () => true, (v) => { got = { v, via: matVia, nodes: matNodes }; });
   await until(() => got);
@@ -764,6 +787,10 @@ check("the material search runs in a worker here, and a worker that dies is answ
   deferred.workerAlive && deferred.died.tries === 1 && deferred.died.via === "main" &&
     deferred.died.dead && !/Checking/.test(deferred.died.msg),
   JSON.stringify({ alive: deferred.workerAlive, died: deferred.died }));
+check("a worker that starts slowly is kept: the boot window answers on the main thread, then the worker",
+  deferred.slow.early && deferred.slow.early.via === "main" && deferred.slow.early.v === null &&
+    deferred.slow.late && deferred.slow.late.via === "worker" && deferred.slow.kept,
+  JSON.stringify(deferred.slow));
 check("ohanlon:28 g4 is silent at the main-thread budget and finishes, claiming nothing, in the worker",
   deferred.mainBudget === null && deferred.bgBudget && deferred.bgBudget.v && deferred.bgBudget.v.swing < 1 &&
     deferred.bgBudget.via === "worker" && deferred.bgBudget.nodes === 219450,

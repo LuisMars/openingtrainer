@@ -47,14 +47,6 @@ when the owner has chosen, and the code and README match the choice.
   is labelled "Colle as White".
 Files: none unless a check fails. Done when each check passes on a phone.
 
-**BUG — The material worker can miss its start-up window under load.** At a
-load average above 20 the worker misses its 8 s start-up and the app falls
-back to the main thread. That is safe, but 16 verdicts stay silent, and the
-UI check "ohanlon:28 g4 … in the worker" can fail. Files: `src/app.js`
-(`matWorker`, `matAsk`), `test/ui.mjs`. Verified by the UI suite on a loaded
-machine. Done when a slow start-up no longer loses the worker, or the check
-waits for it without a wall-clock limit.
-
 ---
 
 ## Features
