@@ -128,6 +128,7 @@ its review interval is over. A *level* is a group of positions by move number.
 - Answer arrows show in Shuffle, at a repair ply and at the end of a Drill line.
 - After the answer, the arrows show the first choice in the system, up to two other accepted moves, the refused move and the expected reply.
 - Except at a repair ply, the trainer never draws an arrow for a sound move that is outside the system.
+- Arrows that start on one square and go in one direction are drawn side by side (`drawArrows` in `src/app.js`).
 
 ## Scheduling and progress
 

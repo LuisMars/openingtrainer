@@ -2707,14 +2707,17 @@ function uciIn(pos,sanTxt){
   const bare=sanTxt.replace(/[+#!?]/g,""),m=legal(pos).find(x=>san(pos,x).replace(/[+#]/g,"")===bare);
   return m?uciOf(m):null;
 }
-function arrowEl(u,c){
+// off: a sideways shift in board units, so arrows that leave one square in one
+// direction (...d6 and ...d5 from d7) run side by side instead of nesting.
+function arrowEl(u,c,off){
   const NS="http://www.w3.org/2000/svg";
   const pt=s=>{let f=F.indexOf(s[0]),r=8-parseInt(s[1],10);if(S.flip){f=7-f;r=7-r;}return[f+.5,r+.5];};
   const a=pt(u.slice(0,2)),b=pt(u.slice(2,4)),w=AR_W[c]||.14;
   const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+  off=off||0;a[0]-=uy*off;a[1]+=ux*off;b[0]-=uy*off;b[1]+=ux*off;
   const hl=Math.min(len*.5,.2+w*1.3),hw=.12+w*.85,bx=b[0]-ux*hl,by=b[1]-uy*hl;
   const g=document.createElementNS(NS,"g");
-  g.setAttribute("class","ar "+c);g.dataset.u=u.slice(0,4);g.dataset.c=c;
+  g.setAttribute("class","ar "+c);g.dataset.u=u.slice(0,4);g.dataset.c=c;g.dataset.off=off;
   const r3=n=>Math.round(n*1000)/1000;
   for(const part of ["halo","body"]){
     const ln=document.createElementNS(NS,"line");
@@ -2740,7 +2743,12 @@ function drawArrows(){
     list.push(x);
   }
   list.sort((p,q)=>AR_ORDER.indexOf(p.c)-AR_ORDER.indexOf(q.c));
-  for(const x of list)svg.appendChild(arrowEl(x.u,x.c));
+  // Arrows sharing a start square and a direction get distinct offsets.
+  const ray=u=>{const dx=u.charCodeAt(2)-u.charCodeAt(0),dy=u.charCodeAt(3)-u.charCodeAt(1),g=Math.max(Math.abs(dx),Math.abs(dy));
+    return u.slice(0,2)+(dx%g||dy%g?dx+","+dy:dx/g+","+dy/g);};
+  const grp={};for(const x of list)(grp[ray(x.u)]=grp[ray(x.u)]||[]).push(x);
+  for(const x of list){const g=grp[ray(x.u)],n=g.length,i=g.indexOf(x);
+    svg.appendChild(arrowEl(x.u,x.c,n>1?Math.round((i-(n-1)/2)*.26*1000)/1000:0));}
   const k=el("akey"),kinds=AR_ORDER.filter(c=>AR_KEY[c]&&list.some(x=>x.c===c));
   if(k)k.innerHTML=kinds.map(c=>'<span class="ak '+c+'"><i></i>'+AR_KEY[c]+"</span>").join("");
 }

@@ -1650,6 +1650,15 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     out.geo = geo;
     const w = parseFloat(getComputedStyle(document.querySelector("#arrows g.ar.best line.body") || document.body).strokeWidth);
     out.scale = { svg: el("arrows").getBoundingClientRect().width, board: br.width, w };
+    // two accepted moves from one square in one direction (...d6 and ...d5 from d7)
+    setArrows([{ u: "d7d6", c: "best" }, { u: "d7d5", c: "alt" }, { u: "g8f6", c: "reply" }], false);
+    const rays = {};
+    for (const g of document.querySelectorAll("#arrows g.ar")) {
+      const u = g.dataset.u, dx = u.charCodeAt(2) - u.charCodeAt(0), dy = u.charCodeAt(3) - u.charCodeAt(1), n = Math.max(Math.abs(dx), Math.abs(dy));
+      const k = u.slice(0, 2) + (dx % n || dy % n ? dx + "," + dy : dx / n + "," + dy / n);
+      (rays[k] = rays[k] || []).push(+g.dataset.off);
+    }
+    out.rays = rays;
     settle(); skipNext(); settle();
     stats.pos = {};
     return out;
@@ -1672,6 +1681,8 @@ const fetches = await page.evaluate(() => window.__fetchCalls);
     JSON.stringify(ar.wrongThenRight));
   check("flipped board: every arrow runs from its origin square's centre to its destination's",
     ar.flip === true && ar.geo.length > 1 && ar.geo.every((g) => g.from && g.to), JSON.stringify(ar.geo));
+  check("no two arrows share a start square and a direction without distinct offsets",
+    Object.keys(ar.rays).length === 2 && Object.values(ar.rays).every((o) => new Set(o).size === o.length), JSON.stringify(ar.rays));
   check("arrows are drawn in board units, so they scale with the board",
     Math.abs(ar.scale.svg - ar.scale.board) < 1 && ar.scale.w > 0 && ar.scale.w < 1, JSON.stringify(ar.scale));
 

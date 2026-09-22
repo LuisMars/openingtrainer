@@ -348,6 +348,30 @@ for (const [what, n] of counts) {
 }
 if (!fail) console.log(`✓ page's stated counts match the data (${LINES.length} lines, ${PZ.length} puzzles)`);
 
+// 10b. README.md makes the same promises in prose and drifted the same way
+// ("829 moves across the 51 lines" long after LINES grew). Check the counts it
+// states: lines, tactics puzzles, and the per-tag tallies in its provenance headings.
+{
+  const before = fail;
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  const tally = {};
+  for (const l of LINES) tally[KIND[l.id]] = (tally[KIND[l.id]] || 0) + 1;
+  for (const m of readme.matchAll(/\b(\d+) lines\b/g))
+    if (+m[1] !== LINES.length) bad(`README says "${m[0]}" but ships ${LINES.length}`);
+  for (const m of readme.matchAll(/\b(\d+) (?:tactics )?puzzles\b/g))
+    if (+m[1] !== PZ.length) bad(`README says "${m[0]}" but ships ${PZ.length}`);
+  let heads = 0;
+  for (const m of readme.matchAll(/^### (`\w+`(?: and `\w+`)*) .*\(([\d +]+)\)\s*$/gm)) {
+    const tags = [...m[1].matchAll(/`(\w+)`/g)].map((t) => t[1]);
+    const said = m[2].split("+").map((x) => +x.trim());
+    heads++;
+    if (tags.length !== said.length) { bad(`README heading "${m[0]}" pairs ${tags.length} tags with ${said.length} counts`); continue; }
+    tags.forEach((t, i) => { if ((tally[t] || 0) !== said[i]) bad(`README says ${said[i]} \`${t}\` lines, data has ${tally[t] || 0}`); });
+  }
+  if (heads < 5) bad(`README: expected the five provenance headings with counts, found ${heads}`);
+  if (fail === before) console.log(`✓ README's stated counts match the data (${LINES.length} lines, ${PZ.length} puzzles, ${heads} tag headings)`);
+}
+
 // 11. W5-B release checks on the analysis itself.
 // (a) Depth is part of the reproducibility contract: one depth for the whole
 //     table, or two rows are not comparable and lossCp is meaningless.

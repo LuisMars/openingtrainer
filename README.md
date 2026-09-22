@@ -3,11 +3,12 @@
 A single-file opening trainer for two systems: the **Colle** as White and the **Hippopotamus** as Black.
 Open `docs/index.html` in any browser. No install, no build step, no server. Fonts, piece graphics and
 engine evaluations are baked into the page, so training itself never touches the network. There is one
-exception and it is opt-in: paste a lichess API token in Settings and the Study screen gains a masters
-statistics panel, which fetches from `explorer.lichess.org` each time you open it. Without a stored
-token, nothing leaves the page.
+exception and it is opt-in: paste a lichess API token under **Masters database** on the menu and the Study
+screen gains a masters statistics panel. Save sends one test request to `explorer.lichess.org` and stores
+the token only if lichess accepts it; after that the panel asks lichess once per position and keeps the
+answer until the tab closes. Without a stored token, nothing leaves the page.
 
-**79 lines · 589 trainable positions · 80 tactics puzzles.**
+**79 lines · 80 tactics puzzles.**
 
 ---
 
@@ -18,13 +19,16 @@ token, nothing leaves the page.
 | **Study a line** | Step through with a note on every move, the ECO name, the line's middlegame plan, an optional masters-database panel, and free play: make any legal move to explore, then take it back |
 | **Drill a line** | Play one line from move one from memory; the opponent answers automatically, and the note on the move you just played stays up through their reply instead of flashing away |
 | **Shuffle drill** | A weighted-random position from any line. How fast you answer is recorded and changes when the position comes back |
-| **Tactics** | 80 real positions from real games in these structures, from the lichess puzzle database |
+| **Tactics** | Real positions from real games in these structures, from the lichess puzzle database |
 | **Progress** | Solid / seen / accuracy, per-line bars, your five weakest positions, and JSON export and import |
 
 Moves can be **dragged or tapped**. Selecting a piece shows its legal destinations.
 
-Options (⋮ menu): flip board, target-square ghosts, board colours (Brown, Blue, Green, Slate),
-piece set (Cburnett standard, or a custom engraved set), and **drill book lines only**.
+Options (⋮ menu on the board screen): flip board, show target squares, board colours (Brown, Blue,
+Green, Slate), piece set (Cburnett standard, or a custom engraved set), **drill book lines only**,
+*favour positions that come up*, *counted at ratings*, *solid needs a second good move*, *favour your
+current level*, and **arrows on the board**. Every option except flip board and show target squares
+is stored.
 
 **Arrows on the board** (on by default, in the same menu) draw on the board what the note says in
 words. Once a position is answered: the first choice within your system (solid; labelled the table's
@@ -64,7 +68,7 @@ only what the article shows. The two Soltis recommendations are second-hand by t
 "attributed to Soltis in a chess.com thread" and "after a thread citing Soltis". The source on file
 is the forum discussion, not the book or column it names.
 
-Six moves in the whole repertoire carry an annotation mark (`e4!`, `Rf3!?` and four others). No engine
+A handful of moves in the repertoire carry an annotation mark (`e4!`, `Rf3!?` and a few others). No engine
 checked them and the build strips them before comparing notation against the generator, so they are
 repertoire signposts rather than verdicts. A mark is kept only where the line's own source carries one,
 which is why five were removed during the audit: a `model` line has no source that could have written
@@ -160,9 +164,9 @@ of the full data set.
 The evaluations in `src/data/evals.js` are Stockfish 16 scores computed once at build time
 (`tools/build-evals.mjs`) by a local engine — lichess's `lila-stockfish-web` sf16-7 build (a 433 KB WASM
 plus one 6.5 MB NNUE network, package version and network checksum both pinned) — so the page itself never
-runs an engine and never touches the network. The table holds 384 positions: all 364 distinct boards
-you are asked to move in, plus 20 more searched while the grading bands were being calibrated or because a
-line's note prices the opponent's move there. Each was searched
+runs an engine and never touches the network. The table holds every distinct board you are asked to move
+in, plus a few more searched while the grading bands were being calibrated or because a line's note prices
+the opponent's move there; `npm run verify` fails if a drilled position has no row. Each was searched
 single-threaded to depth 20 with a cleared hash, which makes this step reproducible, unlike the puzzle
 set: the same engine version and network at the same depth regenerates the same table. Stockfish and its
 network are GPL-3.0 and the lila build AGPL-3.0; they are used here as build tools, the way a compiler
@@ -172,13 +176,13 @@ against them before the switch (best-move agreement on the cached positions, wit
 divergences all near-equal alternatives). All scores are stored from the side to move's point of view,
 with forced mates kept distinct from centipawn scores. The tool takes `--extra` (further positions to
 search) and `--force` (named moves searched one at a time through UCI `searchmoves`), which is why every
-drilled repertoire move has a score of its own even when it falls outside the ranked five — of the 385 distinct
-position-and-move pairs drilled, 330 are in the five, 55 were searched separately, and none is unanalysed. The same `--force` pass also scores
-135 moves that real players commonly chose at drilled positions (next paragraph), so that a common choice
-can be priced rather than guessed at.
+drilled repertoire move has a score of its own even when it falls outside the ranked five; none is
+unanalysed, and the build checks that. The same `--force` pass also scores the moves that real players
+commonly chose at drilled positions (next paragraph), so that a common choice can be priced rather than
+guessed at.
 
 A second search backs the positions where the trainer makes a narrow claim. `tools/deep-check.mjs`
-re-searches 128 drilled positions at depth 28 with the same engine and settings: those with one accepted
+re-searches a subset of the drilled positions at depth 28 with the same engine and settings: those with one accepted
 move, those the setup gate calls demanding, and those whose best move is a mate, capture or check. It
 writes them to `src/data/deep.js`. At those positions a move gets the more generous of its two verdicts,
 so nothing either depth accepts is marked wrong. Where the two depths disagree about a move, the feedback
@@ -190,10 +194,9 @@ What players actually choose at each drilled position is counted, not estimated,
 occurrence weighting uses: the move of the trained colour is recorded at every drilled position a game
 reaches while it follows the repertoire, including the move that leaves it. `src/data/choices.js` keeps
 a choice when, in some band, at least 30 games reached the position and at least 10 and 5% of them chose
-it — 419 moves at 94 positions. Frequency never grades anything: which of those choices is a mistake is
-decided by the stored engine table alone. 34 of the searched ones sit at positions whose forced search is already
-fixed by drilled moves (adding more would shift those moves' own scores), so each is searched on its own
-and no stored score moves.
+it. Frequency never grades anything: which of those choices is a mistake is decided by the stored engine
+table alone. Where a position's forced search is already fixed by drilled moves (adding more would shift
+those moves' own scores), a common choice is searched on its own, so no stored score moves.
 
 ---
 
@@ -242,8 +245,10 @@ Each drillable position keeps `{correct, wrong, streak, lastSeen, rollingTime}`.
   exactly what the first one was. Taking it spends that first hint tier. Whether it counts as a miss
   depends on the grading below.
 - **Book elsewhere is not a miss.** If the move you played is the book move for a different line
-  trained from this exact board, in the same chapter and for the same side, it is not graded wrong: Drill names that line and lets you retry
-  with nothing recorded, Shuffle switches to that line and credits the answer. Puzzles and the
+  trained from this exact board, in the same chapter and for the same side, it is not graded wrong: Drill names
+  that line and lets you retry with no miss and no streak change, Shuffle switches to that line and credits the
+  answer. Either way the move is kept as a good move found there, which counts towards *Solid needs a second
+  good move*. Puzzles and the
   deliberate-mistake lines are excluded, so they can never be waved through this way.
 
 ### How a played move is graded
@@ -271,14 +276,13 @@ centipawns behind in one position and far more in another, and a separately scor
 - **Common mistakes are counted, then priced.** A move players at the selected band chose often
   here (the floor above) that the table grades a concession or worse, and that no line plays from this
   board, is a common mistake. Play one and the refusal adds how often players chose it; answer the
-  position and Shuffle names the most common one, with its count and its score. At the default band
-  24 such choices exist across the repertoire (21 under 1500, 10 at 1900 and over); most are
-  concessions of 30 to 55 centipawns, a few are inferior.
+  position and Shuffle names the most common one, with its count and its score. Most are concessions of
+  well under a pawn; a few are inferior.
 - **Position details** (a panel under the board) gathers what the data can say about the position:
   how often it is reached, how many games reached it, the table's depth and how far its first choice
   stands clear of the second, the line it comes from, and the opponent's threat where there is one: the
   same board searched at build time with the move handed to the opponent, shown only when that free move
-  gains at least 150 centipawns over the position as it stands (49 of 589 drill plies). While the
+  gains at least 150 centipawns over the position as it stands, or mates. While the
   question is live nothing there can name the answer — every row is checked against the move, a threat
   that touches the answer's squares waits until it is answered, and Shuffle hides the line and its plan.
   Once answered it adds the line's plan, the line's own note on the move, the table's first choice with
@@ -294,16 +298,15 @@ The first tap gives a real clue, or the button says **Which piece** instead — 
 come from the line's own annotation (rejected if it contains the move, its squares or the piece name), from
 facts the generator reads off the position (*recapture on d4*, *there is a capture, and it arrives with
 check*, *the move gives check*), or from the plan behind that move in this system (*fianchetto, and aim
-through the centre*, *take b5 away from their pieces*). Of the 425 trainable positions, 420 produce a real
-clue and none leak the answer; the rest fall back to **Which piece**.
+through the centre*, *take b5 away from their pieces*). Most positions produce a real clue; a clue that
+names the answer is rejected, and the rest fall back to **Which piece**.
 
 ---
 
 ## Correctness
 
 The board is not a picture. A full legal move generator was written for this app and verified against the
-standard [perft](https://www.chessprogramming.org/Perft_Results) positions, in Node and inside the shipped
-file in a browser:
+standard [perft](https://www.chessprogramming.org/Perft_Results) positions by `npm run verify`, in Node:
 
 | Position | Depth | Nodes | Result |
 |---|---|---|---|
@@ -312,9 +315,10 @@ file in a browser:
 | Position 3 | 4 | 43,238 | exact |
 | Position 4 | 3 | 9,467 | exact |
 
-All **829 moves** across the 51 lines were then replayed through that generator: every one legal, and the
-algebraic notation shown in the app matches the notation the generator produced independently. The 80 puzzle
-solutions were validated the same way.
+Every move of every line is replayed through that generator on each build: every one legal, and the
+algebraic notation shown in the app matches the notation the generator produces independently. The puzzle
+solutions are validated the same way. Inside the shipped page, the **Progress** screen repeats a smaller
+check in your browser: perft from the start position to depth 3, and a replay of every line and puzzle.
 
 ---
 
@@ -324,9 +328,12 @@ solutions were validated the same way.
   knows about quality is the precomputed table in `src/data/evals.js`, which covers the trained positions
   and nothing else. A rival plan off the table cannot be graded live — it is reported as unanalysed, which
   is not the same as sound.
-- **Engine numbers appear only after you get one wrong.** Miss a move and the feedback names the
-  engine's first choice, its score against yours and the line it plays; answer correctly and it says
-  nothing, because relitigating a book move you already found teaches nothing. Never in Tactics.
+- **The engine's verdict on your move appears only after you get one wrong.** Miss a move and the feedback
+  names the engine's first choice, its score against yours and the line it plays; answer correctly and it
+  says nothing about your move, because relitigating a book move you already found teaches nothing. Other
+  numbers are not held back: the Position details panel shows the gap between the table's top two moves
+  and any threat while the question is live, and a common mistake is shown with its score. Never in
+  Tactics.
 - **Progress names your habits, not just your percentages.** A weak position records which wrong move
   you actually played, so the Progress screen can say "usually Bd3 (4×)" rather than a bare miss rate.
   Five distinct wrong moves are kept per position; rarer ones are evicted.
@@ -335,7 +342,7 @@ solutions were validated the same way.
   in the current format on load, and backups exported from them still import.
 - **The offline promise is conditional, not absolute.** Everything except one panel works on a plane. The
   masters panel on the Study screen is the only online feature: it fetches from `explorer.lichess.org`, it
-  needs a lichess token you supply yourself, and it does not appear until you store one — lichess made the
+  needs a lichess token you supply yourself on the menu, and it does not appear until you store one — lichess made the
   opening explorer login-only in April 2026. Whether that endpoint still answers was not confirmed while
   this was written: it was unreachable from the environment the checks were run in.
 - If *objectively best* is your only criterion, neither opening survives contact: the Colle is equal at best
@@ -368,7 +375,7 @@ src/
   data/puzzles.js          tactics, generated
   data/pieces-cburnett.js  standard piece set
   data/evals.js            precomputed Stockfish scores, generated
-  data/deep.js             depth-28 re-search of 116 narrow drilled positions, generated
+  data/deep.js             depth-28 re-search of the narrow drilled positions, generated
   data/freq.js             how often each position is reached, per rating band, generated
   data/choices.js          what players chose at each position, per rating band, generated
 test/verify.mjs            engine + data gate, no browser needed
@@ -394,8 +401,9 @@ npm run serve     # http://localhost:8080
 ```
 
 `npm run verify` is the gate. It fails on an illegal move, a mislabelled move, a line
-with no provenance tag, or a function called but never defined. The same checks also run
-inside the app: open **Progress** and it verifies itself in your browser and says so.
+with no provenance tag, a function called but never defined, or a line, puzzle or tag count
+in this file that the data does not match. A smaller set runs inside the app: open **Progress**
+and it verifies itself in your browser and says so.
 
 The trainer is published straight from `docs/` on the default branch via GitHub Pages,
 so `docs/index.html` is committed rather than gitignored.

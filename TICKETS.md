@@ -47,33 +47,6 @@ when the owner has chosen, and the code and README match the choice.
   is labelled "Colle as White".
 Files: none unless a check fails. Done when each check passes on a phone.
 
-**BUG — Two accepted moves from one square draw overlapping arrows.** For
-example ...d6 and ...d5 from d7: the shorter arrow sits inside the longer.
-Files: `src/app.js` (`drawArrows`), `src/styles.css`. Verified by a UI check
-that no two drawn arrows share a start square and a direction without an
-offset, and a phone-width screenshot. Done when both arrowheads and shafts
-are distinct.
-
-**BUG — README states things the code does not do.** Found while writing
-`FEATURES.md` against the code:
-- Stale counts the build does not check: "All 829 moves across the 51 lines"
-  (79 lines now), "Of the 425 trainable positions, 420…" (589 drill plies),
-  `data/deep.js` "116 narrow drilled positions" (128).
-- It says perft runs "inside the shipped file in a browser" on four
-  positions; the in-browser self-check (`selfTest`) runs only perft(start, 3).
-- Limits says engine numbers appear only after a wrong answer; the Position
-  details panel and the common-mistake note show centipawns without one.
-- The masters panel: the token field is on the menu under "Masters database",
-  not "in Settings"; answers are cached for the session (`libCache`), not
-  fetched each time; Save sends the token to lichess once before storing it.
-- "Book elsewhere … nothing recorded": Drill logs the move in the answer log
-  (`noteWay`), which counts toward "Solid needs a second good move".
-- The options paragraph names 5 of the 10 options.
-Files: `README.md`, possibly `test/verify.mjs` (to check the counts).
-Verified by comparing each claim with `FEATURES.md` and the code. Done when
-every claim above is true, and the counts are either checked by the build or
-removed.
-
 **BUG — The material worker can miss its start-up window under load.** At a
 load average above 20 the worker misses its 8 s start-up and the app falls
 back to the main thread. That is safe, but 16 verdicts stay silent, and the
